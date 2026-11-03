@@ -1321,7 +1321,7 @@ function mk(pool, fSl, fBase, act) {   // fSl / fBase = wymuszony slot i nazwa b
   const onlyCommon = pool.length === 1 && pool[0] === 0;
   while (!fSl && onlyCommon && (sl === 'amulet' || sl === 'ring' || sl === 'trinket')) sl = P(Object.keys(SL));
   while (!fSl && (sl == 'amulet' || sl == 'ring' || sl == 'trinket') && r === 0) sl = P(Object.keys(SL));
-  const mult = RAR[r][1], s = {}, j = () => R(0.8, 1.2); let d = null;   // losowy mnożnik 0.8–1.2 (jak pula statystyk) – obrażenia broni i pancerz
+  const s = {}, j = () => R(0.8, 1.2); let d = null;   // losowy mnożnik 0.8–1.2 (jak pula statystyk) – obrażenia broni i pancerz
   if (sl == 'weapon') {
     // obrażenia broni rosną z POZIOMEM, ale NIE z rzadkością (losowo 0.8–1.2); Strength mnoży je: × (1 + STR/100)
     d = wpnDmg(me.lvl);
@@ -1330,12 +1330,12 @@ function mk(pool, fSl, fBase, act) {   // fSl / fBase = wymuszony slot i nazwa b
     s.arm = Math.max(1, Math.round((2 + me.lvl * 1.3) * { helm: 1, armor: 1.4, shield: 1.1, boots: .6, gloves: .7 }[sl] * j() * ARM_TIER[r]));
   }
   // STATYSTYKI Z PULI: szare – brak; zielone / niebieskie / fioletowe / złote – 1, 2 albo 3 losowe statystyki, które DZIELĄ wspólną pulę
-  // (np. zielony z pulą 10: 10 Vitality albo 5 Vitality + 5 Strength). Pula = (1 + poziom × 0.9) × mnożnik rzadkości × POOL[r]
+  // (np. zielony z pulą 10: 10 Vitality albo 5 Vitality + 5 Strength). Pula = (1 + poziom × 0.9) × POOL[r]
   // – o 50% mniej niż dawna suma statystyk (dawniej: 1 / 2 / 3 / 3 statystyki po pełnej wartości).
-  const POOL = [0, 0.5, 1, 1.5, 1.5];
+  const POOL = [0, 0.7, 1.4, 2, 3.2];   // CAŁKOWITY mnożnik puli statystyk za rzadkość: common, uncommon, rare, epic, legendary (było 0 / 0.7 / 1.9 / 3.9 / 5.1)
   if (r > 0) {
     // losowy mnożnik puli 0.8–1.2: przedmioty z tego samego poziomu i rzadkości różnią się siłą (nie każdy kolejny to pewny upgrade)
-    const pool = Math.max(1, Math.round((1 + me.lvl * .9) * mult * POOL[r] * j()));
+    const pool = Math.max(1, Math.round((1 + me.lvl * .9) * POOL[r] * j()));
     const keys = ['str', 'dex', 'con'].sort(() => Math.random() - .5).slice(0, Math.min(I(1, 3), pool));
     const w = keys.map(() => 0.4 + Math.random()), sw = w.reduce((a, b) => a + b, 0);
     let left = pool;
