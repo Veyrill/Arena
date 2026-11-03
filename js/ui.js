@@ -814,20 +814,23 @@ const pediaStep = id => (fishing.pedia && fishing.pedia[id]) || 0;
 const rewardTxt = t => [t.sp ? `+${t.sp} Fishing Skill Point` : '', t.fp ? `+${t.fp} FP` : ''].filter(Boolean).join(', ');
 // dolicza n złowionych sztuk i od razu przyznaje osiągnięte progi
 // ===== SAMOUCZEK: ULEPSZ WĘDKĘ =====
-// Start: gracz złowił łącznie TUT_CARP Crucian Carp (licznik Fishpedii). me.tutRod: brak/0 = nie zaczęty, 1 = trwa, 2 = ukończony lub pominięty (zapis w save).
+// Start: gracz złowił łącznie TUT_CARP Crucian Carp (licznik Fishpedii). me.tutRod: brak/0 = nie zaczęty, 1 = trwa, 3 = wędka ulepszona – dymek o haczyku, 2 = ukończony lub pominięty (zapis w save).
 // Dymek (#tutbub) prowadzi krok po kroku: zakładka Tackle Upgrade → przeciągnij wędkę do slotu → złów brakujące karasie → kliknij Upgrade.
+// Po ulepszeniu wędki: dymek przy slocie „Your hook can be upgraded the same way!” – znika po ✕, po wyjściu z zakładki albo po włożeniu haczyka do slotu.
 // Koniec: dowolna wędka gracza ma rzadkość ≥ uncommon. Stare zapisy z już ulepszoną wędką – samouczek od razu oznaczony jako ukończony (bez dymka).
 // X w dymku = pomiń samouczek.
-const TUT_CARP = 10;
+const TUT_CARP = 15;
 const rodUpgraded = () => [...inv, ...Object.values(eq1), ...Object.values(eq2), upgradeItem].some(i => isRod(i) && gearLevel(i) >= 1);
 window.skipTut = () => { me.tutRod = 2; renderTut(); };
 let tutTgt = null, tutSide = 'right';
 function renderTut() {
   if (!me.tutRod && rodUpgraded()) me.tutRod = 2;
   if (!me.tutRod && pediaCount('fish_carp') >= TUT_CARP) me.tutRod = 1;
-  if (me.tutRod === 1 && rodUpgraded()) { me.tutRod = 2; say('<b>Tutorial complete!</b> Your rod is stronger now. Better fish are waiting.', 'crit'); }
+  if (me.tutRod === 1 && rodUpgraded()) me.tutRod = 3;   // wędka ulepszona → dymek o haczyku
+  if (me.tutRod === 3 && (view !== 'upgrade' || isUpgradable(upgradeItem) && !isRod(upgradeItem))) me.tutRod = 2;   // wyjście z zakładki albo haczyk w slocie = koniec
   let txt = ''; tutTgt = null;
-  if (me.tutRod === 1 && !busy) {
+  if (me.tutRod === 3) { tutTgt = document.querySelector('#body-upgrade [data-upgrade-slot]'); tutSide = 'left'; txt = 'Your <b>hook</b> can be<br>upgraded the same way!'; }
+  else if (me.tutRod === 1 && !busy) {
     const slot = document.querySelector('#body-upgrade [data-upgrade-slot]'), ub = document.querySelector('#body-upgrade button[onclick*="upgradeGear"]');
     const c = upgradeCost(gearLevel(upgradeItem)), have = (inv.find(x => x.mat && x.sl === c.mat) || {}).qty || 0;
     if (view !== 'upgrade') { tutTgt = document.querySelector('#nav button[data-v="upgrade"]'); tutSide = 'right'; txt = '<b>Your rod can be upgraded!</b><br>Open Tackle Upgrade.'; }
@@ -839,7 +842,7 @@ function renderTut() {
   let bub = $('tutbub');
   if (!tutTgt) { if (bub) bub.remove(); return; }
   if (!bub) { bub = document.createElement('div'); bub.id = 'tutbub'; document.body.appendChild(bub); }
-  const html = `<button onclick="window.skipTut()" title="Skip tutorial">✕</button><small>Tutorial: Upgrade your rod</small><div>${txt}</div>`;
+  const html = `<button onclick="window.skipTut()" title="Close">✕</button><div>${txt}</div>`;
   if (bub.dataset.h !== html) { bub.innerHTML = html; bub.dataset.h = html; }
   bub.className = 'tb-' + tutSide; placeTut();
 }
@@ -858,7 +861,6 @@ function placeTut() {
 (function tutLoop() { placeTut(); requestAnimationFrame(tutLoop); })();
 document.head.insertAdjacentHTML('beforeend', `<style>
 #tutbub{position:fixed;z-index:60;max-width:220px;padding:8px 26px 8px 11px;border-radius:9px;background:var(--ac);color:var(--on-ac);font-size:13px;line-height:1.35;box-shadow:0 4px 14px #0006;pointer-events:none}
-#tutbub small{display:block;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;opacity:.75;margin-bottom:2px}
 #tutbub button{pointer-events:auto;position:absolute;top:3px;right:3px;padding:0 5px;min-width:0;border:0;background:none;color:inherit;font-size:12px;line-height:18px;cursor:pointer;opacity:.75}
 #tutbub::before{content:"";position:absolute;border:8px solid transparent}
 #tutbub.tb-right::before{right:100%;top:50%;margin-top:-8px;border-right-color:var(--ac)}
