@@ -216,11 +216,11 @@ export const DUN2 = { n: 'The Proving Grounds', e: '🏟️', req: 30, mobs: [
 DUN2.mobs[0].lore = 'He fights in the lower pits, where the sand is never fully dry and the crowd never stops shouting. Dozens of gladiators came to the arena in the same cart as him, and he is the last one still alive. He does not hate his opponents, he simply refuses to be the next body dragged through the gate. Today, the only thing standing between him and another sunrise is you.';
 DUN2.mobs[1].lore = 'Before the arena, he was a soldier who marched through ten wars and buried every friend he ever had. When the last war ended, he had nowhere to go, so he came here to keep doing the only thing he knows. Now he is a giant of scars and muscle, slow to move but impossible to stop. The crowd calls him the Titan, and they say the ground shakes when he charges.';
 DUN2.mobs[2].lore = 'Every gladiator who ever stepped onto this sand has heard his name before they learned to hold a sword. He built the arena into what it is today, and the old masters still bow when he passes by. For years no one has dared to challenge him, so he waited in silence for someone brave or foolish enough. Now the gates are open, and the whole arena holds its breath as you walk in.';
-// LOCH 3 „The Thorn Garden” – od 45 poziomu: Thorn Sprite (48) → Briar Knight (54) → The Withered Queen (60). Na razie BEZ dropów.
+// LOCH 3 „The Thorn Garden” – od 45 poziomu: Garden Hound (48) → Briar Knight (54) → The Withered Queen (60). Na razie BEZ dropów.
 // Statystyki jak w The Proving Grounds (pgClone): klon przeciwnika z wyprawy o podobnej sile + charakter.
-// Grafiki: enemies/enemy_thorn_sprite.png, enemy_briar_knight.png, enemy_the_withered_queen.png (brak pliku → emoji).
+// Grafiki: enemies/enemy_garden_hound.png, enemy_briar_knight.png, enemy_the_withered_queen.png (brak pliku → emoji).
 export const DUN3 = { n: 'The Thorn Garden', e: '🌹', req: 45, mobs: [
-  pgClone('Thorn Sprite', '🧚', 48, 'Stone Titan', { hp: 0.9, dmg: 1.15, crit: 12 }),                  // szybka wróżka: mało HP, mocne i częste krytyki
+  pgClone('Garden Hound', '🐕', 48, 'Stone Titan', { hp: 0.9, dmg: 1.15, crit: 12 }),                  // szybki zdziczały pies królowej: mniej HP, mocne i częste krytyki
   pgClone('Briar Knight', '🌿', 54, 'Abyss Knight', { hp: 1.15, dmg: 0.75, arm: 1.4, dodge: 3 }),      // czołg: rycerz w cierniach – dużo HP i pancerza, słabsze ciosy
   pgClone('The Withered Queen', '🥀', 60, 'Frost Giant', { hp: 1.05, dmg: 1.05, crit: 15 })            // boss: królowa ogrodu, mocna we wszystkim
 ] };
