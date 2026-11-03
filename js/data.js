@@ -224,6 +224,10 @@ export const DUN3 = { n: 'The Thorn Garden', e: '🌹', req: 45, mobs: [
   pgClone('Briar Knight', '🌿', 54, 'Abyss Knight', { hp: 1.15, dmg: 0.75, arm: 1.4, dodge: 3 }),      // czołg: rycerz w cierniach – dużo HP i pancerza, słabsze ciosy
   pgClone('The Withered Queen', '🥀', 60, 'Frost Giant', { hp: 1.05, dmg: 1.05, crit: 15 })            // boss: królowa ogrodu, mocna we wszystkim
 ] };
+// OPISY (lore) przeciwników The Thorn Garden – pod dropami, przy pierwszym obejrzeniu pojawiają się powoli (jak w pozostałych lochach)
+DUN3.mobs[0].lore = 'Once he was the favorite hound of the queen, and he slept every night at the foot of her rose bed. When the garden began to grow wild, he refused to leave her side, even as the thorns wrapped around his fur. Now he runs the overgrown paths alone, hunting anyone who dares to walk where his mistress once walked. He still wears her golden collar, and he will not let you pass without a fight.';
+DUN3.mobs[1].lore = 'He swore to guard the royal garden for as long as the queen lived, and he never broke an oath. When she stopped leaving the garden, he stopped leaving the gate, and the briars slowly grew over his armor. Now the thorns are both his shield and his prison, and every wound he takes only makes them grow thicker. To reach the queen, you must cut through a knight who has forgotten how to fall.';
+DUN3.mobs[2].lore = 'She loved her roses more than her crown, and when the king died, she locked herself in the garden forever. The roses fed on her grief, and in return they promised she would never grow old. Year by year they drank her life, until only a shadow in a faded red gown was left among the dead flowers. She waits for someone to bring her garden back to life, and she believes your blood will make it bloom again.';
 export const DUNS = [DUN, DUN2, DUN3];   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
 
 // IKONY SKILLI: grafiki z assets/skills (pixel art 16×16, plik 64×64). f = nazwa pliku bez .png, e = emoji zapasowe, px = rozmiar.
