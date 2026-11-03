@@ -1451,8 +1451,7 @@ const SKILL_COST = 1;
 const MAX_LVL = 80;
 // XP NA AWANS: 120 × poziom + 3 × poziom² − 70 – Lv1: 53 (2 × Lynx = 60 → 2 poziom z lekką nadwyżką), Lv10: 1430, Lv40: 9530, Lv79: ≈28 130
 // (przy przeciwniku z własnego poziomu: 1–10 ≈ 50 walk, 70–80 ≈ 171 walk – ok. 3× dłużej)
-// XP na kolejny poziom; od 30 poziomu mniej o 5 walk z przeciwnikiem tego poziomu (5 × xpOf = 5 × (20 × L + 10)), np. 30 → 31: 6230 → 3180, 79 → 80: 28133 → 20183
-const xpNeed = L => 120 * L + 3 * L * L - 70 - (L >= 30 ? 5 * (20 * L + 10) : 0);
+const xpNeed = L => 120 * L + 3 * L * L - 70;
 window.buyUpg = (id) => {
   if (busy || panMoved || me.sp < SKILL_COST || (id === 'centerHp' && upgTree.centerHp)) return;
   me.sp -= SKILL_COST;
