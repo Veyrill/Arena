@@ -2,9 +2,9 @@
 <html lang="en"><head><meta charset="utf-8"><title>Arena – prototype</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <style>
-:root{--bg:#f3ecdd;--card:#fffaf0;--tx:#2b2118;--mut:#7a6a58;--bd:#d4c3a3;--ac:#b5541c;--hp:#c0392b;--c0:#7a6a58;--c1:#2e8b3d;--c2:#2a6fd0;--c3:#9b3fd0;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#1d1812;--card:#2a231a;--tx:#f0e6d2;--mut:#a39880;--bd:#4a3e2c;--ac:#e8803c;--c0:#a39880;--c1:#5fcf70;--c2:#6aa5ff;--c3:#c685f5;color-scheme:dark}}
-:root[data-theme=dark]{--bg:#1d1812;--card:#2a231a;--tx:#f0e6d2;--mut:#a39880;--bd:#4a3e2c;--ac:#e8803c;--c0:#a39880;--c1:#5fcf70;--c2:#6aa5ff;--c3:#c685f5;color-scheme:dark}
+:root{--bg:#f3ecdd;--card:#fffaf0;--tx:#2b2118;--mut:#7a6a58;--bd:#d4c3a3;--ac:#b5541c;--on-ac:#fff;--hp:#c0392b;--c0:#7a6a58;--c1:#2e8b3d;--c2:#2a6fd0;--c3:#9b3fd0;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#1d1812;--card:#2a231a;--tx:#f0e6d2;--mut:#a39880;--bd:#4a3e2c;--ac:#e8803c;--on-ac:#1d1208;--c0:#a39880;--c1:#5fcf70;--c2:#6aa5ff;--c3:#c685f5;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#1d1812;--card:#2a231a;--tx:#f0e6d2;--mut:#a39880;--bd:#4a3e2c;--ac:#e8803c;--on-ac:#1d1208;--c0:#a39880;--c1:#5fcf70;--c2:#6aa5ff;--c3:#c685f5;color-scheme:dark}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.35 'Cascadia Mono','Cascadia Code',Consolas,'Courier New',monospace}
 h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;letter-spacing:.05em;color:var(--mut)}
@@ -31,7 +31,7 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:5px 10px}
 button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cursor:default}
 .nav{display:flex;flex-direction:column;gap:6px}.nav button{text-align:left;font-weight:700;letter-spacing:.04em}
-.nav button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.nav button.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac)}
 /* czerwona kropka przy zakładce (np. Skills, gdy są skill pointy do wydania) – jak przy nowych przedmiotach */
 .nav button{position:relative}.nav button.new::after{content:"";position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#e53935;box-shadow:0 0 5px 2px #e5393588;animation:newglow .9s infinite alternate;pointer-events:none}
 @media(max-width:820px){.nav{flex-direction:row}.nav button{flex:1;text-align:center}}
@@ -40,7 +40,7 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 .eq-page-btn{width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border-radius:13px;border:1px solid var(--bd);background:var(--card);color:var(--tx);font-weight:700;font-size:12px;cursor:pointer;padding:0;transition:.12s}
 .eq-page-btn:hover:not(:disabled){border-color:var(--ac)}
 .eq-page-btn:disabled{cursor:not-allowed}
-.eq-page-btn.on{background:var(--ac);color:#fff;border-color:var(--ac);box-shadow:0 0 0 2px color-mix(in srgb,var(--ac) 40%,transparent)}
+.eq-page-btn.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac);box-shadow:0 0 0 2px color-mix(in srgb,var(--ac) 40%,transparent)}
 
 .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:230px;margin:0 auto 8px}
 .slot{aspect-ratio:1;border:2px dashed var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--bd) 18%,transparent);transition:.12s}
@@ -60,7 +60,7 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 .lb{cursor:help;text-decoration:underline dotted var(--mut);text-underline-offset:3px}
 .plusw{display:inline-flex;margin-left:8px}
 .plusw:has(.plus:disabled){cursor:not-allowed}
-.plus{width:22px;height:22px;padding:0;line-height:1;font-size:17px;font-weight:800;border-radius:6px;background:var(--ac);color:#fff;border:1px solid var(--ac);animation:pl 1.6s infinite}
+.plus{width:22px;height:22px;padding:0;line-height:1;font-size:17px;font-weight:800;border-radius:6px;background:var(--ac);color:var(--on-ac);border:1px solid var(--ac);animation:pl 1.6s infinite}
 .plus:disabled{background:var(--card);color:var(--mut);border:1px dashed var(--bd);animation:none;pointer-events:none}
 @keyframes pl{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--ac) 60%,transparent)}70%,100%{box-shadow:0 0 0 7px transparent}}
 /* złoto i skill pointy: w karcie postaci, między ekwipunkiem a napisem Level / XP, po prawej; Skill Points w lewej kolumnie, Gold zawsze w prawej
@@ -86,10 +86,10 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 /* nagroda nad łupem: +XP (fiolet jak pasek XP) i +złoto z monetą */
 #loot .rw{flex-basis:100%;display:flex;justify-content:center;gap:16px;font-weight:700;font-size:15px}
 /* Back w oknie walki (wyprawa): ten sam kolor co Fight! */
-#fbackrow button{background:var(--ac);color:#fff;border-color:var(--ac);font-weight:700}
+#fbackrow button{background:var(--ac);color:var(--on-ac);border-color:var(--ac);font-weight:700}
 /* wynik walki w miejscu Back (po walce): Victory! zielone / Defeat czerwone; stała wysokość wiersza – okno nie skacze */
 #fbackrow{min-height:32px}#fres{flex:1;text-align:center;font-size:20px;letter-spacing:.03em}   /* wynik na środku okna walki */
-#go{display:block;width:auto;margin:20px auto 0;padding:6px 16px;background:var(--ac);color:#fff;border-color:var(--ac);font-weight:700}
+#go{display:block;width:auto;margin:20px auto 0;padding:6px 16px;background:var(--ac);color:var(--on-ac);border-color:var(--ac);font-weight:700}
 #log[hidden]{display:none}   /* log walki ukryty, dopóki gracz nie kliknie „Show battle log” */
 #log{height:100px;overflow:auto;font-size:12px;border:1px solid var(--bd);border-radius:8px;padding:5px;margin:8px 0}
 #log p{margin:1px 0}.crit{color:var(--ac);font-weight:700}.miss{color:var(--mut)}
@@ -102,15 +102,15 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 .slot[data-slot=weapon] img[src*="/weapon/"]{width:64px!important;height:64px!important;image-rendering:pixelated!important}
 .inv{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:5px}
 .cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:2px solid var(--bd);border-radius:8px;cursor:pointer;background:var(--card)}.cell .ic{font-size:32px}.cell.r0{border-color:var(--c0)}.cell.r1{border-color:var(--c1)}.cell.r2{border-color:var(--c2)}.cell.r3{border-color:var(--c3)}.cell.r4{border-color:#f2c200;box-shadow:0 0 8px #f2c20088}.cell.r5{border-color:#e53935;box-shadow:0 0 8px #e5393588}
-#sellbtn.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+#sellbtn.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac)}
 #tip{position:fixed;display:none;z-index:50;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;font-size:18px;line-height:1.35;max-width:315px;pointer-events:none;box-shadow:0 4px 14px #0006}
 #tip b{display:block;font-size:19px}
 #skillreset:disabled{pointer-events:none}#skillresetw:has(#skillreset:disabled){cursor:not-allowed}
 .recipes{display:grid;grid-template-columns:repeat(auto-fill,90px);gap:16px 12px}
 .recipe{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:90px}
-.ctabs{display:flex;gap:6px;margin-bottom:10px}.ctabs button{font-weight:700}.ctabs button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.ctabs{display:flex;gap:6px;margin-bottom:10px}.ctabs button{font-weight:700}.ctabs button.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac)}
 #devbtn{position:fixed;left:12px;bottom:12px;z-index:60;font-weight:700;font-size:12px;opacity:.85}
-#devbtn.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+#devbtn.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac)}
 
 /* WYBÓR RYBY (boczne menu łowienia) */
 .fish-list{display:flex;flex-direction:column;gap:10px}
@@ -169,7 +169,7 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 .upg-node.small{width:24px;height:24px;border-radius:6px}.upg-node.small .ic{font-size:12px}
 .upg-node.avail{border-color:var(--ac);box-shadow:0 0 9px color-mix(in srgb,var(--ac) 55%,transparent)}
 .upg-line.on{stroke:#f2c200;filter:drop-shadow(0 0 3px #f2c200)}.upg-line.off{stroke-dasharray:4 5;opacity:.75}
-.upg-badge{position:absolute;bottom:-4px;right:-4px;background:var(--ac);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:6px;border:1px solid var(--card)}
+.upg-badge{position:absolute;bottom:-4px;right:-4px;background:var(--ac);color:var(--on-ac);font-size:9px;font-weight:700;padding:1px 4px;border-radius:6px;border:1px solid var(--card)}
 .upg-node.bought .upg-badge{background:#f2c200;color:#2b2118}
 .tile.boss{border-color:#e0524a;box-shadow:0 0 10px 2px color-mix(in srgb,#e0524a 45%,transparent)}.fig.boss{filter:drop-shadow(0 0 7px #e0524a)}
 </style></head><body>
