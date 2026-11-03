@@ -3120,7 +3120,7 @@ document.addEventListener('click', e => {
     }
     else if (a == 'dfback') {   // Back z walki → z powrotem lista przeciwników i dropy
       dfight = false;
-      if (dJustBeat) { dJustBeat = false; if (dprog < DUN.mobs.length) { dsel = dprog; dview = dprog; } }   // po pierwszym pokonaniu – wybrany następny przeciwnik
+      dJustBeat = false;   // po pokonaniu zostaje wybrany TEN SAM przeciwnik – na następnego gracz klika sam
     }
     render(); return;
   }
