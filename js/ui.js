@@ -813,6 +813,61 @@ const pediaCount = id => (fishing.count && fishing.count[id]) || 0;
 const pediaStep = id => (fishing.pedia && fishing.pedia[id]) || 0;
 const rewardTxt = t => [t.sp ? `+${t.sp} Fishing Skill Point` : '', t.fp ? `+${t.fp} FP` : ''].filter(Boolean).join(', ');
 // dolicza n złowionych sztuk i od razu przyznaje osiągnięte progi
+// ===== SAMOUCZEK: ULEPSZ WĘDKĘ =====
+// Start: gracz złowił łącznie TUT_CARP Crucian Carp (licznik Fishpedii). me.tutRod: brak/0 = nie zaczęty, 1 = trwa, 2 = ukończony lub pominięty (zapis w save).
+// Dymek (#tutbub) prowadzi krok po kroku: zakładka Tackle Upgrade → przeciągnij wędkę do slotu → złów brakujące karasie → kliknij Upgrade.
+// Koniec: dowolna wędka gracza ma rzadkość ≥ uncommon. Stare zapisy z już ulepszoną wędką – samouczek od razu oznaczony jako ukończony (bez dymka).
+// X w dymku = pomiń samouczek.
+const TUT_CARP = 10;
+const rodUpgraded = () => [...inv, ...Object.values(eq1), ...Object.values(eq2), upgradeItem].some(i => isRod(i) && gearLevel(i) >= 1);
+window.skipTut = () => { me.tutRod = 2; renderTut(); };
+let tutTgt = null, tutSide = 'right';
+function renderTut() {
+  if (!me.tutRod && rodUpgraded()) me.tutRod = 2;
+  if (!me.tutRod && pediaCount('fish_carp') >= TUT_CARP) me.tutRod = 1;
+  if (me.tutRod === 1 && rodUpgraded()) { me.tutRod = 2; say('<b>Tutorial complete!</b> Your rod is stronger now. Better fish are waiting.', 'crit'); }
+  let txt = ''; tutTgt = null;
+  if (me.tutRod === 1 && !busy) {
+    const slot = document.querySelector('#body-upgrade [data-upgrade-slot]'), ub = document.querySelector('#body-upgrade button[onclick*="upgradeGear"]');
+    const c = upgradeCost(gearLevel(upgradeItem)), have = (inv.find(x => x.mat && x.sl === c.mat) || {}).qty || 0;
+    if (view !== 'upgrade') { tutTgt = document.querySelector('#nav button[data-v="upgrade"]'); tutSide = 'right'; txt = '<b>Your rod can be upgraded!</b><br>Open Tackle Upgrade.'; }
+    else if (fishing.active) { tutTgt = slot; tutSide = 'left'; txt = 'Stop fishing first.<br>A rod in use cannot be upgraded.'; }
+    else if (!isRod(upgradeItem)) { tutTgt = slot; tutSide = 'left'; txt = upgradeItem ? 'Put your <b>rod</b> here<br>instead of the hook.' : 'Drag your <b>rod</b> here<br>from your equipment.'; }
+    else if (ub && have < c.qty) { tutTgt = ub; tutSide = 'below'; txt = `Catch more ${MATS[c.mat].name}:<br><b>${have} / ${c.qty}</b>`; }
+    else if (ub) { tutTgt = ub; tutSide = 'below'; txt = 'Click <b>Upgrade</b>!'; }
+  }
+  let bub = $('tutbub');
+  if (!tutTgt) { if (bub) bub.remove(); return; }
+  if (!bub) { bub = document.createElement('div'); bub.id = 'tutbub'; document.body.appendChild(bub); }
+  const html = `<button onclick="window.skipTut()" title="Skip tutorial">✕</button><small>Tutorial: Upgrade your rod</small><div>${txt}</div>`;
+  if (bub.dataset.h !== html) { bub.innerHTML = html; bub.dataset.h = html; }
+  bub.className = 'tb-' + tutSide; placeTut();
+}
+// pozycja dymka przy celu (co klatkę – cel może się przesunąć po przewinięciu / zmianie układu)
+function placeTut() {
+  const bub = $('tutbub'); if (!bub || !tutTgt) return;
+  if (!tutTgt.isConnected) { renderTut(); return; }
+  const r = tutTgt.getBoundingClientRect(), w = bub.offsetWidth, h = bub.offsetHeight;
+  let side = tutSide; if (side === 'right' && r.right + w + 24 > innerWidth) side = 'below';   // wąski ekran: menu poziome → dymek pod przyciskiem
+  if (side === 'left' && r.left - w - 24 < 0) side = 'below';
+  bub.className = 'tb-' + side;
+  const x = side === 'right' ? r.right + 14 : side === 'left' ? r.left - w - 14 : r.left + r.width / 2 - w / 2;
+  const y = side === 'below' ? r.bottom + 12 : r.top + r.height / 2 - h / 2;
+  bub.style.left = Math.max(6, Math.min(innerWidth - w - 6, x)) + 'px'; bub.style.top = Math.max(6, y) + 'px';
+}
+(function tutLoop() { placeTut(); requestAnimationFrame(tutLoop); })();
+document.head.insertAdjacentHTML('beforeend', `<style>
+#tutbub{position:fixed;z-index:60;max-width:220px;padding:8px 26px 8px 11px;border-radius:9px;background:var(--ac);color:var(--on-ac);font-size:13px;line-height:1.35;box-shadow:0 4px 14px #0006;pointer-events:none}
+#tutbub small{display:block;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;opacity:.75;margin-bottom:2px}
+#tutbub button{pointer-events:auto;position:absolute;top:3px;right:3px;padding:0 5px;min-width:0;border:0;background:none;color:inherit;font-size:12px;line-height:18px;cursor:pointer;opacity:.75}
+#tutbub::before{content:"";position:absolute;border:8px solid transparent}
+#tutbub.tb-right::before{right:100%;top:50%;margin-top:-8px;border-right-color:var(--ac)}
+#tutbub.tb-left::before{left:100%;top:50%;margin-top:-8px;border-left-color:var(--ac)}
+#tutbub.tb-below::before{bottom:100%;left:50%;margin-left:-8px;border-bottom-color:var(--ac)}
+#tutbub.tb-right{animation:tbR .8s ease-in-out infinite alternate}#tutbub.tb-left{animation:tbL .8s ease-in-out infinite alternate}#tutbub.tb-below{animation:tbB .8s ease-in-out infinite alternate}
+@keyframes tbR{to{translate:5px 0}}@keyframes tbL{to{translate:-5px 0}}@keyframes tbB{to{translate:0 5px}}
+</style>`);
+
 function addCatch(id, n) {
   fishing.count = fishing.count || {}; fishing.pedia = fishing.pedia || {};
   fishing.count[id] = pediaCount(id) + n;
@@ -1796,6 +1851,7 @@ function render() {
   renderFishSide();
   renderActSide();
   renderQuestSide();   // questy (tylko w Expedition, po prawej)
+  renderTut();   // samouczek ulepszania wędki (dymek)
 
   const isBought = upgTree.centerHp > 0;
   // elementy dymka skilli (kolory jak w WoW: złoty opis, biały nagłówek "Next rank:", zielony koszt)
