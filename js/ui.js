@@ -1084,7 +1084,7 @@ let dview = 0;
 // OPIS PRZECIWNIKA W LOCHU: przy PIERWSZYM obejrzeniu danego przeciwnika tekst pojawia się powoli (litera po literze, LORE_MS ms na znak).
 // Reszta tekstu jest od razu zarezerwowana (niewidoczna), więc ramka nie rośnie i nic nie skacze. Klik w tekst = pokaż od razu.
 // Obejrzani przeciwnicy zapisani w me.loreSeen (save) – kolejne wizyty pokazują cały tekst od razu.
-const LORE_MS = 28;
+const LORE_MS = 31;
 let loreAnim = null, loreTimer = null;   // loreAnim = { i: indeks przeciwnika, t0: start animacji }
 const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 function loreHtml(i) {
