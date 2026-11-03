@@ -194,6 +194,24 @@ DUN.mobs[2].lore = 'Before the den was filled with webs, it was a temple, and sh
 // Spider Servant: −300 HP (widoczne w walce: 2321 → 2021; bazowe 1950 → 1698, bo HP w walce = bazowe × 1.19) i obrażenia −3 / −3 (93.6–140.4 → 90.6–137.4)
 DUN.mobs[1].st.hp = 1698; DUN.mobs[1].st.min -= 3; DUN.mobs[1].st.max -= 3;
 DUN.mobs[0].st = { hp: 820, min: 30, max: 42, arm: 23, crit: 5, dodge: 9.5, dex: 27 };
+DUN.req = 10;   // wymagany poziom gracza (wejście do lochu)
+
+// LOCH 2 „The Proving Grounds” (arena gladiatorów) – od 30 poziomu: Pit Fighter (33) → Juggernaut (40) → Grand Champion (46).
+// Na razie BEZ dropów (sd: []). Statystyki = klon przeciwnika z wyprawy (Akt 2, statystyki wprost z st – bez mnożnika 1.05^indeks, który mają tylko przeciwnicy Aktu 1)
+// z HP jak w lochu (wyprawa ma −10% HP) – a potem „charakter” przeciwnika (k): hp / dmg / arm / crit / dodge.
+// Siła jak w Spider's Den: pierwszy ≈ przeciwnik z wyprawy tego samego poziomu, kolejni ≈ o 1–3 poziomy mocniejsi.
+// Grafiki: enemies/enemy_pit_fighter.png, enemy_juggernaut.png, enemy_grand_champion.png (brak pliku → emoji).
+const pgClone = (n, e, l, src, k) => {
+  const all = ALL_LOCS.flatMap(x => x.mobs), st = all.find(m => m.n === src).st, b = 1;
+  return { n, e, l, sd: [], drop: [], st: { hp: Math.round(st.hp * b * 0.9 * (k.hp || 1)), min: st.min * b * (k.dmg || 1), max: st.max * b * (k.dmg || 1),
+    arm: st.arm * b * (k.arm || 1), dex: st.dex * b, crit: k.crit ?? st.crit, ...(k.dodge != null ? { dodge: k.dodge } : {}) } };
+};
+export const DUN2 = { n: 'The Proving Grounds', e: '🏟️', req: 30, mobs: [
+  pgClone('Pit Fighter', '🤺', 33, 'Crocodile', { hp: 0.85, dmg: 1.1, crit: 12 }),                     // szybki zabijaka: mniej HP, mocniej i częściej krytycznie
+  pgClone('Juggernaut', '🛡️', 40, 'Spider Queen', { hp: 1.45, dmg: 0.75, arm: 1.5, dodge: 3 }),       // czołg: dużo HP i pancerza, słabsze ciosy, prawie bez uniku
+  pgClone('Grand Champion', '🏆', 46, 'Stone Titan', { hp: 1.05, dmg: 1.05, crit: 15 })               // mistrz areny: mocny we wszystkim
+] };
+export const DUNS = [DUN, DUN2];   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
 
 // IKONY SKILLI: grafiki z assets/skills (pixel art 16×16, plik 64×64). f = nazwa pliku bez .png, e = emoji zapasowe, px = rozmiar.
 // Małe nody (statystyki): plusy – zielony Dexterity, żółty Strength, czerwony Vitality – 16 px (×1), środek: 32 px (×2) – zawsze całkowita skala, więc piksele są ostre.

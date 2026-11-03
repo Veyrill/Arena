@@ -1,4 +1,4 @@
-import { DEV, SL, NAMES, RAR, ST, LOCS, ACTS, ALL_LOCS, ACT_START, DUN, UPG, SKILL_ICON_CENTER, MATS, FISH, FISH_LOCKED, R, I, P, UNIQUES, makeUnique, FIXED_ITEMS, makeFixed, FISH_SETS, GEAR_SETS, namesFor, devFlag, DEV_TIME, PANEL_KEY, setTimeOff } from './data.js';
+import { DEV, SL, NAMES, RAR, ST, LOCS, ACTS, ALL_LOCS, ACT_START, DUN, DUNS, UPG, SKILL_ICON_CENTER, MATS, FISH, FISH_LOCKED, R, I, P, UNIQUES, makeUnique, FIXED_ITEMS, makeFixed, FISH_SETS, GEAR_SETS, namesFor, devFlag, DEV_TIME, PANEL_KEY, setTimeOff } from './data.js';
 import { me, eq1, eq2, inv, G, up, upgTree, fishing, upgradeItem, equipPage, currentZoom, panX, panY, panMoved, panDrag, view, eloc, esel, dloc, dprog, busy, cdEnd, sellMode, drag, lastMob, showInfo, showDunUnlockMsg, dunMsgClosed, showNoRodMsg, buffStrEnd, lastMouseE, setEquipPage, setView, setEloc, setEsel, setDloc, setDprog, setBusy, setSellMode, setLastMouseE, setDrag, setPanDrag, setPanMoved, setPanX, setPanY, setCurrentZoom, setShowInfo, setLastMob, setShowDunUnlockMsg, setDunMsgClosed, setShowNoRodMsg, setCdEnd, setBuffStrEnd, buffDexEnd, setBuffDexEnd, foodBuff, setUpgradeItem, eact, actsUnlocked, setEact, setActsUnlocked, locUnlocked, setLocUnlocked, gear, der, ub, mstats, HP_MUL, ENEMY_HP, CRIT_K, CRIT_C, CRIT_CAP } from './state.js';
 import { hasRod, buyRod, upgradeRod, upgradeGear, upgradeCost, makeRod, makeHook, isRod, isUpgradable, gearLevel, gearMaxLevel, previewGear, fishPower, canFish, ROD_TIERS, HOOK_TIERS } from './fishing.js';
 import { hit, armorRed, ARMOR_K } from './combat.js';
@@ -56,8 +56,14 @@ const UNLOCK = () => devFlag('unlockall', false);
 const locOpen = i => UNLOCK() || i <= locUnlocked;
 const actsOn = () => UNLOCK() || actsUnlocked;
 const mobOpen = (li, i) => UNLOCK() || i <= ((me.eprog || {})[li] || 0);
-const dunProg = () => UNLOCK() ? DUN.mobs.length : dprog;
-const dunLvlOk = () => UNLOCK() || me.lvl >= 10;
+// LOCHY: dloc = indeks lochu w DUNS (0 = Spider's Den, 1 = The Proving Grounds). curDun() = otwarty loch (poza lochem: pierwszy).
+// Postęp: Spider's Den – dprog (jak dawniej, zgodność z zapisem), kolejne lochy – me.dprogs[d]. Przerwy i opisy: klucz 'i' (Den) albo 'd:i' (kolejne).
+const curDun = () => DUNS[dloc ?? 0] || DUN;
+const dProgOf = d => d ? ((me.dprogs || {})[d] || 0) : dprog;
+const setDProgOf = (d, v) => { if (d) { me.dprogs = me.dprogs || {}; me.dprogs[d] = v; } else setDprog(v); };
+const dKey = i => (dloc ? dloc + ':' : '') + i;
+const dunProg = () => UNLOCK() ? curDun().mobs.length : dProgOf(dloc ?? 0);
+const dunLvlOk = (d = dloc ?? 0) => UNLOCK() || me.lvl >= (DUNS[d].req || 10);
 // stary zapis: w lochu było 10 przeciwników, teraz jest 1 → postęp nie większy niż liczba przeciwników
 if (dprog > DUN.mobs.length) setDprog(DUN.mobs.length);
 // przedmioty o stałych statystykach: wymagany poziom zawsze aktualny z FIXED_ITEMS (np. komplet Forgotten: 10 → 12)
@@ -1145,9 +1151,9 @@ const LORE_MS = 31;
 let loreAnim = null, loreTimer = null;   // loreAnim = { i: indeks przeciwnika, t0: start animacji }
 const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 function loreHtml(i) {
-  const L = DUN.mobs[i] && DUN.mobs[i].lore; if (!L) return '';
+  const L = curDun().mobs[i] && curDun().mobs[i].lore; if (!L) return '';
   me.loreSeen = me.loreSeen || {};
-  if (!me.loreSeen[i]) { me.loreSeen[i] = 1; loreAnim = { i, t0: performance.now() }; }
+  if (!me.loreSeen[dKey(i)]) { me.loreSeen[dKey(i)] = 1; loreAnim = { i, t0: performance.now() }; }
   const n = loreAnim && loreAnim.i === i ? Math.floor((performance.now() - loreAnim.t0) / LORE_MS) : L.length;
   if (n >= L.length) { if (loreAnim && loreAnim.i === i) loreAnim = null; return `<p class="dunlore">${esc(L)}</p>`; }
   if (!loreTimer) loreTimer = setInterval(loreTick, 30);
@@ -1156,7 +1162,7 @@ function loreHtml(i) {
 function loreTick() {
   const el = $('dunlore');
   if (!loreAnim || !el) { clearInterval(loreTimer); loreTimer = null; if (el && !loreAnim) el.removeAttribute('id'); return; }
-  const L = DUN.mobs[loreAnim.i].lore, n = Math.floor((performance.now() - loreAnim.t0) / LORE_MS);
+  const L = curDun().mobs[loreAnim.i].lore, n = Math.floor((performance.now() - loreAnim.t0) / LORE_MS);
   if (n >= L.length) { el.innerHTML = esc(L); el.removeAttribute('id'); el.style.cursor = ''; el.removeAttribute('title'); loreAnim = null; clearInterval(loreTimer); loreTimer = null; return; }
   el.firstChild.textContent = L.slice(0, n); el.lastChild.textContent = L.slice(n);
 }
@@ -1287,11 +1293,11 @@ function dunDrops(m, mi) {
   }).join('') + `</div>` : `<div class="fdrops-lbl">Special drops</div><small style="color:var(--mut)">None</small>`;
   return cells;   // bez nagłówka z nazwą przeciwnika
 }   // przeciwnik, którego dropy widać w lewym panelu lochu (można kliknąć każdego)
-const curMob = () => view == 'exp' ? (eloc != null && esel >= 0 && mobOpen(eloc, esel) ? ALL_LOCS[eloc].mobs[esel] : null) : view == 'dun' ? (dloc != null && dsel >= 0 && dsel <= dunProg() && dsel < DUN.mobs.length ? DUN.mobs[dsel] : null) : null;
+const curMob = () => view == 'exp' ? (eloc != null && esel >= 0 && mobOpen(eloc, esel) ? ALL_LOCS[eloc].mobs[esel] : null) : view == 'dun' ? (dloc != null && dsel >= 0 && dsel <= dunProg() && dsel < curDun().mobs.length ? curDun().mobs[dsel] : null) : null;
 // LOCH – powtarzanie walk: każdy pokonany (i kolejny niepokonany) przeciwnik może być atakowany wielokrotnie.
 // Zwykły tryb: po WYGRANEJ 1 h przerwy dla tego przeciwnika (me.dcd[i] = koniec przerwy, zapisywane w save). DEV: bez przerw.
 const DUN_CD = 3600e3;
-const dunCd = i => DEV && !devFlag('dcd', false) ? 0 : Math.max(0, ((me.dcd || {})[i] || 0) - Date.now());
+const dunCd = i => DEV && !devFlag('dcd', false) ? 0 : Math.max(0, ((me.dcd || {})[dKey(i)] || 0) - Date.now());
 const fmtCd = ms => { const t = Math.ceil(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t % 3600 / 60), s = t % 60; return (h ? h + ':' + String(m).padStart(2, '0') : m) + ':' + String(s).padStart(2, '0'); };
 
 // NAZWA → GRAFIKA (akt 1): jedna grafika na nazwę z NAMES (data.js)
@@ -1997,7 +2003,7 @@ function render() {
     };
   }
 
-  const back = (a, t) => `<div class="row"><button data-a="${a}"${a === 'dfback' ? ' class="bkac"' : ''}${busy ? ' disabled' : ''}>← Back</button><b>${t}</b></div>`, N = DUN.mobs.length;   // Back z walki w lochu (dfback) – pomarańczowy, jak Fight i Back na wyprawie
+  const back = (a, t) => `<div class="row"><button data-a="${a}"${a === 'dfback' ? ' class="bkac"' : ''}${busy ? ' disabled' : ''}>← Back</button><b>${t}</b></div>`, D = curDun(), N = D.mobs.length;   // Back z walki w lochu (dfback) – pomarańczowy, jak Fight i Back na wyprawie
   // lista lokacji Aktu 1 (dokładnie jak wcześniej)
   // lokacja jest zablokowana, dopóki nie pokonasz bossa (czerwona poświata) poprzedniej lokacji
   // lokacje wybranego aktu; data-i = indeks w ALL_LOCS (wspólny dla wszystkich aktów: Akt 1 = 0–4, Akt 2 = 5–9, Akt 3 = 10–14)
@@ -2010,15 +2016,16 @@ function render() {
   $('body-exp').innerHTML = eloc == null ? (
       ACTS[actI].locs ? locTiles : lockedLocs
     ) : back('eback', `${ALL_LOCS[eloc].e} ${ALL_LOCS[eloc].n}`) + `<div class="tiles">` + ALL_LOCS[eloc].mobs.map((m, i) => `<button class="tile${i == esel ? ' sel' : ''}${i == ALL_LOCS[eloc].mobs.length - 1 ? ' boss' : ''}${mobOpen(eloc, i) ? '' : ' mlock'}" data-a="esel" data-i="${i}"${busy || fishing.active || !mobOpen(eloc, i) ? ' disabled' : ''}>${lvlTag(m, i == ALL_LOCS[eloc].mobs.length - 1)}${winTag(m)}${mobIco(m, 64)}<b>${m.n}</b><small>+${xpOf(m)} XP</small></button>`).join('') + `</div>`;
-  $('body-dun').innerHTML = dloc == null ? `<div class="grid9">` + Array.from({ length: 9 }, (_, i) => i === 0 ? (!dunLvlOk() ? `<div class="tile lock"><span class="ic">${DUN.e}</span><b>${DUN.n}</b><small style="color:var(--ac);font-weight:700">From level 10</small></div>` : `<button class="tile" data-a="dloc"><span class="ic">${DUN.e}</span><b>${DUN.n}</b><small>${dprog}/${N}</small></button>`) : `<div class="tile lock"><span class="ic">🔒</span></div>`).join('') + `</div>` : (dfight ? back('dfback', `${DUN.e} ${DUN.n}`) : back('dback', `${DUN.e} ${DUN.n} · ${Math.min(dprog, N)}/${N}`))
+  $('body-dun').innerHTML = dloc == null ? `<div class="grid9">` + Array.from({ length: 9 }, (_, i) => { const X = DUNS[i]; if (!X) return `<div class="tile lock"><span class="ic">🔒</span></div>`;   // kafelek każdego lochu z DUNS, reszta – kłódki
+        return !dunLvlOk(i) ? `<div class="tile lock"><span class="ic">${X.e}</span><b>${X.n}</b><small style="color:var(--ac);font-weight:700">From level ${X.req || 10}</small></div>` : `<button class="tile" data-a="dloc" data-i="${i}"><span class="ic">${X.e}</span><b>${X.n}</b><small>${Math.min(dProgOf(i), X.mobs.length)}/${X.mobs.length}</small></button>`; }).join('') + `</div>` : (dfight ? back('dfback', `${D.e} ${D.n}`) : back('dback', `${D.e} ${D.n} · ${Math.min(dunProg(), N)}/${N}`))
       // LEWO: dropy oglądanego przeciwnika (dview), PRAWO: kolumna przeciwników (każdego można kliknąć, żeby zobaczyć dropy;
       // walczyć można tylko z kolejnym niepokonanym = dprog, dalsi zablokowani do czasu pokonania poprzedniego)
-      + (dfight ? `<div id="dunfight-slot"></div>` : `<div class="dunwrap"><div class="dunmobs">` + DUN.mobs.map((m, i) => {
+      + (dfight ? `<div id="dunfight-slot"></div>` : `<div class="dunwrap"><div class="dunmobs">` + D.mobs.map((m, i) => {
         const dP = dunProg(), cd = i <= dP ? dunCd(i) : 0, st = i > dP ? 'lock' : cd ? 'cool' : 'open', on = i === Math.min(dview, N - 1);
         // bez XP i bez kłódki: zablokowani są tylko wyszarzeni; pod nazwą jedynie licznik przerwy; ostatni przeciwnik bez czerwonej obwódki
         const sub = st === 'cool' ? `<small class="dcd" data-cd="${i}">${fmtCd(cd)}</small>` : '';
         return `<button class="tile dmob${on ? ' sel' : ''}${st === 'lock' ? ' dlock' : ''}${st === 'cool' ? ' dcool' : ''}" data-a="dsel" data-i="${i}"${busy ? ' disabled' : ''}>${lvlTag(m, false)}${winTag(m)}${mobIco(m, 64)}<b>${m.n}</b>${sub}</button>`;
-      }).join('') + `</div><div class="dundrops">${dunDrops(DUN.mobs[Math.min(dview, N - 1)], Math.min(dview, N - 1))}${loreHtml(Math.min(dview, N - 1))}${dunFightBtn(Math.min(dview, N - 1))}</div></div>`);
+      }).join('') + `</div><div class="dundrops">${dunDrops(D.mobs[Math.min(dview, N - 1)], Math.min(dview, N - 1))}${loreHtml(Math.min(dview, N - 1))}${dunFightBtn(Math.min(dview, N - 1))}</div></div>`);
   // okno walki: w trybie walki lochu przeniesione DO karty lochu (zamiast listy przeciwników), w pozostałych przypadkach na swoim miejscu nad plecakiem
   if (view == 'dun' && dloc != null && dfight && $('dunfight-slot')) $('dunfight-slot').appendChild(FIGHTBOX);
   else if (FIGHTBOX.parentNode !== $('invcard').parentNode || FIGHTBOX.nextElementSibling !== $('invcard')) $('invcard').before(FIGHTBOX);
@@ -2776,7 +2783,7 @@ $('go').onclick = async () => {
   if (fightOn) { if (!skipFight) { skipFight = true; sayMute = true; $('go').disabled = true; } return; }
   if (expRes && view == 'exp') { endExp(); setEsel(-1); setLastMob(null); render(); return; }   // Collect (łup → plecak) / Back; lastMob = null → przy następnym wyborze pełne HP i tarcza
   const mob = curMob(); if (!mob || busy || fishing.active || Date.now() < cdEnd) return;
-  if (view == 'dun' && dunCd(DUN.mobs.indexOf(mob)) > 0) return;   // loch: przerwa 1 h po wygranej
+  if (view == 'dun' && dunCd(curDun().mobs.indexOf(mob)) > 0) return;   // loch: przerwa 1 h po wygranej
   setBusy(true); fightOn = true; skipFight = false; $('log').innerHTML = ''; live = null;   // nowa walka – panel ℹ️ startuje od wartości bazowych
   // try/finally: nawet jeśli w trakcie walki pojawi się błąd, gra zawsze odblokuje klikanie (busy = false)
   try {
@@ -2818,9 +2825,9 @@ $('go').onclick = async () => {
         }
       }
       if (view == 'dun') {
-        const di = DUN.mobs.indexOf(mob);
-        if (!DEV || devFlag('dcd', false)) { me.dcd = me.dcd || {}; me.dcd[di] = Date.now() + DUN_CD; }   // przerwa 1 h dla tego przeciwnika (DEV: bez przerwy)
-        if (di === dprog) { setDprog(dprog + 1); dJustBeat = true; }   // pierwszy raz pokonany → następny zostanie wybrany po Back
+        const di = curDun().mobs.indexOf(mob), dd = dloc ?? 0;
+        if (!DEV || devFlag('dcd', false)) { me.dcd = me.dcd || {}; me.dcd[dKey(di)] = Date.now() + DUN_CD; }   // przerwa 1 h dla tego przeciwnika (DEV: bez przerwy)
+        if (di === dProgOf(dd)) { setDProgOf(dd, di + 1); dJustBeat = true; }   // pierwszy raz pokonany → następny zostanie wybrany po Back
       }
       // postęp w lokacji: pokonanie kolejnego przeciwnika odblokowuje następnego w tej samej lokacji
       { const li = ALL_LOCS.findIndex(l => l.mobs.includes(mob)); if (li >= 0) { const mi = ALL_LOCS[li].mobs.indexOf(mob); me.eprog = me.eprog || {}; if (mi === (me.eprog[li] || 0)) me.eprog[li] = mi + 1; } }
@@ -2886,7 +2893,7 @@ function updateTip(x, y, target) {
     }
     else if (it.startsWith('questrw:')) i = me.quests?.list?.[+it.split(':')[1]]?.item || null;   // nagroda z questa
     else if (it.startsWith('loot:')) i = expRes?.loot?.[+it.split(':')[1]] || null;   // łup pod przyciskiem Collect
-    else if (it.startsWith('dsd:')) { const [, m, n] = it.split(':'), x = DUN.mobs[+m]?.sd?.[+n]; i = x ? makeFixed(x.k) : null; }
+    else if (it.startsWith('dsd:')) { const [, m, n] = it.split(':'), x = curDun().mobs[+m]?.sd?.[+n]; i = x ? makeFixed(x.k) : null; }
     else if (it.startsWith('sdrop:')) { const [, f, n] = it.split(':'); i = SPECIAL_DROPS[f]?.[+n]?.item() || null; }
     else if (it.startsWith('fishsel:')) {
       // ten sam opis co ryba w plecaku (z aktualną ilością, jeśli ją masz)
@@ -3170,11 +3177,11 @@ document.addEventListener('click', e => {
     else if (a == 'eback') { setEloc(null); setEsel(-1); }
     else if (a == 'fback') { setEsel(-1); endExp(); setLastMob(null); }   // Back w lewym górnym rogu okna walki (wyprawa) → wybór przeciwnika + plecak
     else if (a == 'esel') { if (mobOpen(eloc, +b.dataset.i)) { setEsel(+b.dataset.i); endExp(); setLastMob(null); } }   // zablokowany (niepokonany poprzedni) – nie da się wybrać
-    else if (a == 'dloc') { if (dunLvlOk()) { setDloc(0); dfight = false; dsel = dprog < DUN.mobs.length && !fishing.active ? dprog : -1; dview = Math.min(dprog, DUN.mobs.length - 1); } }   // otwarcie: wybrany kolejny niepokonany
+    else if (a == 'dloc') { const d = +b.dataset.i || 0; if (dunLvlOk(d)) { setDloc(d); dfight = false; const pr = dProgOf(d), n = DUNS[d].mobs.length; dsel = pr < n && !fishing.active ? pr : -1; dview = Math.min(pr, n - 1); } }   // otwarcie: wybrany kolejny niepokonany
     else if (a == 'dsel') { const n = +b.dataset.i; dview = n; dsel = n <= dunProg() && !fishing.active ? n : -1; }   // każdy: podgląd dropów; walka z każdym pokonanym i kolejnym niepokonanym
     else if (a == 'dback') { setDloc(null); dsel = -1; dfight = false; }
     else if (a == 'dfight') {   // Fight pod Special drops: karta lochu zamienia się w walkę i walka startuje od razu
-      if (dsel >= 0 && dsel === Math.min(dview, DUN.mobs.length - 1) && !dunCd(dsel) && !fishing.active) { dfight = true; render(); setTimeout(() => $('go').onclick(), 0); return; }
+      if (dsel >= 0 && dsel === Math.min(dview, curDun().mobs.length - 1) && !dunCd(dsel) && !fishing.active) { dfight = true; render(); setTimeout(() => $('go').onclick(), 0); return; }
     }
     else if (a == 'dfback') {   // Back z walki → z powrotem lista przeciwników i dropy
       dfight = false;
