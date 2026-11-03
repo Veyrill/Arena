@@ -211,6 +211,10 @@ export const DUN2 = { n: 'The Proving Grounds', e: '🏟️', req: 30, mobs: [
   pgClone('Juggernaut', '🛡️', 40, 'Spider Queen', { hp: 1.45, dmg: 0.75, arm: 1.5, dodge: 3 }),       // czołg: dużo HP i pancerza, słabsze ciosy, prawie bez uniku
   pgClone('Grand Champion', '🏆', 46, 'Stone Titan', { hp: 1.05, dmg: 1.05, crit: 15 })               // mistrz areny: mocny we wszystkim
 ] };
+// OPISY (lore) przeciwników The Proving Grounds – pod dropami, przy pierwszym obejrzeniu pojawiają się powoli (jak w Spider's Den)
+DUN2.mobs[0].lore = 'He fights in the lower pits, where the sand is never fully dry and the crowd never stops shouting. Dozens of gladiators came to the arena in the same cart as him, and he is the last one still alive. He does not hate his opponents, he simply refuses to be the next body dragged through the gate. Today, the only thing standing between him and another sunrise is you.';
+DUN2.mobs[1].lore = 'Before the arena, he was a soldier who marched through ten wars and buried every friend he ever had. When the last war ended, he had nowhere to go, so he came here to keep doing the only thing he knows. Now he is a giant of scars and muscle, slow to move but impossible to stop. The crowd calls him the Titan, and they say the ground shakes when he charges.';
+DUN2.mobs[2].lore = 'Every gladiator who ever stepped onto this sand has heard his name before they learned to hold a sword. He built the arena into what it is today, and the old masters still bow when he passes by. For years no one has dared to challenge him, so he waited in silence for someone brave or foolish enough. Now the gates are open, and the whole arena holds its breath as you walk in.';
 export const DUNS = [DUN, DUN2];   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
 
 // IKONY SKILLI: grafiki z assets/skills (pixel art 16×16, plik 64×64). f = nazwa pliku bez .png, e = emoji zapasowe, px = rozmiar.
