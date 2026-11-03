@@ -445,8 +445,8 @@ export const FIXED_ITEMS = {
   widow_ring: { sl: 'ring', r: 2, name: 'Widow Ring', s: { str: 19, dex: 19, con: 18 }, req: 26, val: 800, img: 'dungeon/ring_widow.png', e: '💍' },
   widowgrip_gauntlets: { sl: 'gloves', r: 2, name: 'Widowgrip Gauntlets', s: { arm: 84, dex: 24, str: 20, con: 12 }, req: 26, val: 800, img: 'dungeon/gloves_widowgrip.png', e: '🧤' },
   widow_helm: { sl: 'helm', r: 2, name: 'Widow Helm', s: { arm: 120, con: 24, str: 17, dex: 15 }, req: 26, val: 800, img: 'dungeon/helm_widow.png', e: '⛑️' },
-  // WIDOWS HEART – bardzo rzadka osobna nagroda ze Spider Queen (0.4%), epic, poza setem Widow; +40 Strength, +40 Dexterity, wymaga 26 poziomu
-  widows_heart: { sl: 'amulet', r: 3, name: 'Widows Heart', s: { str: 40, dex: 40 }, req: 26, val: 2000, img: 'dungeon/amulet_widows_heart.png', e: '📿' },
+  // WIDOWS HEART – bardzo rzadka osobna nagroda ze Spider Queen (0.4%), epic, poza setem Widow; +35 Strength, +35 Dexterity (było 40 / 40), wymaga 26 poziomu
+  widows_heart: { sl: 'amulet', r: 3, name: 'Widows Heart', s: { str: 35, dex: 35 }, req: 26, val: 2000, img: 'dungeon/amulet_widows_heart.png', e: '📿' },
   spider_eye_charm: { sl: 'trinket', r: 2, name: 'Spider Eye Charm', s: { str: 15, dex: 14, con: 14 }, req: 21, val: 750, img: 'dungeon/trinket_spider_eye.png', e: '🧿' },
   boonie: { sl: 'helm', r: 1, name: "Angler Boonie", isFishGear: 1, fp: 25, fx: { treasure: 0.5 }, val: 100, img: 'fishing_gear/helm_boonie.png', e: '👒' },
   // Angler Wellies – kalosze do łowienia (slot butów na stronie 2), uncommon, 25 FP; special drop z Dorsza (2%, jednorazowo)
