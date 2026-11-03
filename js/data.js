@@ -228,7 +228,15 @@ export const DUN3 = { n: 'The Thorn Garden', e: '🌹', req: 45, mobs: [
 DUN3.mobs[0].lore = 'Once he was the favorite hound of the queen, and he slept every night at the foot of her rose bed. When the garden began to grow wild, he refused to leave her side, even as the thorns wrapped around his fur. Now he runs the overgrown paths alone, hunting anyone who dares to walk where his mistress once walked. He still wears her golden collar, and he will not let you pass without a fight.';
 DUN3.mobs[1].lore = 'He swore to guard the royal garden for as long as the queen lived, and he never broke an oath. When she stopped leaving the garden, he stopped leaving the gate, and the briars slowly grew over his armor. Now the thorns are both his shield and his prison, and every wound he takes only makes them grow thicker. To reach the queen, you must cut through a knight who has forgotten how to fall.';
 DUN3.mobs[2].lore = 'She loved her roses more than her crown, and when the king died, she locked herself in the garden forever. The roses fed on her grief, and in return they promised she would never grow old. Year by year they drank her life, until only a shadow in a faded red gown was left among the dead flowers. She waits for someone to bring her garden back to life, and she believes your blood will make it bloom again.';
-export const DUNS = [DUN, DUN2, DUN3];   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
+// LOCH 4 „The Wyrm Graveyard” – od 60 poziomu: Bone Drake (63) → Grave Keeper (70) → The Undying Wyrm (76). Na razie BEZ dropów.
+// Statystyki jak w poprzednich lochach (pgClone): klon przeciwnika z wyprawy (Akt 3) o podobnej sile + charakter.
+// Grafiki: enemies/enemy_bone_drake.png, enemy_grave_keeper.png, enemy_the_undying_wyrm.png (brak pliku → emoji).
+export const DUN4 = { n: 'The Wyrm Graveyard', e: '🦴', req: 60, mobs: [
+  pgClone('Bone Drake', '🦴', 63, 'Yeti', { hp: 0.9, dmg: 1.15, crit: 12 }),                          // szybki: szkielet młodego smoka – mniej HP, mocne i częste krytyki
+  pgClone('Grave Keeper', '⚰️', 70, 'Storm Lord', { hp: 1.15, dmg: 0.75, arm: 1.4, dodge: 3 }),         // czołg: olbrzymi strażnik smoczych kości
+  pgClone('The Undying Wyrm', '🐉', 76, 'Ancient Dragon', { hp: 1.05, dmg: 1.05, crit: 15 })         // boss: martwy smok przywrócony do życia
+] };
+export const DUNS = [DUN, DUN2, DUN3, DUN4];   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
 
 // IKONY SKILLI: grafiki z assets/skills (pixel art 16×16, plik 64×64). f = nazwa pliku bez .png, e = emoji zapasowe, px = rozmiar.
 // Małe nody (statystyki): plusy – zielony Dexterity, żółty Strength, czerwony Vitality – 16 px (×1), środek: 32 px (×2) – zawsze całkowita skala, więc piksele są ostre.
