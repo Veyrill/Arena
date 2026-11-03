@@ -100,7 +100,8 @@ export const LOCS=[
 {n:'Graveyard',e:'⚰️',mobs:[M_('Skeleton','💀',6,D2),M_('Skeleton Warrior','⚔️',7,D2),M_('Skeleton Mage','🧙',8,D2),M_('Ghoul','🧟',9,D2),M_('Necromancer','☠️',10,D2)]},
 {n:'Tundra',e:'❄️',mobs:[M_('Polar Bear','🐻',11,D2),M_('Snow Worm','🐛',12,D2),M_('Mammoth','🐘',13,D2),M_('Lantern Keeper','🏮',14,D2),M_('Ice Dragon','🐉',15,D2)]},
 {n:'Desert',e:'🏜️',mobs:[M_('Scorpion','🦂',16,D2),M_('Cobra','🐍',17,D2),M_('Vulture','🦅',18,D2),M_('Tomb Guardian','🏺',19,D2),M_('Sphinx','🦁',20,D2)]},
-{n:'Volcano',e:'🌋',mobs:[M_('Salamander','🦎',21,D2),M_('Imp','😈',22,D2),M_('Lava Golem','🗿',23,D2),M_('Fire Demon','👹',24,D2),M_('Fire Lord','🔥',25,DFL)]}];
+// Volcano: Lava Golem → Fire Serpent, Fire Demon → Ashen Warrior (tylko nazwa i emoji; statystyki, poziomy i dropy bez zmian; grafiki: enemies/enemy_fire_serpent.png, enemy_ashen_warrior.png)
+{n:'Volcano',e:'🌋',mobs:[M_('Salamander','🦎',21,D2),M_('Imp','😈',22,D2),M_('Fire Serpent','🐍',23,D2),M_('Ashen Warrior','🗡️',24,D2),M_('Fire Lord','🔥',25,DFL)]}];
 
 // AKT 1: Forest – tylko szare. Od Skeletona szansa na ZIELONY rośnie z każdym kolejnym przeciwnikiem – od 20% do 60% (Fire Lord), liniowo.
 // Reszta to szare; Fire Lord dodatkowo 15% na niebieski (25% szare / 60% zielone / 15% niebieskie).
