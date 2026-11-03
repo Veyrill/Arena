@@ -1081,6 +1081,28 @@ let dsel = -1;   // wybrany przeciwnik w lochu (można wybrać tylko kolejnego n
 const FIGHTBOX = document.getElementById('fightbox');   // stała referencja – okno walki bywa przenoszone do karty lochu
 let dfight = false, dJustBeat = false;   // dfight = okno lochu zamienione w walkę; dJustBeat = właśnie pokonany pierwszy raz (po Back → wybór następnego)
 let dview = 0;
+// OPIS PRZECIWNIKA W LOCHU: przy PIERWSZYM obejrzeniu danego przeciwnika tekst pojawia się powoli (litera po literze, LORE_MS ms na znak).
+// Reszta tekstu jest od razu zarezerwowana (niewidoczna), więc ramka nie rośnie i nic nie skacze. Klik w tekst = pokaż od razu.
+// Obejrzani przeciwnicy zapisani w me.loreSeen (save) – kolejne wizyty pokazują cały tekst od razu.
+const LORE_MS = 20;
+let loreAnim = null, loreTimer = null;   // loreAnim = { i: indeks przeciwnika, t0: start animacji }
+const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+function loreHtml(i) {
+  const L = DUN.mobs[i] && DUN.mobs[i].lore; if (!L) return '';
+  me.loreSeen = me.loreSeen || {};
+  if (!me.loreSeen[i]) { me.loreSeen[i] = 1; loreAnim = { i, t0: performance.now() }; }
+  const n = loreAnim && loreAnim.i === i ? Math.floor((performance.now() - loreAnim.t0) / LORE_MS) : L.length;
+  if (n >= L.length) { if (loreAnim && loreAnim.i === i) loreAnim = null; return `<p class="dunlore">${esc(L)}</p>`; }
+  if (!loreTimer) loreTimer = setInterval(loreTick, 30);
+  return `<p class="dunlore" id="dunlore" style="cursor:pointer" title="Click to show all"><span>${esc(L.slice(0, n))}</span><span style="opacity:0">${esc(L.slice(n))}</span></p>`;
+}
+function loreTick() {
+  const el = $('dunlore');
+  if (!loreAnim || !el) { clearInterval(loreTimer); loreTimer = null; if (el && !loreAnim) el.removeAttribute('id'); return; }
+  const L = DUN.mobs[loreAnim.i].lore, n = Math.floor((performance.now() - loreAnim.t0) / LORE_MS);
+  if (n >= L.length) { el.innerHTML = esc(L); el.removeAttribute('id'); el.style.cursor = ''; el.removeAttribute('title'); loreAnim = null; clearInterval(loreTimer); loreTimer = null; return; }
+  el.firstChild.textContent = L.slice(0, n); el.lastChild.textContent = L.slice(n);
+}
 // LEWY PANEL LOCHU: special dropy (jak u ryb: „?” do pierwszego zdobycia, potem grafika; DEV – wszystko odkryte), losowy przedmiot wg rzadkości, XP i złoto
 // ===== SKLEP =====
 // 6 losowych przedmiotów (dowolny slot ekwipunku) z poziomu gracza w chwili odświeżenia; RZADKOŚĆ każdego przedmiotu losowana
@@ -1938,7 +1960,7 @@ function render() {
         // bez XP i bez kłódki: zablokowani są tylko wyszarzeni; pod nazwą jedynie licznik przerwy; ostatni przeciwnik bez czerwonej obwódki
         const sub = st === 'cool' ? `<small class="dcd" data-cd="${i}">${fmtCd(cd)}</small>` : '';
         return `<button class="tile dmob${on ? ' sel' : ''}${st === 'lock' ? ' dlock' : ''}${st === 'cool' ? ' dcool' : ''}" data-a="dsel" data-i="${i}"${busy ? ' disabled' : ''}>${lvlTag(m, false)}${winTag(m)}${mobIco(m, 64)}<b>${m.n}</b>${sub}</button>`;
-      }).join('') + `</div><div class="dundrops">${dunDrops(DUN.mobs[Math.min(dview, N - 1)], Math.min(dview, N - 1))}${DUN.mobs[Math.min(dview, N - 1)].lore ? `<p class="dunlore">${DUN.mobs[Math.min(dview, N - 1)].lore}</p>` : ''}${dunFightBtn(Math.min(dview, N - 1))}</div></div>`);
+      }).join('') + `</div><div class="dundrops">${dunDrops(DUN.mobs[Math.min(dview, N - 1)], Math.min(dview, N - 1))}${loreHtml(Math.min(dview, N - 1))}${dunFightBtn(Math.min(dview, N - 1))}</div></div>`);
   // okno walki: w trybie walki lochu przeniesione DO karty lochu (zamiast listy przeciwników), w pozostałych przypadkach na swoim miejscu nad plecakiem
   if (view == 'dun' && dloc != null && dfight && $('dunfight-slot')) $('dunfight-slot').appendChild(FIGHTBOX);
   else if (FIGHTBOX.parentNode !== $('invcard').parentNode || FIGHTBOX.nextElementSibling !== $('invcard')) $('invcard').before(FIGHTBOX);
@@ -3055,6 +3077,7 @@ document.addEventListener('drop', e => {
 document.addEventListener('click', e => {
   const t = e.target; if (!t.closest) return;
   if (t.closest('[data-a=info]')) { setShowInfo(!showInfo); render(); return; }
+  if (t.closest('#dunlore')) { if (loreAnim) loreAnim.t0 = -1e9; loreTick(); return; }   // klik w pojawiający się opis lochu – pokaż cały od razu
 
   const btn = t.closest('#nav button');
   if (btn && !busy) {
