@@ -2088,7 +2088,7 @@ function render() {
     if (lastMob !== m && !busy) live = null;   // inny przeciwnik → panel znów pokazuje statystyki bazowe
     renderInfo(m);
     // przycisk „Show battle log” (absolutnie pod przeciwnikiem) zjeżdża pod panel ℹ️, gdy ten jest otwarty
-    { const lw = $('logwrap'); if (lw) lw.style.marginTop = (showInfo ? $('info').offsetHeight + 24 : 24) + 'px'; }
+    { const lw = $('logwrap'), sb = $('skillbar'); if (lw) lw.style.marginTop = ((sb ? sb.offsetHeight + 14 : 0) + (showInfo ? $('info').offsetHeight : 0) + 24) + 'px'; }   // przycisk logu pod paskiem umiejętności (i pod panelem ℹ️)
     if (lastMob !== m && !busy) { setLastMob(m); setShowInfo(false); renderDebuffs({}); const h0 = frailHp(s.hp);
       // Elemental Barrier widoczna już przed walką: niebieska końcówka paska i HP + tarcza / maks. HP (bez ikony buffa)
       const sh0 = Math.round(d.hp * (ub().barrier || 0) / 100), tot = d.hp + sh0;
