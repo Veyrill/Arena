@@ -1142,8 +1142,27 @@ const priceBase = i => i.val !== undefined ? i.val : Math.round((4 + me.lvl * 5)
 const price = i => Math.max(1, Math.round(priceBase(i) * 0.5));
 let dsel = -1;   // wybrany przeciwnik w lochu (można wybrać tylko kolejnego niepokonanego = dprog)
 const FIGHTBOX = document.getElementById('fightbox');   // stała referencja – okno walki bywa przenoszone do karty lochu
-// PASEK HP: biały ślad zadanych obrażeń – .hpg kopiuje szerokość paska HP (gracz: hp1, przeciwnik: hp2); opóźnienie i zjazd robi CSS
-[['hp1', 'hg1'], ['hp2', 'hg2']].forEach(([a, g]) => { const A = $(a), Gh = $(g); if (A && Gh) new MutationObserver(() => { Gh.style.width = A.style.width; }).observe(A, { attributes: true, attributeFilter: ['style'] }); });
+// PASEK HP: jasnoczerwony ślad zadanych obrażeń (.hpg; gracz: hp1/hg1, przeciwnik: hp2/hg2).
+// Po trafieniu ślad stoi TRAIL_HOLD ms, potem płynnie zjeżdża do poziomu HP (w ok. TRAIL_TIME s). Kolejny cios w trakcie zjazdu NIE zatrzymuje go –
+// ślad dalej płynie w dół, tylko do nowego celu. Postój jest tylko wtedy, gdy ślad zdążył już dojść do paska. Leczenie: ślad od razu równy paskowi.
+const TRAIL_HOLD = 200, TRAIL_TIME = 0.25;
+const trails = [['hp1', 'hg1'], ['hp2', 'hg2']].map(([a, g]) => ({ A: $(a), G: $(g), w: 100, hold: 0 }));
+let trailT0 = performance.now();
+(function trailLoop(t) {
+  const dt = Math.min(0.1, (t - trailT0) / 1000); trailT0 = t;
+  trails.forEach(r => {
+    if (!r.A || !r.G) return;
+    const target = parseFloat(r.A.style.width) || 0;
+    if (target >= r.w - 0.05) { r.w = target; r.hold = 0; }            // leczenie / brak zmiany: ślad = pasek
+    else {
+      if (!r.hold) r.hold = t + TRAIL_HOLD;                               // nowa strata po bezczynności → krótki postój
+      if (t >= r.hold) r.w = Math.max(target, r.w - Math.max((r.w - target) * dt / TRAIL_TIME * 3, 20 * dt));   // płynny zjazd, bez zatrzymań przy kolejnych ciosach
+      if (r.w - target < 0.05) { r.w = target; r.hold = 0; }
+    }
+    r.G.style.width = r.w + '%';
+  });
+  requestAnimationFrame(trailLoop);
+})(performance.now());
 // PASEK HP: procent HP na środku paska (gracz: hpp1 – samo HP bez tarczy, przeciwnik: hpp2)
 const hpPct = (i, cur, max) => { const e = $('hpp' + i); if (e) e.textContent = Math.max(0, Math.round(max ? cur / max * 100 : 0)) + '%'; };
 let dfight = false, dJustBeat = false;   // dfight = okno lochu zamienione w walkę; dJustBeat = właśnie pokonany pierwszy raz (po Back → wybór następnego)
