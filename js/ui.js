@@ -1174,7 +1174,7 @@ function renderAtkSlot() {
   const w = eq1.weapon, key = (w ? 'w:' + (w.name || '') + (w.ic || '') + (w.img || '') : 'fist');
   if (s.dataset.k === key) return; s.dataset.k = key;
   s.classList.add('atk'); s.title = 'Attack (1)';
-  s.innerHTML = (w ? sizeIco(w, 32) : '<span class="ic">👊</span>') + '<span class="kb">1</span>';
+  s.innerHTML = (w ? sizeIco(w, 48) : '<span class="ic">👊</span>') + '<span class="kb">1</span>';
 }
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#skillbar .sk[data-key="1"]')) doAttack(); });
 addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && atkResolve && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); doAttack(); } });
@@ -2827,7 +2827,8 @@ $('go').onclick = async () => {
   // try/finally: nawet jeśli w trakcie walki pojawi się błąd, gra zawsze odblokuje klikanie (busy = false)
   try {
     render();
-    const io = { sim: false, manual: true };   // manual: atak gracza dopiero po kliknięciu slotu 1 / klawisza 1 (symulacja szans – bez czekania)
+    const io = { sim: false, manual: true };
+    { const sb = $('skillbar'); if (sb) sb.classList.add('fighting'); }   // w trakcie walki slot ataku jest szary poza Twoją turą   // manual: atak gracza dopiero po kliknięciu slotu 1 / klawisza 1 (symulacja szans – bez czekania)
     for (const ms of fightGen(mob, io)) { if (ms === 'wait') { if (!skipFight) await waitAttack(); continue; } if (!skipFight) await slp(ms); }   // pauzy między ciosami; po Skip – bez pauz i bez czekania na atak
     const { ph } = io.res, upd = io.upd;
     if (skipFight) { sayMute = false; say('<i>Fight skipped.</i>', 'miss'); upd(); }   // koniec pominiętej walki: log znowu działa
@@ -2890,6 +2891,7 @@ $('go').onclick = async () => {
     console.error('Combat error:', err);
     say('An error occurred during combat (see console, F12).', 'miss');
   } finally {
+    { const sb = $('skillbar'); if (sb) sb.classList.remove('fighting'); }
     if (skipFight) sayMute = false; fightOn = false; skipFight = false;
     setBusy(false); setCdEnd(Date.now() + 1000); render();
   }
