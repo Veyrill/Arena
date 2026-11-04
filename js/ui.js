@@ -1163,6 +1163,21 @@ let trailT0 = performance.now();
   });
   requestAnimationFrame(trailLoop);
 })(performance.now());
+// WALKA RĘCZNA – ATAK (slot 1 paska umiejętności): w Twojej turze walka czeka (waitAttack), slot świeci; klik w slot albo klawisz 1 = atak (doAttack).
+// Ikona slotu = obecna broń (strona 1 ekwipunku), bez broni – pięść. Skip w trakcie walki wykonuje czekający atak i dalej walka idzie sama.
+let atkResolve = null;
+const atkSlot = () => document.querySelector('#skillbar .sk[data-key="1"]');
+function waitAttack() { const s = atkSlot(); if (s) s.classList.add('ready'); return new Promise(r => { atkResolve = r; }); }
+function doAttack() { if (!atkResolve) return; const f = atkResolve; atkResolve = null; const s = atkSlot(); if (s) s.classList.remove('ready'); f(); }
+function renderAtkSlot() {
+  const s = atkSlot(); if (!s) return;
+  const w = eq1.weapon, key = (w ? 'w:' + (w.name || '') + (w.ic || '') + (w.img || '') : 'fist');
+  if (s.dataset.k === key) return; s.dataset.k = key;
+  s.classList.add('atk'); s.title = 'Attack (1)';
+  s.innerHTML = (w ? sizeIco(w, 32) : '<span class="ic">👊</span>') + '<span class="kb">1</span>';
+}
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#skillbar .sk[data-key="1"]')) doAttack(); });
+addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && atkResolve && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); doAttack(); } });
 // PASEK HP: procent HP na środku paska (gracz: hpp1 – samo HP bez tarczy, przeciwnik: hpp2)
 const hpPct = (i, cur, max) => { const e = $('hpp' + i); if (e) e.textContent = Math.max(0, Math.round(max ? cur / max * 100 : 0)) + '%'; };
 let dfight = false, dJustBeat = false;   // dfight = okno lochu zamienione w walkę; dJustBeat = właśnie pokonany pierwszy raz (po Back → wybór następnego)
@@ -1883,6 +1898,7 @@ function render() {
   renderActSide();
   renderQuestSide();   // questy (tylko w Expedition, po prawej)
   renderTut();   // samouczek ulepszania wędki (dymek)
+  renderAtkSlot();   // slot 1: ikona obecnej broni
 
   const isBought = upgTree.centerHp > 0;
   // elementy dymka skilli (kolory jak w WoW: złoty opis, biały nagłówek "Next rank:", zielony koszt)
@@ -2548,7 +2564,7 @@ function* fightGen(mob, io) {
     renderDebuffs(deb);
     say(upgTree.centerHp ? 'You strike first (Surprise Attack).' : turn === 0 ? `You strike first (Dexterity ${p.dex} vs ${Math.round(M.dex)}).` : `${mob.n} strikes first (Dexterity ${Math.round(M.dex)} vs ${p.dex}).`, 'miss');
     while (ph > 0 && mh > 0 && rounds++ < 200) {   // limit 200 rund (było 120) – długie walki z przeciwnikami Aktu 3
-      yield 325;
+      yield io.manual && turn == 0 ? 'wait' : 325;   // WALKA RĘCZNA: w Twojej turze walka czeka na atak (slot 1 albo klawisz 1)
       if (turn == 0) {
         // Death Sentence: wróg poniżej 20% HP – każdy Twój cios ma szansę go zabić (6.67% za rangę, 20% przy 3/3)
         const doom = U.doom && mh < M.hp * 0.2;
@@ -2803,7 +2819,7 @@ function endExp() {   // zamyka ekran wyniku i oddaje niezebrany łup do plecaka
   delete me.pendLoot; expRes = null;
 }
 $('go').onclick = async () => {
-  if (fightOn) { if (!skipFight) { skipFight = true; sayMute = true; $('go').disabled = true; } return; }
+  if (fightOn) { if (!skipFight) { skipFight = true; sayMute = true; $('go').disabled = true; doAttack(); } return; }   // Skip: reszta walki sama (także czekający atak)
   if (expRes && view == 'exp') { endExp(); setEsel(-1); setLastMob(null); render(); return; }   // Collect (łup → plecak) / Back; lastMob = null → przy następnym wyborze pełne HP i tarcza
   const mob = curMob(); if (!mob || busy || fishing.active || Date.now() < cdEnd) return;
   if (view == 'dun' && dunCd(curDun().mobs.indexOf(mob)) > 0) return;   // loch: przerwa 1 h po wygranej
@@ -2811,8 +2827,8 @@ $('go').onclick = async () => {
   // try/finally: nawet jeśli w trakcie walki pojawi się błąd, gra zawsze odblokuje klikanie (busy = false)
   try {
     render();
-    const io = { sim: false };
-    for (const ms of fightGen(mob, io)) if (!skipFight) await slp(ms);   // pauzy między ciosami; po Skip – bez pauz
+    const io = { sim: false, manual: true };   // manual: atak gracza dopiero po kliknięciu slotu 1 / klawisza 1 (symulacja szans – bez czekania)
+    for (const ms of fightGen(mob, io)) { if (ms === 'wait') { if (!skipFight) await waitAttack(); continue; } if (!skipFight) await slp(ms); }   // pauzy między ciosami; po Skip – bez pauz i bez czekania na atak
     const { ph } = io.res, upd = io.upd;
     if (skipFight) { sayMute = false; say('<i>Fight skipped.</i>', 'miss'); upd(); }   // koniec pominiętej walki: log znowu działa
     fightOn = false;

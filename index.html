@@ -82,17 +82,21 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 /* bariera (Elemental Barrier): niebieska końcówka paska HP gracza, zaraz za czerwoną częścią */
 /* PASEK HP W WALCE: pikselowy pasek – gruby czarny obrys, płaskie czerwone wypełnienie, ciemne tło pustej części, cień pod spodem.
    Dokładne HP (np. 812/1200 HP) tylko po najechaniu myszą (na telefonie: dotknięcie) – dymek pod paskiem (nie zasłania nazwy). */
-.arena .bar{height:22px;margin-top:5px;border:4px solid #111;border-radius:0;background:#4a1717;box-shadow:0 4px 0 rgba(0,0,0,.28);overflow:hidden}
+.arena .bar{height:22px;margin-top:5px;border:4px solid #111;border-radius:0;background:#3b1012;box-shadow:0 4px 0 rgba(0,0,0,.28);overflow:hidden}
 .arena .bar{position:relative}
-.arena .bar i{position:relative;z-index:1;background:#e8212b;box-shadow:inset 0 3px 0 rgba(255,255,255,.22);transition:none}
+.arena .bar i{position:relative;z-index:1;background:linear-gradient(#ff6b6b 0 25%,#e8212b 25% 70%,#a3121a 70%);box-shadow:none;transition:none}   /* pikselowe cieniowanie: jasny / czerwony / ciemny pas */
 /* jasnoczerwony „ślad” zadanych obrażeń: czerwień spada od razu, ślad zostaje 0.2 s i potem płynnie zjeżdża ok. 0.25 s – ruch liczy pętla w ui.js (TRAIL_HOLD, TRAIL_TIME), także przy kolejnych ciosach */
-.arena .bar i.hpg{position:absolute;left:0;top:0;z-index:0;background:#ff8a8f;box-shadow:none;transition:none}
+.arena .bar i.hpg{position:absolute;left:0;top:0;z-index:0;background:#ffb0b3;box-shadow:none;transition:none}
 .arena .bar #sh1{z-index:2}
 /* PASEK UMIEJĘTNOŚCI gracza pod paskami HP: 10 kwadratowych slotów w jednym rzędzie na całą szerokość (na razie puste – miejsce na aktywne skille);
    ciemne wypełnienie (jak pasek akcji), w prawym dolnym rogu klawisz: 1 2 3 4 5 Q W E R Tab. */
 .skillbar{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;margin-top:14px}
-.sk{position:relative;aspect-ratio:1;background:#3a3027;border:3px solid #111;box-shadow:inset 0 3px 0 rgba(255,255,255,.08),0 3px 0 rgba(0,0,0,.28);box-sizing:border-box}
-.sk span{position:absolute;right:3px;bottom:2px;font-size:11px;font-weight:700;line-height:1;color:#f3e3c4}
+.sk{position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:1;background:#3a3027;border:3px solid #111;box-shadow:inset 0 3px 0 rgba(255,255,255,.08),0 3px 0 rgba(0,0,0,.28);box-sizing:border-box}
+.sk .kb{position:absolute;right:3px;bottom:2px;font-size:11px;font-weight:700;line-height:1;color:#f3e3c4;z-index:2}
+/* slot 1 = ATAK: ikona obecnej broni; w Twojej turze slot świeci i czeka na kliknięcie albo klawisz 1 */
+.sk.atk{cursor:pointer}.sk.atk .ic{font-size:28px}
+.sk.ready{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac),0 0 12px 2px var(--ac),0 3px 0 rgba(0,0,0,.28);animation:skready .8s ease-in-out infinite alternate}
+@keyframes skready{to{box-shadow:0 0 0 2px var(--ac),0 0 4px 0 var(--ac),0 3px 0 rgba(0,0,0,.28)}}
 /* procent HP na środku paska */
 .arena .bar .hpp{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;line-height:1;color:#fff;text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;pointer-events:none}
 .hpw{position:relative;outline:none;cursor:default}
@@ -225,7 +229,7 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 <div class="arena"><div><div class="fig" id="fp">🧙</div><b>You</b><div class="hpw" tabindex="0"><div class="bar" style="position:relative"><i class="hpg" id="hg1" style="width:100%"></i><i id="hp1" style="width:100%"></i><i id="sh1"></i><span class="hpp" id="hpp1"></span></div><small id="ht1" class="hptip"></small></div></div>
 <div style="font-size:18px">VS</div>
 <div style="position:relative"><div class="fig" id="fm"></div><b id="nm"></b><div class="hpw" tabindex="0"><div class="bar"><i class="hpg" id="hg2" style="width:100%"></i><i id="hp2" style="width:100%"></i><span class="hpp" id="hpp2"></span></div><small id="ht2" class="hptip"></small></div><div id="logwrap" style="position:absolute;right:0;top:100%;margin-top:24px"><button id="logbtn" style="font-size:12px;padding:3px 10px">Show battle log</button></div></div></div>
-<div class="skillbar" id="skillbar"><div class="sk" data-key="1"><span>1</span></div><div class="sk" data-key="2"><span>2</span></div><div class="sk" data-key="3"><span>3</span></div><div class="sk" data-key="4"><span>4</span></div><div class="sk" data-key="5"><span>5</span></div><div class="sk" data-key="Q"><span>Q</span></div><div class="sk" data-key="W"><span>W</span></div><div class="sk" data-key="E"><span>E</span></div><div class="sk" data-key="R"><span>R</span></div><div class="sk" data-key="Tab"><span>Tab</span></div></div>
+<div class="skillbar" id="skillbar"><div class="sk" data-key="1"><span class="kb">1</span></div><div class="sk" data-key="2"><span class="kb">2</span></div><div class="sk" data-key="3"><span class="kb">3</span></div><div class="sk" data-key="4"><span class="kb">4</span></div><div class="sk" data-key="5"><span class="kb">5</span></div><div class="sk" data-key="Q"><span class="kb">Q</span></div><div class="sk" data-key="W"><span class="kb">W</span></div><div class="sk" data-key="E"><span class="kb">E</span></div><div class="sk" data-key="R"><span class="kb">R</span></div><div class="sk" data-key="Tab"><span class="kb">Tab</span></div></div>
 <div class="info" id="info"></div>
 <div id="loot" hidden></div><button id="go">Fight!</button><div id="log" hidden></div></div>
 <div class="card" id="invcard"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Backpack</h2><button id="sellbtn" title="Sell mode: click an item or drop it on this button">💰 Sell</button></div><div class="inv" id="inv"></div></div>
