@@ -1165,9 +1165,11 @@ let trailT0 = performance.now();
 })(performance.now());
 // WALKA RĘCZNA – ATAK (slot 1 paska umiejętności): w Twojej turze walka czeka (waitAttack), slot świeci; klik w slot albo klawisz 1 = atak (doAttack).
 // Ikona slotu = obecna broń (strona 1 ekwipunku), bez broni – pięść. Skip w trakcie walki wykonuje czekający atak i dalej walka idzie sama.
-let atkResolve = null;
+let atkResolve = null, atkQueued = false;   // atkQueued: atak kliknięty przed walką – walka startuje i od razu go używa
 const atkSlot = () => document.querySelector('#skillbar .sk[data-key="1"]');
-function waitAttack() { const s = atkSlot(); if (s) s.classList.add('ready'); return new Promise(r => { atkResolve = r; }); }
+function waitAttack() { if (atkQueued) { atkQueued = false; return Promise.resolve(); } const s = atkSlot(); if (s) s.classList.add('ready'); return new Promise(r => { atkResolve = r; }); }
+// SKILL PRZED WALKĄ: klik w skill (albo jego klawisz), gdy walka jeszcze nie trwa, a przycisk pokazuje Fight! → startuje walkę i od razu używa tego ruchu
+function useSkillOrStart() { if (atkResolve) return doAttack(); const go = $('go'); if (!fightOn && !busy && go && !go.disabled && go.textContent.trim() === 'Fight!' && curMob()) { atkQueued = true; go.onclick(); if (!fightOn) atkQueued = false; } }   // walka nie ruszyła (np. przerwa po walce) – nie zostawiaj ataku w kolejce
 function doAttack() { if (!atkResolve) return; const f = atkResolve; atkResolve = null; const s = atkSlot(); if (s) s.classList.remove('ready'); f(); }
 function renderAtkSlot() {
   const s = atkSlot(); if (!s) return;
@@ -1176,8 +1178,8 @@ function renderAtkSlot() {
   s.classList.add('atk'); s.title = 'Attack (1)';
   s.innerHTML = (w ? sizeIco(w, 48) : '<span class="ic">👊</span>') + '<span class="kb">1</span>';
 }
-document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#skillbar .sk[data-key="1"]')) doAttack(); });
-addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && atkResolve && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); doAttack(); } });
+document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#skillbar .sk[data-key="1"]')) useSkillOrStart(); });
+addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '') && (atkResolve || (!fightOn && !FIGHTBOX.hidden))) { e.preventDefault(); useSkillOrStart(); } });
 // PASEK HP: procent HP na środku paska (gracz: hpp1 – samo HP bez tarczy, przeciwnik: hpp2)
 const hpPct = (i, cur, max) => { const e = $('hpp' + i); if (e) e.textContent = Math.max(0, Math.round(max ? cur / max * 100 : 0)) + '%'; };
 let dfight = false, dJustBeat = false;   // dfight = okno lochu zamienione w walkę; dJustBeat = właśnie pokonany pierwszy raz (po Back → wybór następnego)
@@ -2891,7 +2893,7 @@ $('go').onclick = async () => {
     console.error('Combat error:', err);
     say('An error occurred during combat (see console, F12).', 'miss');
   } finally {
-    { const sb = $('skillbar'); if (sb) sb.classList.remove('fighting'); }
+    { const sb = $('skillbar'); if (sb) sb.classList.remove('fighting'); } atkQueued = false;
     if (skipFight) sayMute = false; fightOn = false; skipFight = false;
     setBusy(false); setCdEnd(Date.now() + 1000); render();
   }
