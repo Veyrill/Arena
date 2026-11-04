@@ -1142,6 +1142,10 @@ const priceBase = i => i.val !== undefined ? i.val : Math.round((4 + me.lvl * 5)
 const price = i => Math.max(1, Math.round(priceBase(i) * 0.5));
 let dsel = -1;   // wybrany przeciwnik w lochu (można wybrać tylko kolejnego niepokonanego = dprog)
 const FIGHTBOX = document.getElementById('fightbox');   // stała referencja – okno walki bywa przenoszone do karty lochu
+// PASEK HP: biały ślad zadanych obrażeń – .hpg kopiuje szerokość paska HP (gracz: hp1, przeciwnik: hp2); opóźnienie i zjazd robi CSS
+[['hp1', 'hg1'], ['hp2', 'hg2']].forEach(([a, g]) => { const A = $(a), Gh = $(g); if (A && Gh) new MutationObserver(() => { Gh.style.width = A.style.width; }).observe(A, { attributes: true, attributeFilter: ['style'] }); });
+// PASEK HP: procent HP na środku paska (gracz: hpp1 – samo HP bez tarczy, przeciwnik: hpp2)
+const hpPct = (i, cur, max) => { const e = $('hpp' + i); if (e) e.textContent = Math.max(0, Math.round(max ? cur / max * 100 : 0)) + '%'; };
 let dfight = false, dJustBeat = false;   // dfight = okno lochu zamienione w walkę; dJustBeat = właśnie pokonany pierwszy raz (po Back → wybór następnego)
 let dview = 0;
 // OPIS PRZECIWNIKA W LOCHU: przy PIERWSZYM obejrzeniu danego przeciwnika tekst pojawia się powoli (litera po literze, LORE_MS ms na znak).
@@ -2075,7 +2079,7 @@ function render() {
         if (u0.water) pv.water = { st: 1, tip: `Stacks: 1/${N}<br>At ${N} stacks you heal for ${+u0.water.toFixed(2)}% of your maximum health` };
         renderPBuffs(pv); }
       $('hp1').style.width = d.hp / tot * 100 + '%'; $('sh1').style.left = d.hp / tot * 100 + '%'; $('sh1').style.width = sh0 / tot * 100 + '%';
-      $('hp2').style.width = (h0 / Math.round(s.hp) * 100) + '%'; $('ht1').textContent = tot + '/' + d.hp; $('ht2').textContent = h0 + '/' + Math.round(s.hp); }
+      $('hp2').style.width = (h0 / Math.round(s.hp) * 100) + '%'; $('ht1').textContent = tot + '/' + d.hp; $('ht2').textContent = h0 + '/' + Math.round(s.hp); hpPct(1, d.hp, d.hp); hpPct(2, h0, Math.round(s.hp)); }
   }
   { const dcd = view == 'dun' && m && dsel >= 0 ? dunCd(dsel) : 0;   // loch: przerwa po wygranej → przycisk z licznikiem
     const done = expRes && !fightOn;   // wyprawa po walce: Collect (wygrana) / Back (przegrana)
@@ -2451,7 +2455,7 @@ function* fightGen(mob, io) {
     if (UI) live = { mob, M, hp: mh };   // panel ℹ️ czyta stąd aktualne statystyki wroga
     // pasek HP gracza: stała skala = maks. HP + tarcza ze startu – tarcza działa jak dodatkowe zdrowie (niebieska końcówka skraca się jak HP);
     // napis = HP + tarcza / maks. HP (np. 1100/1000)
-    const upd = !UI ? () => {} : () => { if (live) { live.hp = Math.max(0, mh); renderInfo(mob); } { const hw = Math.max(0, ph) / barTot * 100; $('hp1').style.width = hw + '%'; $('sh1').style.left = hw + '%'; $('sh1').style.width = sh / barTot * 100 + '%'; } $('hp2').style.width = Math.max(0, mh / M.hp * 100) + '%'; $('ht1').textContent = Math.max(0, Math.round(ph + sh)) + '/' + p.hp; $('ht2').textContent = Math.max(0, Math.round(mh)) + '/' + Math.round(M.hp); };
+    const upd = !UI ? () => {} : () => { if (live) { live.hp = Math.max(0, mh); renderInfo(mob); } { const hw = Math.max(0, ph) / barTot * 100; $('hp1').style.width = hw + '%'; $('sh1').style.left = hw + '%'; $('sh1').style.width = sh / barTot * 100 + '%'; } $('hp2').style.width = Math.max(0, mh / M.hp * 100) + '%'; $('ht1').textContent = Math.max(0, Math.round(ph + sh)) + '/' + p.hp; $('ht2').textContent = Math.max(0, Math.round(mh)) + '/' + Math.round(M.hp); hpPct(1, ph, p.hp); hpPct(2, mh, M.hp); };
     upd(); say(`Fight against: ${mob.e} ${mob.n}!`);
     // KLĄTWY (Curses): stan na czas tej jednej walki
     const U = ub(), baseArm = M.arm;

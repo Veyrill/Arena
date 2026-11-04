@@ -83,7 +83,13 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 /* PASEK HP W WALCE: pikselowy pasek – gruby czarny obrys, płaskie czerwone wypełnienie, ciemne tło pustej części, cień pod spodem.
    Dokładne HP (np. 812/1200 HP) tylko po najechaniu myszą (na telefonie: dotknięcie) – dymek pod paskiem (nie zasłania nazwy). */
 .arena .bar{height:22px;margin-top:5px;border:4px solid #111;border-radius:0;background:#4a1717;box-shadow:0 4px 0 rgba(0,0,0,.28);overflow:hidden}
-.arena .bar i{background:#e8212b;box-shadow:inset 0 3px 0 rgba(255,255,255,.22)}
+.arena .bar{position:relative}
+.arena .bar i{position:relative;z-index:1;background:#e8212b;box-shadow:inset 0 3px 0 rgba(255,255,255,.22);transition:none}
+/* biały „ślad” zadanych obrażeń: czerwień spada od razu, biel zostaje 0.35 s i potem płynnie zjeżdża (szerokość kopiowana z paska HP w ui.js) */
+.arena .bar i.hpg{position:absolute;left:0;top:0;z-index:0;background:#ffffff;box-shadow:none;transition:width .45s ease-in .35s}
+.arena .bar #sh1{z-index:2}
+/* procent HP na środku paska */
+.arena .bar .hpp{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;line-height:1;color:#fff;text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;pointer-events:none}
 .hpw{position:relative;outline:none;cursor:default}
 .hptip{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:2px 8px;font-weight:700;font-size:12px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:5;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .hptip:empty{display:none}.hptip::after{content:" HP"}
@@ -211,9 +217,9 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 <div class="card" id="v-cook" hidden><h2 style="display:flex;align-items:center;gap:10px">Cooking<span id="cook-head" style="flex:1;display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0"></span></h2><div id="body-cook"></div></div>
 <div class="card" id="fightbox" hidden>
 <div class="row" id="fbackrow" style="display:none"><button data-a="fback">← Back</button><b id="fres"></b></div>
-<div class="arena"><div><div class="fig" id="fp">🧙</div><b>You</b><div class="hpw" tabindex="0"><div class="bar" style="position:relative"><i id="hp1" style="width:100%"></i><i id="sh1"></i></div><small id="ht1" class="hptip"></small></div></div>
+<div class="arena"><div><div class="fig" id="fp">🧙</div><b>You</b><div class="hpw" tabindex="0"><div class="bar" style="position:relative"><i class="hpg" id="hg1" style="width:100%"></i><i id="hp1" style="width:100%"></i><i id="sh1"></i><span class="hpp" id="hpp1"></span></div><small id="ht1" class="hptip"></small></div></div>
 <div style="font-size:18px">VS</div>
-<div style="position:relative"><div class="fig" id="fm"></div><b id="nm"></b><div class="hpw" tabindex="0"><div class="bar"><i id="hp2" style="width:100%"></i></div><small id="ht2" class="hptip"></small></div><div id="logwrap" style="position:absolute;right:0;top:100%;margin-top:24px"><button id="logbtn" style="font-size:12px;padding:3px 10px">Show battle log</button></div></div></div>
+<div style="position:relative"><div class="fig" id="fm"></div><b id="nm"></b><div class="hpw" tabindex="0"><div class="bar"><i class="hpg" id="hg2" style="width:100%"></i><i id="hp2" style="width:100%"></i><span class="hpp" id="hpp2"></span></div><small id="ht2" class="hptip"></small></div><div id="logwrap" style="position:absolute;right:0;top:100%;margin-top:24px"><button id="logbtn" style="font-size:12px;padding:3px 10px">Show battle log</button></div></div></div>
 <div class="info" id="info"></div>
 <div id="loot" hidden></div><button id="go">Fight!</button><div id="log" hidden></div></div>
 <div class="card" id="invcard"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Backpack</h2><button id="sellbtn" title="Sell mode: click an item or drop it on this button">💰 Sell</button></div><div class="inv" id="inv"></div></div>
