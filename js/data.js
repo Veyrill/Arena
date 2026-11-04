@@ -236,6 +236,10 @@ export const DUN4 = { n: 'The Wyrm Graveyard', e: '🦴', req: 60, mobs: [
   pgClone('Grave Keeper', '⚰️', 70, 'Storm Lord', { hp: 1.15, dmg: 0.75, arm: 1.4, dodge: 3 }),         // czołg: olbrzymi strażnik smoczych kości
   pgClone('The Undying Wyrm', '🐉', 76, 'Ancient Dragon', { hp: 1.05, dmg: 1.05, crit: 15 })         // boss: martwy smok przywrócony do życia
 ] };
+// OPISY (lore) przeciwników The Wyrm Graveyard – dopasowane do sprite'ów (Bone Drake: kości i strzępy skrzydeł; Grave Keeper: szary kaptur, zielone światło, łopata i kościany kostur; The Undying Wyrm: ciemne łuski, zielony ogień w pęknięciach)
+DUN4.mobs[0].lore = 'Its mother laid her egg on the day she came here to die, and the young dragon lived only one night. Nothing is left of it now but bleached bones and a few torn strips of leather that were once its wings. The graveyard would not let it rest, and it now crawls between the ribs of its ancestors, faster than it ever was in life. It never learned to fly, but it learned how to hunt.';
+DUN4.mobs[1].lore = 'He was the last of the dragon riders, and when his dragon fell, he followed it into the valley and never left. Under his grey hood, only a cold green light remains where his face used to be. He still carries the same shovel he used to dig a thousand graves, and a staff made from the bone of his first dragon. He believes you came to rob the dead, and no thief has ever left his valley.';
+DUN4.mobs[2].lore = 'This one belonged to the last rider, and it was the first dragon ever buried in the valley. It refused to stay dead, and the curse answered with green fire that now burns through the cracks in its dark scales. Its body is rotten and its heart is gone, yet it still rises every night to guard its old friend. To end this, you must break a bond that even death could not break.';
 export const DUNS = [DUN, DUN2, DUN3, DUN4];   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
 
 // IKONY SKILLI: grafiki z assets/skills (pixel art 16×16, plik 64×64). f = nazwa pliku bez .png, e = emoji zapasowe, px = rozmiar.
