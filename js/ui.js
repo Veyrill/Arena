@@ -2080,10 +2080,10 @@ function render() {
   if (expFight) $('v-exp').style.display = 'none';
   $('fbackrow').style.display = view == 'exp' && m ? 'flex' : 'none';
   $('fbackrow').firstChild.disabled = busy;   // w trakcie walki nieaktywny
-  // po walce: Back znika, w jego miejscu napis wyniku – Victory! (zielony) / Defeat (czerwony)
+  // po walce: Back znika, w jego miejscu napis wyniku – VICTORY (złoty) / DEFEAT (czerwony) z małym podpisem pod spodem
   const showRes = !!(expRes && !fightOn);
   $('fbackrow').firstChild.style.display = showRes ? 'none' : '';
-  $('fres').innerHTML = showRes ? (expRes.win ? '<span style="color:#2fae3f">Victory!</span>' : '<span style="color:#e53935">Defeat</span>') : '';
+  $('fres').innerHTML = showRes ? (expRes.win ? '<span class="resv win">VICTORY</span><span class="ress">THE ENEMY HAS FALLEN</span>' : '<span class="resv lose">DEFEAT</span><span class="ress">YOU HAVE FALLEN</span>') : '';   // duży napis + mały podpis (jak w RPG)
   $('loot').hidden = !(expRes && expRes.win && !fightOn);
   if (!$('loot').hidden) $('loot').innerHTML = (expRes.loot.length
     ? expRes.loot.map((i, n) => `<div class="cell r${i.r || 0}" data-it="loot:${n}">${invIco(i)}</div>`).join('')   // tylko podgląd (dymek, Shift = porównanie) – bez zakładania

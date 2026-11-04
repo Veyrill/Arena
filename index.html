@@ -117,7 +117,12 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 /* Back w oknie walki (wyprawa): ten sam kolor co Fight! */
 #fbackrow button{background:var(--ac);color:var(--on-ac);border-color:var(--ac);font-weight:700}
 /* wynik walki w miejscu Back (po walce): Victory! zielone / Defeat czerwone; stała wysokość wiersza – okno nie skacze */
-#fbackrow{min-height:32px}#fres{flex:1;text-align:center;font-size:20px;letter-spacing:.03em}   /* wynik na środku okna walki */
+#fbackrow{min-height:32px}#fres{flex:1;text-align:center;font-size:20px;letter-spacing:.03em;display:flex;flex-direction:column;align-items:center;gap:4px}   /* wynik na środku okna walki */
+/* WYNIK WALKI: duży napis z ciemnym cieniem + mały podpis z rozstrzelonymi literami */
+.resv{font-size:32px;font-weight:800;line-height:1;letter-spacing:.06em;text-shadow:3px 3px 0 #000}
+.resv.win{color:#f5d88a}.resv.lose{color:#e05050}
+.ress{font-size:11px;font-weight:700;letter-spacing:.25em;color:var(--mut)}
+:root:not([data-theme=dark]) .resv.win{color:#e8b54a}
 #go{display:block;width:auto;margin:20px auto 0;padding:6px 16px;background:var(--ac);color:var(--on-ac);border-color:var(--ac);font-weight:700}
 #log[hidden]{display:none}   /* log walki ukryty, dopóki gracz nie kliknie „Show battle log” */
 #log{height:100px;overflow:auto;font-size:12px;border:1px solid var(--bd);border-radius:8px;padding:5px;margin:8px 0}
