@@ -146,7 +146,7 @@ const MX=(n,e)=>{ kMob++; const t=kMob/50;
   return { n, e, l:30+kMob, drop:[], mats:[], st:{ hp:Math.round(FL0.hp*(100000/FL0.hp)**t), min:FL0.min*4.2**t, max:FL0.max*4.2**t, arm:FL0.arm*4**t, dex:FL0.dex*3**t, crit:Math.round(5+10*t) } }; };
 export const LOCS2=[
 {n:'Swamp',e:'🐊',mobs:[MX('Giant Frog','🐸'),MX('Bog Lurker','🦎'),MX('Crocodile','🐊'),MX('Swamp Witch','🧙'),MX('Hydra','🐲')]},
-{n:'Fungal Hollow',e:'🍄',mobs:[MX('Spore Crawler','🐛'),MX('Rot Beetle','🪲'),MX('Myconid Brute','🍄'),MX('Mold Shaman','🔮'),MX('Mother Mycelia','🦠')]},   // dawniej Dark Forest (te same statystyki)
+{n:'Fungal Hollow',e:'🍄',mobs:[MX('Spore Crawler','🐛'),MX('Rot Beetle','🪲'),MX('Myconid Brute','🍄'),MX('Mold Shaman','🔮'),MX('Sporelord','👑')]},   // dawniej Dark Forest (te same statystyki)
 {n:'Mountain Pass',e:'⛰️',mobs:[MX('Harpy','🦅'),MX('Troll','👹'),MX('Rock Giant','🗿'),MX('Griffin','🦁'),MX('Stone Titan','🏔️')]},
 {n:'Haunted Castle',e:'🏰',mobs:[MX('Ghost Knight','👻'),MX('Banshee','😱'),MX('Cursed Armor','🛡️'),MX('Vampire Bat','🦇'),MX('Vampire Lord','🧛')]},
 {n:'Abyssal Rift',e:'🌀',mobs:[MX('Shadow Hound','🐕'),MX('Void Stalker','👁️'),MX('Abyss Knight','⚔️'),MX('Demon Priest','😈'),MX('Abyss Lord','👿')]}];
@@ -209,7 +209,7 @@ const pgClone = (n, e, l, src, k) => {
 };
 export const DUN2 = { n: 'The Proving Grounds', e: '🏟️', req: 30, mobs: [
   pgClone('Pit Fighter', '🤺', 33, 'Crocodile', { hp: 0.85, dmg: 1.1, crit: 12 }),                     // szybki zabijaka: mniej HP, mocniej i częściej krytycznie
-  pgClone('Juggernaut', '🛡️', 40, 'Mother Mycelia', { hp: 1.45, dmg: 0.75, arm: 1.5, dodge: 3 }),       // czołg: dużo HP i pancerza, słabsze ciosy, prawie bez uniku
+  pgClone('Juggernaut', '🛡️', 40, 'Sporelord', { hp: 1.45, dmg: 0.75, arm: 1.5, dodge: 3 }),       // czołg: dużo HP i pancerza, słabsze ciosy, prawie bez uniku
   pgClone('Grand Champion', '🏆', 46, 'Stone Titan', { hp: 1.05, dmg: 1.05, crit: 15 })               // mistrz areny: mocny we wszystkim
 ] };
 // OPISY (lore) przeciwników The Proving Grounds – pod dropami, przy pierwszym obejrzeniu pojawiają się powoli (jak w Spider's Den)
