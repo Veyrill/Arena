@@ -115,10 +115,15 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 .abico{width:52px;height:52px;flex:none;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(#46505e,#2d3440);border:3px solid #111;border-radius:8px}
 .abinf{flex:1;display:flex;flex-direction:column;gap:3px}.abinf small{color:var(--mut)}
 .abok{font-weight:700;color:#f07b16}
+/* ZAKŁADKA SETTINGS */
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg)}
+.setrow small{color:var(--mut);display:block;margin-top:2px}
+.setopt{display:flex;gap:6px}.setopt button.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac);font-weight:700}
 /* procent HP na środku paska */
 .arena .bar .hpp{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;line-height:1;color:#fff;text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;pointer-events:none}
 .hpw{position:relative;outline:none;cursor:default}
 /* dokładne HP przy lewej krawędzi paska (np. 150/240); procent dalej na środku */
+body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 .arena .bar .hpv{position:absolute;left:6px;top:0;bottom:0;z-index:3;display:flex;align-items:center;font-size:11px;font-weight:700;line-height:1;color:#fff;text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;pointer-events:none}
 /* RAGE: pomarańczowy pasek pod zdrowiem bohatera, 0–100; każdy zwykły atak +8 (liczba na środku) */
 .arena .bar.rage{height:18px;margin-top:4px;background:#2e1806}
@@ -249,6 +254,7 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 <div class="card" id="v-shop" hidden><h2>Shop</h2><div id="body-shop"></div></div>
 <div class="card" id="v-upg" hidden><span id="skillresetw" style="position:absolute;top:6px;right:8px;display:inline-flex"><button id="skillreset" style="font-size:22px;line-height:1;padding:2px 8px;font-weight:700">↺</button></span><h2>Passives</h2><small style="color:var(--mut)">Mouse wheel: zoom · drag: pan the board</small><div id="body-upg" style="margin-top:6px"></div></div>
 <div class="card" id="v-abil" hidden><h2>Abilities</h2><div id="body-abil" style="margin-top:6px"></div></div>
+<div class="card" id="v-set" hidden><h2>Settings</h2><div id="body-set" style="margin-top:6px"></div></div>
 <div class="card" id="v-dun" hidden><h2>Dungeons</h2><div id="body-dun"></div></div>
 <div class="card" id="v-craft" hidden><h2>Crafting</h2><div id="body-craft"></div></div>
 <div class="card" id="v-fish" hidden><h2>Fishing</h2><div id="body-fish"></div></div>

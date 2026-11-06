@@ -1262,6 +1262,19 @@ window.learnAbil = id => {
   if (!Object.values(me.bar).includes(id)) { const k = !me.bar['2'] ? '2' : BAR_KEYS.find(x => !me.bar[x]); if (k) me.bar[k] = id; }   // domyślnie slot 2 (zajęty → pierwszy wolny)
   saveGame(); render();
 };
+// SETTINGS (zakładka Settings): me.opts – zapisywane razem z grą.
+// hpVals: true = pasek HP pokazuje procent + dokładne HP (np. 140/153), false = same procenty (jak dawniej)
+const opt = k => { const o = me.opts || {}; return k in o ? o[k] : { hpVals: true }[k]; };
+function applySettings() { document.body.classList.toggle('hpv-off', !opt('hpVals')); }
+function renderSettings() {
+  const el = $('body-set'); if (!el) return; const v = opt('hpVals');
+  el.innerHTML = `<div class="setrow"><div><b>Health bar</b><small>What the health bars show in fights.</small></div>`
+    + `<div class="setopt"><button data-hpv="0" class="${v ? '' : 'on'}">Percent</button><button data-hpv="1" class="${v ? 'on' : ''}">Percent + values</button></div></div>`;
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('[data-hpv]'); if (!b) return;
+  me.opts = Object.assign({}, me.opts, { hpVals: b.dataset.hpv === '1' }); saveGame(); render();
+});
 // RAGE (pasek pod zdrowiem bohatera): 0–100, na start walki 0; każdy zwykły atak gracza +RAGE_HIT (na razie nic nie zużywa rage)
 const RAGE_MAX = 100, RAGE_HIT = 8;
 const setRage = v => { const f = $('rg1'), t = $('rgp1'); if (f) f.style.width = v / RAGE_MAX * 100 + '%'; if (t) t.textContent = v; if (fightIo) { fightIo.rage = v; refreshAb(); } };
@@ -1617,7 +1630,7 @@ window.buyNode = id => {
   render();
 };
 
-const NAV = [['exp', 'Expedition'], ['shop', 'Shop'], ['craft', 'Crafting'], ['upg', 'Passives'], ['abil', 'Abilities'], ['dun', 'Dungeons'], ['fish', 'Fishing'], ['upgrade', 'Tackle Upgrade'], ['cook', 'Cooking']];   // Tackle = sprzęt wędkarski (wędka + haczyk)
+const NAV = [['exp', 'Expedition'], ['shop', 'Shop'], ['craft', 'Crafting'], ['upg', 'Passives'], ['abil', 'Abilities'], ['dun', 'Dungeons'], ['fish', 'Fishing'], ['upgrade', 'Tackle Upgrade'], ['cook', 'Cooking'], ['set', 'Settings']];   // Tackle = sprzęt wędkarski (wędka + haczyk)
 // spDot: czerwona kropka przy zakładce Skills, gdy są skill pointy do wydania. Znika po najechaniu myszką,
 // wraca, gdy gracz dostanie nowe skill pointy (awans, reset skilli).
 let spDot = false;
@@ -1757,7 +1770,7 @@ function render() {
     btn.disabled = busy || (fishing.active && btn.dataset.v === 'exp');
   });
 
-  ['exp', 'shop', 'upg', 'abil', 'upgrade', 'dun', 'craft', 'fish', 'cook'].forEach(k => {
+  ['exp', 'shop', 'upg', 'abil', 'upgrade', 'dun', 'craft', 'fish', 'cook', 'set'].forEach(k => {
     const el = $('v-' + k);
     if (el) el.style.display = (k === view) ? 'block' : 'none';
   });
@@ -1986,6 +1999,7 @@ function render() {
   renderTut();   // samouczek ulepszania wędki (dymek)
   renderAtkSlot();   // slot 1: ikona obecnej broni
   renderBarAbils(); if (view === 'abil') renderAbilTab();   // ABILITIES: pasek + zakładka
+  applySettings(); if (view === 'set') renderSettings();   // SETTINGS
 
   const isBought = upgTree.centerHp > 0;
   // elementy dymka skilli (kolory jak w WoW: złoty opis, biały nagłówek "Next rank:", zielony koszt)
