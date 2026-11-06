@@ -1265,7 +1265,7 @@ window.learnAbil = id => {
 // RAGE (pasek pod zdrowiem bohatera): 0–100, na start walki 0; każdy zwykły atak gracza +RAGE_HIT (na razie nic nie zużywa rage)
 const RAGE_MAX = 100, RAGE_HIT = 8;
 const setRage = v => { const f = $('rg1'), t = $('rgp1'); if (f) f.style.width = v / RAGE_MAX * 100 + '%'; if (t) t.textContent = v; if (fightIo) { fightIo.rage = v; refreshAb(); } };
-const hpPct = (i, cur, max) => { const e = $('hpp' + i); if (e) e.textContent = Math.max(0, Math.round(max ? cur / max * 100 : 0)) + '%'; };
+const hpPct = (i, cur, max) => { const e = $('hpp' + i); if (e) e.textContent = Math.max(0, Math.round(max ? cur / max * 100 : 0)) + '%'; const v = $('hpv' + i); if (v) v.textContent = Math.max(0, Math.round(cur)) + '/' + Math.round(max); };   // % na środku, dokładne HP przy lewej krawędzi
 let dfight = false, dJustBeat = false;   // dfight = okno lochu zamienione w walkę; dJustBeat = właśnie pokonany pierwszy raz (po Back → wybór następnego)
 let dview = 0;
 // OPIS PRZECIWNIKA W LOCHU: przy PIERWSZYM obejrzeniu danego przeciwnika tekst pojawia się powoli (litera po literze, LORE_MS ms na znak).
