@@ -1107,6 +1107,7 @@ const isBoss = m => ALL_LOCS.some(l => l.mobs[l.mobs.length - 1] === m);
 // IKONY DEBUFFÓW w prawym górnym rogu okna walki (zamiast wpisów w logu). Curse of Frailty nie ma ikony.
 // st = stosy (liczba w prawym dolnym rogu, tylko dla debuffów, które się kumulują), tip = opis w dymku
 const DEBUFFS = {
+  stun: ['debuff_stun', 'Stunned', '💫'],   // Gauntlet Strike: wróg traci następną turę (brak pliku → 💫)
   sunder: ['curse_sunder', 'Curse of Frailty'], exhaust: ['curse_cripple', 'Curse of Withering'], expose: ['curse_exposed', 'Exposed Weakness'], mark: ['curse_shadow_mark', 'Curse of the Void'], agony: ['curse_agony', 'Torment'], warcry: ['skill_war_cry', 'War Cry', '📯'], rage: ['skill_rage_within', 'Rage Within', '😤'], fervor: ['skill_battle_fervor', 'Battle Fervor', '🔥'],
   reap: ['curse_terror', 'Terror'], fire: ['skill_combustion', 'Fire Energy', '🔥'], water: ['skill_tidal_renewal', 'Water Energy', '💧'], tide: ['skill_soothing_tide', 'Soothing Tide', '🌊'], burn: ['skill_lingering_flames', 'Burning', '♨️'], bolt: ['skill_lightning_bolt', 'Lightning Energy', '⚡'], bleed: ['curse_lacerate', 'Bleeding'], doom: ['curse_death', 'Death Sentence']
 };
@@ -1124,7 +1125,7 @@ function renderAuras(id, list) {
   const bc = id === 'pbuffs' ? '#3fbf4f' : '#e53935';
   // ikony to pixel art 32×32 (plik 128 px = ×4) → wyświetlane dokładnie 32×32 (skala całkowita) bez wygładzania, żeby piksele były równe
   // STAŁA KOLEJNOŚĆ ikon (buffy i debuffy): ikona pojawiająca się / znikająca nie przestawia pozostałych
-  const ORD = ['warcry', 'rage', 'fervor', 'reap', 'bolt', 'fire', 'water', 'tide', 'sunder', 'exhaust', 'expose', 'mark', 'burn', 'bleed', 'doom', 'agony'];
+  const ORD = ['stun', 'warcry', 'rage', 'fervor', 'reap', 'bolt', 'fire', 'water', 'tide', 'sunder', 'exhaust', 'expose', 'mark', 'burn', 'bleed', 'doom', 'agony'];
   const pos = k => { const i = ORD.indexOf(k); return i < 0 ? 99 : i; };
   el.innerHTML = Object.entries(list || {}).sort((a, b) => pos(a[0]) - pos(b[0])).map(([k, v]) => `<div data-tip="<b>${DEBUFFS[k][1]}</b>${v.tip}" style="position:relative;box-sizing:content-box;width:32px;height:32px;border:2px solid ${bc};border-radius:4px;overflow:hidden;box-shadow:0 0 4px #0008">`
     + `<img src="${ASSETS_DIR}/skills/curses/${DEBUFFS[k][0]}.png" alt="" style="display:block;width:32px;height:32px;image-rendering:pixelated" onerror="this.outerHTML='<span style=&quot;display:flex;align-items:center;justify-content:center;height:100%;font-size:18px&quot;>${DEBUFFS[k][2] || '✨'}</span>'">`
@@ -1187,7 +1188,9 @@ addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEX
 // me.abils = { id: true } – wykupione; me.bar = { klawisz slotu: id } – rozmieszczenie na pasku (przeciąganie myszką między slotami).
 // cost = koszt w Rage, mul = mnożnik średnich obrażeń broni, cd = odnowienie w turach (1 = w kolejnej Twojej turze znowu gotowe), lvl = wymagany poziom.
 const ABILS = {
-  overhead: { n: 'Overhead Blow', ico: '💥', cost: 30, mul: 1.4, cd: 1, lvl: 3, d: 'A heavy strike for 140% of your average weapon damage. Uses your turn.' }
+  overhead: { n: 'Overhead Blow', ico: '💥', cost: 30, mul: 1.4, cd: 1, lvl: 3, d: 'A heavy strike for 140% of your average weapon damage. Uses your turn.' },
+  // stun: trafienie ogłusza – wróg traci swoją następną turę (Ty atakujesz znowu)
+  gauntlet: { n: 'Gauntlet Strike', ico: '🥊', cost: 20, mul: 0.5, cd: 5, lvl: 6, stun: true, d: 'A quick punch for 50% of your average weapon damage. The enemy is stunned and loses its next turn.' }
 };
 const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = zwykły atak (stały)
 const abTip = id => { const a = ABILS[id]; return `<b>${a.n}</b>Cost: ${a.cost} Rage<br>Cooldown: ${a.cd} turn${a.cd === 1 ? '' : 's'}<br>${a.d}`; };
@@ -2593,7 +2596,7 @@ function* fightGen(mob, io) {
     // napis = HP + tarcza / maks. HP (np. 1100/1000)
     const upd = !UI ? () => {} : () => { if (live) { live.hp = Math.max(0, mh); renderInfo(mob); } { const hw = Math.max(0, ph) / barTot * 100; $('hp1').style.width = hw + '%'; $('sh1').style.left = hw + '%'; $('sh1').style.width = sh / barTot * 100 + '%'; } $('hp2').style.width = Math.max(0, mh / M.hp * 100) + '%'; $('ht1').textContent = Math.max(0, Math.round(ph + sh)) + '/' + p.hp; $('ht2').textContent = Math.max(0, Math.round(mh)) + '/' + Math.round(M.hp); hpPct(1, ph, p.hp); hpPct(2, mh, M.hp); };
     let rageBar = 0; if (UI) setRage(0);   // RAGE: nowa walka = pusty pasek
-    const abCd = {}; io.cd = abCd;   // ABILITIES: odnowienia w tej walce (tury)
+    const abCd = {}; io.cd = abCd; let stun = false;   // stun: Gauntlet Strike – wróg traci następną turę   // ABILITIES: odnowienia w tej walce (tury)
     upd(); say(`Fight against: ${mob.e} ${mob.n}!`);
     // KLĄTWY (Curses): stan na czas tej jednej walki
     const U = ub(), baseArm = M.arm;
@@ -2655,7 +2658,7 @@ function* fightGen(mob, io) {
     // MIST VEIL: szansa wroga na krytyk −3 / −6 / −9 pkt proc. (min. 0%) – od początku walki
     M.crit = Math.max(0, M.crit - (U.critDown || 0));
     const eDex0 = M.dex, eCrit0 = M.crit;
-    const agF = () => U.agony ? Math.max(0, 1 - 0.1 * Object.keys(deb).filter(k => k !== 'expose').length) : 1;   // ikona Exposed Weakness nie jest klątwą
+    const agF = () => U.agony ? Math.max(0, 1 - 0.1 * Object.keys(deb).filter(k => k !== 'expose' && k !== 'stun').length) : 1;   // ikona Exposed Weakness nie jest klątwą
     const recalcEnemy = () => {
       const ag = agF(), k = (strNow() * 0.6 + 2) / (eStr0 * 0.6 + 2);
       M.arm = baseArm * (1 - sPer * sunder / 100) * ag;
@@ -2688,7 +2691,7 @@ function* fightGen(mob, io) {
         if (fervor) { const f = 1 + U.fervor * fervor / 100; A = Object.assign({}, A, { min: A.min * f, max: A.max * f }); }
         // Exposed Weakness: min. 2 klątwy na wrogu (Burning się nie liczy) → +U.expose% obrażeń; ikona na wrogu, gdy aktywne
         if (U.expose) {
-          const on = Object.keys(deb).filter(k => k !== 'expose' && k !== 'burn').length >= 2;
+          const on = Object.keys(deb).filter(k => k !== 'expose' && k !== 'burn' && k !== 'stun').length >= 2;
           if (on && !deb.expose) { deb.expose = { tip: `Takes ${U.expose}% more damage from you (2+ curses)` }; curses(); }
           else if (!on && deb.expose) { delete deb.expose; curses(); }
           if (on) { const f = 1 + U.expose / 100; A = Object.assign({}, A, { min: A.min * f, max: A.max * f }); }
@@ -2699,7 +2702,8 @@ function* fightGen(mob, io) {
         if (ab) { const avg = (A.min + A.max) / 2 * ab.mul; A = Object.assign({}, A, { min: avg, max: avg }); rageBar -= ab.cost; abCd[act] = ab.cd; if (UI) setRage(rageBar); say(`<b>${ab.n}!</b> (−${ab.cost} Rage)`, 'crit'); }
         firstHit = false;
         { const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); mh -= dm; if (UI) dmgPop(fm, dm, hit.crit, 'out'); }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
-        if (!ab) { rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT); if (UI) setRage(rageBar); }   // umiejętność nie ładuje Rage   // RAGE: +8 za każdy zwykły atak (także chybiony), maks. 100
+        if (!ab) { rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT); if (UI) setRage(rageBar); }
+        if (ab && ab.stun && mh > 0) { stun = true; deb.stun = { tip: 'Loses its next turn' }; curses(); }   // ogłuszenie (ikona na wrogu)   // umiejętność nie ładuje Rage   // RAGE: +8 za każdy zwykły atak (także chybiony), maks. 100
         // Rage Within: każdy Twój krytyk +U.rage% obrażeń broni do końca walki (działa od następnego ciosu)
         if (U.rage && hit.crit && U.rage * (rage + 1) <= 30) { rage++; pbuf.rage = { st: rage, tip: `Weapon damage +${U.rage * rage}% (max 30%)` }; renderPBuffs(pbuf); }   // limit +30%
         // Lightning Bolt: +1 stos po ataku; przy 5 stosach piorun (15% / 30% / 45% średnich obrażeń, bez redukcji pancerza), potem 1 stos
@@ -2765,6 +2769,8 @@ function* fightGen(mob, io) {
           renderDebuffs(deb); upd();
           if (mh <= 0) break;
         }
+        // OGŁUSZENIE (Gauntlet Strike): po krwawieniu / podpaleniu wróg nie atakuje – tura wraca do Ciebie
+        if (stun) { stun = false; delete deb.stun; curses(); say(`${mob.n} is stunned and loses its turn.`, 'miss'); turn ^= 1; upd(); continue; }
         { const dm = hit(mob.n, 'You', M, p, fm, (t, c) => say(t, c));
           // Elemental Barrier: tarcza pochłania obrażenia (najpierw tarcza, potem zdrowie)
           const ab = Math.min(sh, dm); if (ab > 0) { sh -= ab; say(`Elemental Barrier absorbs <b>${ab}</b>${sh ? ` (${sh} left)` : ' – the shield breaks!'}`, 'miss'); }
