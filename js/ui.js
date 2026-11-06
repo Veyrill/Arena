@@ -1181,6 +1181,9 @@ function renderAtkSlot() {
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#skillbar .sk[data-key="1"]')) useSkillOrStart(); });
 addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '') && (atkResolve || (!fightOn && !FIGHTBOX.hidden))) { e.preventDefault(); useSkillOrStart(); } });
 // PASEK HP: procent HP na środku paska (gracz: hpp1 – samo HP bez tarczy, przeciwnik: hpp2)
+// RAGE (pasek pod zdrowiem bohatera): 0–100, na start walki 0; każdy zwykły atak gracza +RAGE_HIT (na razie nic nie zużywa rage)
+const RAGE_MAX = 100, RAGE_HIT = 8;
+const setRage = v => { const f = $('rg1'), t = $('rgp1'); if (f) f.style.width = v / RAGE_MAX * 100 + '%'; if (t) t.textContent = v; };
 const hpPct = (i, cur, max) => { const e = $('hpp' + i); if (e) e.textContent = Math.max(0, Math.round(max ? cur / max * 100 : 0)) + '%'; };
 let dfight = false, dJustBeat = false;   // dfight = okno lochu zamienione w walkę; dJustBeat = właśnie pokonany pierwszy raz (po Back → wybór następnego)
 let dview = 0;
@@ -1533,7 +1536,7 @@ window.buyNode = id => {
   render();
 };
 
-const NAV = [['exp', 'Expedition'], ['shop', 'Shop'], ['craft', 'Crafting'], ['upg', 'Skills'], ['dun', 'Dungeons'], ['fish', 'Fishing'], ['upgrade', 'Tackle Upgrade'], ['cook', 'Cooking']];   // Tackle = sprzęt wędkarski (wędka + haczyk)
+const NAV = [['exp', 'Expedition'], ['shop', 'Shop'], ['craft', 'Crafting'], ['upg', 'Passives'], ['abil', 'Abilities'], ['dun', 'Dungeons'], ['fish', 'Fishing'], ['upgrade', 'Tackle Upgrade'], ['cook', 'Cooking']];   // Tackle = sprzęt wędkarski (wędka + haczyk)
 // spDot: czerwona kropka przy zakładce Skills, gdy są skill pointy do wydania. Znika po najechaniu myszką,
 // wraca, gdy gracz dostanie nowe skill pointy (awans, reset skilli).
 let spDot = false;
@@ -1673,7 +1676,7 @@ function render() {
     btn.disabled = busy || (fishing.active && btn.dataset.v === 'exp');
   });
 
-  ['exp', 'shop', 'upg', 'upgrade', 'dun', 'craft', 'fish', 'cook'].forEach(k => {
+  ['exp', 'shop', 'upg', 'abil', 'upgrade', 'dun', 'craft', 'fish', 'cook'].forEach(k => {
     const el = $('v-' + k);
     if (el) el.style.display = (k === view) ? 'block' : 'none';
   });
@@ -2116,7 +2119,7 @@ function render() {
         if (u0.water) pv.water = { st: 1, tip: `Stacks: 1/${N}<br>At ${N} stacks you heal for ${+u0.water.toFixed(2)}% of your maximum health` };
         renderPBuffs(pv); }
       $('hp1').style.width = d.hp / tot * 100 + '%'; $('sh1').style.left = d.hp / tot * 100 + '%'; $('sh1').style.width = sh0 / tot * 100 + '%';
-      $('hp2').style.width = (h0 / Math.round(s.hp) * 100) + '%'; $('ht1').textContent = tot + '/' + d.hp; $('ht2').textContent = h0 + '/' + Math.round(s.hp); hpPct(1, d.hp, d.hp); hpPct(2, h0, Math.round(s.hp)); }
+      $('hp2').style.width = (h0 / Math.round(s.hp) * 100) + '%'; $('ht1').textContent = tot + '/' + d.hp; $('ht2').textContent = h0 + '/' + Math.round(s.hp); hpPct(1, d.hp, d.hp); hpPct(2, h0, Math.round(s.hp)); setRage(0); }
   }
   { const dcd = view == 'dun' && m && dsel >= 0 ? dunCd(dsel) : 0;   // loch: przerwa po wygranej → przycisk z licznikiem
     const done = expRes && !fightOn;   // wyprawa po walce: Collect (wygrana) / Back (przegrana)
@@ -2493,6 +2496,7 @@ function* fightGen(mob, io) {
     // pasek HP gracza: stała skala = maks. HP + tarcza ze startu – tarcza działa jak dodatkowe zdrowie (niebieska końcówka skraca się jak HP);
     // napis = HP + tarcza / maks. HP (np. 1100/1000)
     const upd = !UI ? () => {} : () => { if (live) { live.hp = Math.max(0, mh); renderInfo(mob); } { const hw = Math.max(0, ph) / barTot * 100; $('hp1').style.width = hw + '%'; $('sh1').style.left = hw + '%'; $('sh1').style.width = sh / barTot * 100 + '%'; } $('hp2').style.width = Math.max(0, mh / M.hp * 100) + '%'; $('ht1').textContent = Math.max(0, Math.round(ph + sh)) + '/' + p.hp; $('ht2').textContent = Math.max(0, Math.round(mh)) + '/' + Math.round(M.hp); hpPct(1, ph, p.hp); hpPct(2, mh, M.hp); };
+    let rageBar = 0; if (UI) setRage(0);   // RAGE: nowa walka = pusty pasek
     upd(); say(`Fight against: ${mob.e} ${mob.n}!`);
     // KLĄTWY (Curses): stan na czas tej jednej walki
     const U = ub(), baseArm = M.arm;
@@ -2593,6 +2597,7 @@ function* fightGen(mob, io) {
         }
         firstHit = false;
         { const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); mh -= dm; if (UI) dmgPop(fm, dm, hit.crit, 'out'); }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
+        rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT); if (UI) setRage(rageBar);   // RAGE: +8 za każdy zwykły atak (także chybiony), maks. 100
         // Rage Within: każdy Twój krytyk +U.rage% obrażeń broni do końca walki (działa od następnego ciosu)
         if (U.rage && hit.crit && U.rage * (rage + 1) <= 30) { rage++; pbuf.rage = { st: rage, tip: `Weapon damage +${U.rage * rage}% (max 30%)` }; renderPBuffs(pbuf); }   // limit +30%
         // Lightning Bolt: +1 stos po ataku; przy 5 stosach piorun (15% / 30% / 45% średnich obrażeń, bez redukcji pancerza), potem 1 stos

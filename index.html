@@ -106,6 +106,10 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 /* procent HP na środku paska */
 .arena .bar .hpp{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;line-height:1;color:#fff;text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;pointer-events:none}
 .hpw{position:relative;outline:none;cursor:default}
+/* RAGE: pomarańczowy pasek pod zdrowiem bohatera, 0–100; każdy zwykły atak +8 (liczba na środku) */
+.arena .bar.rage{height:18px;margin-top:4px;background:#2e1806}
+.arena .bar.rage i{background:linear-gradient(#ffc06a 0 25%,#f07b16 25% 70%,#a84a08 70%);transition:width .25s}
+.arena .bar.rage .hpp{font-size:11px}
 .hptip{position:absolute;left:50%;top:calc(100% + 8px);transform:translateX(-50%);background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:2px 8px;font-weight:700;font-size:12px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .12s;z-index:5;box-shadow:0 2px 6px rgba(0,0,0,.25)}
 .hptip:empty{display:none}.hptip::after{content:" HP"}
 .hpw:hover .hptip,.hpw:focus .hptip{opacity:1}
@@ -229,7 +233,8 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 <div>
 <div class="card" id="v-exp"><h2>Expedition</h2><div id="body-exp"></div></div>
 <div class="card" id="v-shop" hidden><h2>Shop</h2><div id="body-shop"></div></div>
-<div class="card" id="v-upg" hidden><span id="skillresetw" style="position:absolute;top:6px;right:8px;display:inline-flex"><button id="skillreset" style="font-size:22px;line-height:1;padding:2px 8px;font-weight:700">↺</button></span><h2>Skills</h2><small style="color:var(--mut)">Mouse wheel: zoom · drag: pan the board</small><div id="body-upg" style="margin-top:6px"></div></div>
+<div class="card" id="v-upg" hidden><span id="skillresetw" style="position:absolute;top:6px;right:8px;display:inline-flex"><button id="skillreset" style="font-size:22px;line-height:1;padding:2px 8px;font-weight:700">↺</button></span><h2>Passives</h2><small style="color:var(--mut)">Mouse wheel: zoom · drag: pan the board</small><div id="body-upg" style="margin-top:6px"></div></div>
+<div class="card" id="v-abil" hidden><h2>Abilities</h2><div id="body-abil" style="margin-top:6px"><small style="color:var(--mut)">Coming soon.</small></div></div>
 <div class="card" id="v-dun" hidden><h2>Dungeons</h2><div id="body-dun"></div></div>
 <div class="card" id="v-craft" hidden><h2>Crafting</h2><div id="body-craft"></div></div>
 <div class="card" id="v-fish" hidden><h2>Fishing</h2><div id="body-fish"></div></div>
@@ -237,9 +242,9 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 <div class="card" id="v-cook" hidden><h2 style="display:flex;align-items:center;gap:10px">Cooking<span id="cook-head" style="flex:1;display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0"></span></h2><div id="body-cook"></div></div>
 <div class="card" id="fightbox" hidden>
 <div class="row" id="fbackrow" style="display:none"><button data-a="fback">← Back</button><b id="fres"></b></div>
-<div class="arena"><div><div class="fig" id="fp">🧙</div><b>You</b><div class="hpw" tabindex="0"><div class="bar" style="position:relative"><i class="hpg" id="hg1" style="width:100%"></i><i id="hp1" style="width:100%"></i><i id="sh1"></i><span class="hpp" id="hpp1"></span></div><small id="ht1" class="hptip"></small></div></div>
+<div class="arena"><div><div class="fig" id="fp">🧙</div><b>You</b><div class="hpw" tabindex="0"><div class="bar" style="position:relative"><i class="hpg" id="hg1" style="width:100%"></i><i id="hp1" style="width:100%"></i><i id="sh1"></i><span class="hpp" id="hpp1"></span></div><small id="ht1" class="hptip"></small></div><div class="bar rage" id="rgw"><i id="rg1" style="width:0%"></i><span class="hpp" id="rgp1">0</span></div></div>
 <div style="font-size:18px">VS</div>
-<div style="position:relative"><div class="fig" id="fm"></div><b id="nm"></b><div class="hpw" tabindex="0"><div class="bar"><i class="hpg" id="hg2" style="width:100%"></i><i id="hp2" style="width:100%"></i><span class="hpp" id="hpp2"></span></div><small id="ht2" class="hptip"></small></div><div id="logwrap" style="position:absolute;right:0;top:100%;margin-top:24px"><button id="logbtn" style="font-size:12px;padding:3px 10px">Show battle log</button></div></div></div>
+<div style="position:relative"><div class="fig" id="fm"></div><b id="nm"></b><div class="hpw" tabindex="0"><div class="bar"><i class="hpg" id="hg2" style="width:100%"></i><i id="hp2" style="width:100%"></i><span class="hpp" id="hpp2"></span></div><small id="ht2" class="hptip"></small></div><div class="bar rage" style="visibility:hidden" aria-hidden="true"></div><div id="logwrap" style="position:absolute;right:0;top:100%;margin-top:24px"><button id="logbtn" style="font-size:12px;padding:3px 10px">Show battle log</button></div></div></div>
 <div class="skillbar" id="skillbar"><div class="sk" data-key="1"><span class="kb">1</span></div><div class="sk" data-key="2"><span class="kb">2</span></div><div class="sk" data-key="3"><span class="kb">3</span></div><div class="sk" data-key="4"><span class="kb">4</span></div><div class="sk" data-key="5"><span class="kb">5</span></div><div class="sk" data-key="Q"><span class="kb">Q</span></div><div class="sk" data-key="W"><span class="kb">W</span></div><div class="sk" data-key="E"><span class="kb">E</span></div><div class="sk" data-key="R"><span class="kb">R</span></div><div class="sk" data-key="Tab"><span class="kb">Tab</span></div></div>
 <div class="info" id="info"></div>
 <div id="loot" hidden></div><button id="go">Fight!</button><div id="log" hidden></div></div>
