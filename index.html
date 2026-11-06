@@ -103,6 +103,18 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 .sk.atk img,.sk.atk .ic{transition:filter .12s,opacity .12s}
 #skillbar.fighting .sk.atk:not(.ready) img,#skillbar.fighting .sk.atk:not(.ready) .ic{filter:grayscale(1);opacity:.35}
 #skillbar.fighting .sk.atk:not(.ready){cursor:default}
+/* ABILITIES na pasku: ikona, koszt Rage (lewy górny róg), licznik odnowienia; szare, gdy nie można użyć; przeciąganie między slotami */
+.sk.ab{cursor:pointer}.sk.ab .ic{font-size:34px;line-height:1;transition:filter .12s,opacity .12s}
+.sk.ab.off{cursor:default}.sk.ab.off .ic{filter:grayscale(1);opacity:.35}
+.sk .abc{position:absolute;left:3px;top:2px;font-size:11px;font-weight:700;line-height:1;color:#ffb347;z-index:2;text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000}
+.sk .abcd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;z-index:3;pointer-events:none;text-shadow:2px 2px 0 #000}
+.sk.abover{outline:3px solid #f07b16;outline-offset:1px}
+/* ZAKŁADKA ABILITIES */
+.abrow{display:flex;align-items:center;gap:14px;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg)}
+.abrow.has{border-color:#f07b16}
+.abico{width:52px;height:52px;flex:none;display:flex;align-items:center;justify-content:center;font-size:32px;background:#3a3027;border:3px solid #111;border-radius:8px}
+.abinf{flex:1;display:flex;flex-direction:column;gap:3px}.abinf small{color:var(--mut)}
+.abok{font-weight:700;color:#f07b16}
 /* procent HP na środku paska */
 .arena .bar .hpp{position:absolute;inset:0;z-index:3;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;line-height:1;color:#fff;text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000;pointer-events:none}
 .hpw{position:relative;outline:none;cursor:default}
@@ -234,7 +246,7 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 <div class="card" id="v-exp"><h2>Expedition</h2><div id="body-exp"></div></div>
 <div class="card" id="v-shop" hidden><h2>Shop</h2><div id="body-shop"></div></div>
 <div class="card" id="v-upg" hidden><span id="skillresetw" style="position:absolute;top:6px;right:8px;display:inline-flex"><button id="skillreset" style="font-size:22px;line-height:1;padding:2px 8px;font-weight:700">↺</button></span><h2>Passives</h2><small style="color:var(--mut)">Mouse wheel: zoom · drag: pan the board</small><div id="body-upg" style="margin-top:6px"></div></div>
-<div class="card" id="v-abil" hidden><h2>Abilities</h2><div id="body-abil" style="margin-top:6px"><small style="color:var(--mut)">Coming soon.</small></div></div>
+<div class="card" id="v-abil" hidden><h2>Abilities</h2><div id="body-abil" style="margin-top:6px"></div></div>
 <div class="card" id="v-dun" hidden><h2>Dungeons</h2><div id="body-dun"></div></div>
 <div class="card" id="v-craft" hidden><h2>Crafting</h2><div id="body-craft"></div></div>
 <div class="card" id="v-fish" hidden><h2>Fishing</h2><div id="body-fish"></div></div>

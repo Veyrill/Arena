@@ -1169,10 +1169,10 @@ let trailT0 = performance.now();
 // Ikona slotu = obecna broń (strona 1 ekwipunku), bez broni – pięść. Skip w trakcie walki wykonuje czekający atak i dalej walka idzie sama.
 let atkResolve = null, atkQueued = false;   // atkQueued: atak kliknięty przed walką – walka startuje i od razu go używa
 const atkSlot = () => document.querySelector('#skillbar .sk[data-key="1"]');
-function waitAttack() { if (atkQueued) { atkQueued = false; return Promise.resolve(); } const s = atkSlot(); if (s) s.classList.add('ready'); return new Promise(r => { atkResolve = r; }); }
+function waitAttack() { if (atkQueued) { atkQueued = false; return Promise.resolve(); } const s = atkSlot(); if (s) s.classList.add('ready'); const pr = new Promise(r => { atkResolve = r; }); refreshAb(); return pr; }
 // SKILL PRZED WALKĄ: klik w skill (albo jego klawisz), gdy walka jeszcze nie trwa, a przycisk pokazuje Fight! → startuje walkę i od razu używa tego ruchu
 function useSkillOrStart() { if (atkResolve) return doAttack(); const go = $('go'); if (!fightOn && !busy && go && !go.disabled && go.textContent.trim() === 'Fight!' && curMob()) { atkQueued = true; go.onclick(); if (!fightOn) atkQueued = false; } }   // walka nie ruszyła (np. przerwa po walce) – nie zostawiaj ataku w kolejce
-function doAttack() { if (!atkResolve) return; const f = atkResolve; atkResolve = null; const s = atkSlot(); if (s) s.classList.remove('ready'); f(); }
+function doAttack() { if (!atkResolve) return; const f = atkResolve; atkResolve = null; const s = atkSlot(); if (s) s.classList.remove('ready'); f(); refreshAb(); }
 function renderAtkSlot() {
   const s = atkSlot(); if (!s) return;
   const w = eq1.weapon, key = (w ? 'w:' + (w.name || '') + (w.ic || '') + (w.img || '') : 'fist');
@@ -1183,9 +1183,88 @@ function renderAtkSlot() {
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#skillbar .sk[data-key="1"]')) useSkillOrStart(); });
 addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '') && (atkResolve || (!fightOn && !FIGHTBOX.hidden))) { e.preventDefault(); useSkillOrStart(); } });
 // PASEK HP: procent HP na środku paska (gracz: hpp1 – samo HP bez tarczy, przeciwnik: hpp2)
+// ABILITIES (aktywne umiejętności): kupowane w zakładce Abilities, używane z paska umiejętności (sloty 2–Tab).
+// me.abils = { id: true } – wykupione; me.bar = { klawisz slotu: id } – rozmieszczenie na pasku (przeciąganie myszką między slotami).
+// cost = koszt w Rage, mul = mnożnik średnich obrażeń broni, cd = odnowienie w turach (1 = w kolejnej Twojej turze znowu gotowe), lvl = wymagany poziom.
+const ABILS = {
+  overhead: { n: 'Overhead Blow', ico: '💥', cost: 30, mul: 1.4, cd: 1, lvl: 3, d: 'A heavy strike for 140% of your average weapon damage. Uses your turn.' }
+};
+const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = zwykły atak (stały)
+const abTip = id => { const a = ABILS[id]; return `<b>${a.n}</b>Cost: ${a.cost} Rage<br>Cooldown: ${a.cd} turn${a.cd === 1 ? '' : 's'}<br>${a.d}`; };
+let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
+// pasek: ikony umiejętności w slotach 2–Tab (przebudowa tylko, gdy zmieni się rozmieszczenie – nie miga)
+function renderBarAbils() {
+  if (!me.bar) me.bar = {};
+  BAR_KEYS.forEach(k => {
+    const s = document.querySelector(`#skillbar .sk[data-key="${k}"]`); if (!s) return;
+    const id = me.abils && me.abils[me.bar[k]] ? me.bar[k] : null, sig = id || '';
+    if (s.dataset.ab === sig && s.dataset.built) return;
+    s.dataset.ab = sig; s.dataset.built = 1;
+    s.classList.toggle('ab', !!id); s.draggable = !!id;
+    if (id) { s.dataset.tip = abTip(id); } else delete s.dataset.tip;
+    s.innerHTML = (id ? `<span class="ic">${ABILS[id].ico}</span><span class="abc">${ABILS[id].cost}</span><span class="abcd"></span>` : '') + `<span class="kb">${k}</span>`;
+  });
+  refreshAb();
+}
+// stan slotów w walce: szary, gdy nie Twoja tura / za mało Rage / odnowienie (licznik tur na slocie)
+function refreshAb() {
+  const fighting = !!fightIo;
+  BAR_KEYS.forEach(k => {
+    const s = document.querySelector(`#skillbar .sk[data-key="${k}"]`); if (!s) return;
+    const id = s.dataset.ab; if (!id) { s.classList.remove('off'); return; }
+    const cd = fighting && fightIo.cd ? fightIo.cd[id] || 0 : 0;
+    const ok = !fighting || (atkResolve && (fightIo.rage || 0) >= ABILS[id].cost && !cd);
+    s.classList.toggle('off', !ok);
+    const c = s.querySelector('.abcd'); if (c) c.textContent = cd ? cd : '';
+  });
+}
+// użycie umiejętności (klik w slot / klawisz): w Twojej turze – zamiast zwykłego ataku; przed walką – startuje walkę (Rage = 0, więc bez ruchu)
+function useAbility(id) {
+  const a = ABILS[id]; if (!a) return;
+  if (atkResolve && fightIo) { if ((fightIo.rage || 0) < a.cost || (fightIo.cd && fightIo.cd[id])) return; fightIo.act = id; doAttack(); return; }
+  const go = $('go'); if (!fightOn && !busy && go && !go.disabled && go.textContent.trim() === 'Fight!' && curMob()) go.onclick();
+}
+document.addEventListener('click', e => {
+  const s = e.target.closest && e.target.closest('#skillbar .sk.ab'); if (s && s.dataset.ab) useAbility(s.dataset.ab);
+});
+addEventListener('keydown', e => {
+  if (e.repeat || /INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '') || FIGHTBOX.hidden) return;
+  const k = e.key === 'Tab' ? 'Tab' : e.key.length === 1 ? e.key.toUpperCase() : ''; if (!BAR_KEYS.includes(k)) return;
+  e.preventDefault();   // Tab nie przeskakuje między przyciskami, gdy widać okno walki
+  const id = me.bar && me.bar[k]; if (id && me.abils && me.abils[id]) useAbility(id);
+});
+// PRZECIĄGANIE na pasku: złap umiejętność i upuść na inny slot (2–Tab) – zamiana miejsc (na pusty slot = przeniesienie)
+let abDragKey = null;
+{ const sb = document.getElementById('skillbar');
+  sb.addEventListener('dragstart', e => { const s = e.target.closest('.sk.ab'); if (!s || fightIo) { e.preventDefault(); return; } abDragKey = s.dataset.key; e.dataTransfer.setData('text/plain', 'ab'); e.dataTransfer.effectAllowed = 'move'; e.stopPropagation(); });
+  sb.addEventListener('dragover', e => { if (!abDragKey) return; const s = e.target.closest('.sk'); sb.querySelectorAll('.sk.abover').forEach(x => x !== s && x.classList.remove('abover')); if (s && BAR_KEYS.includes(s.dataset.key)) { e.preventDefault(); s.classList.add('abover'); } });
+  sb.addEventListener('drop', e => {
+    if (!abDragKey) return; e.preventDefault(); e.stopPropagation();
+    const s = e.target.closest('.sk'), to = s && s.dataset.key;
+    if (to && BAR_KEYS.includes(to) && to !== abDragKey) { const a = me.bar[abDragKey], b = me.bar[to]; if (b) me.bar[abDragKey] = b; else delete me.bar[abDragKey]; me.bar[to] = a; renderBarAbils(); saveGame(); }
+    abDragKey = null; sb.querySelectorAll('.abover').forEach(x => x.classList.remove('abover'));
+  });
+  sb.addEventListener('dragend', () => { abDragKey = null; sb.querySelectorAll('.abover').forEach(x => x.classList.remove('abover')); });
+}
+// ZAKŁADKA ABILITIES: lista umiejętności – wymagany poziom, koszt w Rage, odnowienie; Learn (na razie za darmo)
+function renderAbilTab() {
+  const el = $('body-abil'); if (!el) return;
+  el.innerHTML = Object.entries(ABILS).map(([id, a]) => {
+    const has = me.abils && me.abils[id], lvOk = me.lvl >= a.lvl;
+    return `<div class="abrow${has ? ' has' : ''}"><div class="abico" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${a.ico}</div><div class="abinf"><b>${a.n}</b><small>${a.d}</small>`
+      + `<small>Cost: <b style="color:#f07b16">${a.cost} Rage</b> · Cooldown: ${a.cd} turn${a.cd === 1 ? '' : 's'} · Requires level ${a.lvl}</small></div>`
+      + (has ? `<span class="abok">Learned</span>` : `<button onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>${lvOk ? 'Learn (free)' : 'Level ' + a.lvl}</button>`) + `</div>`;
+  }).join('') + `<small style="color:var(--mut);display:block;margin-top:8px">Learned abilities appear on your skill bar. Drag them to change their slot.</small>`;
+}
+window.learnAbil = id => {
+  const a = ABILS[id]; if (!a || busy || me.lvl < a.lvl || (me.abils && me.abils[id])) return;
+  me.abils = me.abils || {}; me.abils[id] = true; me.bar = me.bar || {};
+  if (!Object.values(me.bar).includes(id)) { const k = !me.bar['2'] ? '2' : BAR_KEYS.find(x => !me.bar[x]); if (k) me.bar[k] = id; }   // domyślnie slot 2 (zajęty → pierwszy wolny)
+  saveGame(); render();
+};
 // RAGE (pasek pod zdrowiem bohatera): 0–100, na start walki 0; każdy zwykły atak gracza +RAGE_HIT (na razie nic nie zużywa rage)
 const RAGE_MAX = 100, RAGE_HIT = 8;
-const setRage = v => { const f = $('rg1'), t = $('rgp1'); if (f) f.style.width = v / RAGE_MAX * 100 + '%'; if (t) t.textContent = v; };
+const setRage = v => { const f = $('rg1'), t = $('rgp1'); if (f) f.style.width = v / RAGE_MAX * 100 + '%'; if (t) t.textContent = v; if (fightIo) { fightIo.rage = v; refreshAb(); } };
 const hpPct = (i, cur, max) => { const e = $('hpp' + i); if (e) e.textContent = Math.max(0, Math.round(max ? cur / max * 100 : 0)) + '%'; };
 let dfight = false, dJustBeat = false;   // dfight = okno lochu zamienione w walkę; dJustBeat = właśnie pokonany pierwszy raz (po Back → wybór następnego)
 let dview = 0;
@@ -1906,6 +1985,7 @@ function render() {
   renderQuestSide();   // questy (tylko w Expedition, po prawej)
   renderTut();   // samouczek ulepszania wędki (dymek)
   renderAtkSlot();   // slot 1: ikona obecnej broni
+  renderBarAbils(); if (view === 'abil') renderAbilTab();   // ABILITIES: pasek + zakładka
 
   const isBought = upgTree.centerHp > 0;
   // elementy dymka skilli (kolory jak w WoW: złoty opis, biały nagłówek "Next rank:", zielony koszt)
@@ -2499,6 +2579,7 @@ function* fightGen(mob, io) {
     // napis = HP + tarcza / maks. HP (np. 1100/1000)
     const upd = !UI ? () => {} : () => { if (live) { live.hp = Math.max(0, mh); renderInfo(mob); } { const hw = Math.max(0, ph) / barTot * 100; $('hp1').style.width = hw + '%'; $('sh1').style.left = hw + '%'; $('sh1').style.width = sh / barTot * 100 + '%'; } $('hp2').style.width = Math.max(0, mh / M.hp * 100) + '%'; $('ht1').textContent = Math.max(0, Math.round(ph + sh)) + '/' + p.hp; $('ht2').textContent = Math.max(0, Math.round(mh)) + '/' + Math.round(M.hp); hpPct(1, ph, p.hp); hpPct(2, mh, M.hp); };
     let rageBar = 0; if (UI) setRage(0);   // RAGE: nowa walka = pusty pasek
+    const abCd = {}; io.cd = abCd;   // ABILITIES: odnowienia w tej walce (tury)
     upd(); say(`Fight against: ${mob.e} ${mob.n}!`);
     // KLĄTWY (Curses): stan na czas tej jednej walki
     const U = ub(), baseArm = M.arm;
@@ -2572,6 +2653,7 @@ function* fightGen(mob, io) {
     renderDebuffs(deb);
     say(upgTree.centerHp ? 'You strike first (Surprise Attack).' : turn === 0 ? `You strike first (Dexterity ${p.dex} vs ${Math.round(M.dex)}).` : `${mob.n} strikes first (Dexterity ${Math.round(M.dex)} vs ${p.dex}).`, 'miss');
     while (ph > 0 && mh > 0 && rounds++ < 200) {   // limit 200 rund (było 120) – długie walki z przeciwnikami Aktu 3
+      if (turn == 0) { for (const k in abCd) if (abCd[k] > 0) abCd[k]--; if (UI) refreshAb(); }   // odnowienie: −1 na początku każdej Twojej tury
       yield io.manual && turn == 0 ? 'wait' : 325;   // WALKA RĘCZNA: w Twojej turze walka czeka na atak (slot 1 albo klawisz 1)
       if (turn == 0) {
         // Death Sentence: wróg poniżej 20% HP – każdy Twój cios ma szansę go zabić (6.67% za rangę, 20% przy 3/3)
@@ -2597,9 +2679,13 @@ function* fightGen(mob, io) {
           else if (!on && deb.expose) { delete deb.expose; curses(); }
           if (on) { const f = 1 + U.expose / 100; A = Object.assign({}, A, { min: A.min * f, max: A.max * f }); }
         }
+        // ABILITY wybrana w tej turze (klik / klawisz): zamiast zwykłego ataku; koszt w Rage, odnowienie, obrażenia = mnożnik × średnie obrażenia broni
+        const act = io.act || 'atk'; io.act = 'atk';
+        const ab = act !== 'atk' && ABILS[act] && rageBar >= ABILS[act].cost && !abCd[act] ? ABILS[act] : null;
+        if (ab) { const avg = (A.min + A.max) / 2 * ab.mul; A = Object.assign({}, A, { min: avg, max: avg }); rageBar -= ab.cost; abCd[act] = ab.cd; if (UI) setRage(rageBar); say(`<b>${ab.n}!</b> (−${ab.cost} Rage)`, 'crit'); }
         firstHit = false;
         { const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); mh -= dm; if (UI) dmgPop(fm, dm, hit.crit, 'out'); }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
-        rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT); if (UI) setRage(rageBar);   // RAGE: +8 za każdy zwykły atak (także chybiony), maks. 100
+        if (!ab) { rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT); if (UI) setRage(rageBar); }   // umiejętność nie ładuje Rage   // RAGE: +8 za każdy zwykły atak (także chybiony), maks. 100
         // Rage Within: każdy Twój krytyk +U.rage% obrażeń broni do końca walki (działa od następnego ciosu)
         if (U.rage && hit.crit && U.rage * (rage + 1) <= 30) { rage++; pbuf.rage = { st: rage, tip: `Weapon damage +${U.rage * rage}% (max 30%)` }; renderPBuffs(pbuf); }   // limit +30%
         // Lightning Bolt: +1 stos po ataku; przy 5 stosach piorun (15% / 30% / 45% średnich obrażeń, bez redukcji pancerza), potem 1 stos
@@ -2836,7 +2922,7 @@ $('go').onclick = async () => {
   // try/finally: nawet jeśli w trakcie walki pojawi się błąd, gra zawsze odblokuje klikanie (busy = false)
   try {
     render();
-    const io = { sim: false, manual: true };
+    const io = { sim: false, manual: true }; fightIo = io;
     { const sb = $('skillbar'); if (sb) sb.classList.add('fighting'); }   // w trakcie walki slot ataku jest szary poza Twoją turą   // manual: atak gracza dopiero po kliknięciu slotu 1 / klawisza 1 (symulacja szans – bez czekania)
     for (const ms of fightGen(mob, io)) { if (ms === 'wait') { if (!skipFight) await waitAttack(); continue; } if (!skipFight) await slp(ms); }   // pauzy między ciosami; po Skip – bez pauz i bez czekania na atak
     const { ph } = io.res, upd = io.upd;
@@ -2900,6 +2986,7 @@ $('go').onclick = async () => {
     console.error('Combat error:', err);
     say('An error occurred during combat (see console, F12).', 'miss');
   } finally {
+    fightIo = null; refreshAb();   // ABILITIES: po walce sloty znów normalne
     { const sb = $('skillbar'); if (sb) sb.classList.remove('fighting'); } atkQueued = false;
     if (skipFight) sayMute = false; fightOn = false; skipFight = false;
     setBusy(false); setCdEnd(Date.now() + 1000); render();
