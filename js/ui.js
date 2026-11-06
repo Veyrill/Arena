@@ -2897,8 +2897,8 @@ function boltFx(fig) {
 const popStack = new Map();   // postać → [czas ostatniej liczby, ile liczb w serii]
 function dmgPop(fig, v, crit, kind) {
   if (!fig || !fig.offsetParent || skipFight) return;
-  // BŁYSK: przeciwnik na ułamek sekundy robi się biały, gdy dostaje obrażenia (cios, krwawienie, podpalenie)
-  if (fig.id === 'fm' && kind !== 'heal' && kind !== 'shield' && v > 0) fig.animate([{ filter: 'brightness(0) invert(1)' }, { filter: 'brightness(0) invert(1)', offset: .45 }, { filter: 'none' }], { duration: 160, easing: 'ease-out' });
+  // BŁYSK: przeciwnik na ułamek sekundy mocno się rozjaśnia (nie całkiem biały), gdy dostaje obrażenia (cios, krwawienie, podpalenie)
+  if (fig.id === 'fm' && kind !== 'heal' && kind !== 'shield' && v > 0) fig.animate([{ filter: 'brightness(2.4) saturate(.55)' }, { filter: 'none' }], { duration: 100, easing: 'ease-out' });   // rozjaśnienie (kolor zostaje), 0.1 s
   const r = fig.getBoundingClientRect(), e = document.createElement('div');
   // kilka liczb nad tą samą postacią w odstępie < 0.5 s – każda kolejna 24 px wyżej (maks. 2 poziomy w górę, potem od nowa); nigdy wyżej niż górna krawędź okna walki
   const now = performance.now(), ps = popStack.get(fig) || [0, 0], lvl = now - ps[0] < 500 ? (ps[1] + 1) % 3 : 0; popStack.set(fig, [now, lvl]);   // maks. 3 poziomy (0 / 24 / 48 px), potem znowu od dołu – przy szybkim klikaniu liczby nie uciekają w górę
