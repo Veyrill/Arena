@@ -3619,10 +3619,11 @@ if (me.pendLoot) { deliverLoot(me.pendLoot); delete me.pendLoot; }
 render();
 // WYBÓR KLASY (nowa gra / po resecie): ekran wyszarzony, 3 karty – Warlock, Mage, Warrior. Na razie da się wybrać tylko Warrior.
 // Klik w kartę = zaznaczenie, Accept = zapis klasy (me.cls) i zamknięcie okna. Do czasu Accept okno wraca po odświeżeniu strony.
+const clsIco = f => `<img src="${ASSETS_DIR}/hero/${f}.png" alt="" draggable="false" style="display:block;width:128px;height:128px;image-rendering:pixelated">`;   // sprite klasy 32×32 → 128 px
 const CLASSES = [
-  { k: 'warlock', n: 'Warlock', ico: '<span style="font-size:72px;line-height:128px">🔮</span>', d: 'Curses and shadow magic. Weakens enemies over time.', lock: true },
-  { k: 'mage', n: 'Mage', ico: '<span style="font-size:72px;line-height:128px">🧙</span>', d: 'Elemental spells: fire, frost and lightning.', lock: true },
-  { k: 'warrior', n: 'Warrior', ico: heroIco(128), d: 'Steel and fury. Strong attacks fueled by Rage.' }
+  { k: 'warlock', n: 'Warlock', ico: clsIco('hero_warlock'), d: 'Curses and shadow magic. Weakens enemies over time.', lock: true },
+  { k: 'mage', n: 'Mage', ico: clsIco('hero_mage'), d: 'Elemental spells: fire, frost and lightning.', lock: true },
+  { k: 'warrior', n: 'Warrior', ico: clsIco('hero_warrior'), d: 'Steel and fury. Strong attacks fueled by Rage.' }
 ];
 function showClassPick() {
   document.head.insertAdjacentHTML('beforeend', '<style>'
@@ -3634,7 +3635,7 @@ function showClassPick() {
     + '.clsc:not(.lock):hover{transform:translateY(-3px)}'
     + '.clsc.on{border-color:var(--ac);box-shadow:0 0 0 3px var(--ac),0 0 18px var(--ac)}'
     + '.clsc b{font-size:18px}.clsc small{color:var(--mut);font-size:12px;line-height:1.35}'
-    + '.clsc.lock{cursor:not-allowed}.clsc.lock>*{filter:grayscale(1);opacity:.4}'
+    + '.clsc.lock{cursor:not-allowed}.clsc.lock>*{opacity:.45}.clsc.lock>img{opacity:.75}'   // zablokowana klasa: postać w kolorach (podgląd), lekko przygaszona; tekst wyblakły
     + '.clsc .clk{position:absolute;top:8px;right:8px;font-size:11px;font-weight:700;color:var(--mut);filter:none;opacity:1}'
     + '#clsok{font-size:16px;font-weight:700;padding:6px 26px;background:var(--ac);color:var(--on-ac);border-color:var(--ac)}#clsok:disabled{opacity:.4;cursor:default}'
     + '</style>');
