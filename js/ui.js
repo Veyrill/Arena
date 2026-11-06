@@ -46,6 +46,8 @@ const slp = ms => new Promise(r => setTimeout(r, ms));
 window.G_GLOBAL = G;
 // ZAPIS GRY: wczytanie zapisu (save.js) zanim cokolwiek się narysuje; savedAt = czas poprzedniego zapisu (0 = nowa gra) – do postępu offline
 const savedAt = loadGame();
+if (!savedAt) me.clsPick = true;   // WYBÓR KLASY: nowa gra (także po New game / resecie) → okno wyboru klasy na starcie, aż gracz kliknie Accept
+if (!me.cls && !me.clsPick) me.cls = 'warrior';   // stary zapis bez klasy = Warrior (bez okna)
 // stary zapis: Fire Lord pokonany, gdy Akt 2 jeszcze nie istniał → od razu odblokuj pierwszą lokację Aktu 2
 if (actsUnlocked && locUnlocked < ACT_START[1]) setLocUnlocked(ACT_START[1]);
 // POSTĘP W LOKACJI: me.eprog[indeks lokacji] = ilu przeciwników po kolei pokonano; przeciwnik i dostępny, gdy i <= eprog.
@@ -3528,3 +3530,37 @@ document.body.appendChild(newBtn);
 // niezebrany łup z wyprawy (strona odświeżona przed Collect) → plecak
 if (me.pendLoot) { deliverLoot(me.pendLoot); delete me.pendLoot; }
 render();
+// WYBÓR KLASY (nowa gra / po resecie): ekran wyszarzony, 3 karty – Warlock, Mage, Warrior. Na razie da się wybrać tylko Warrior.
+// Klik w kartę = zaznaczenie, Accept = zapis klasy (me.cls) i zamknięcie okna. Do czasu Accept okno wraca po odświeżeniu strony.
+const CLASSES = [
+  { k: 'warlock', n: 'Warlock', ico: '<span style="font-size:72px;line-height:128px">🔮</span>', d: 'Curses and shadow magic. Weakens enemies over time.', lock: true },
+  { k: 'mage', n: 'Mage', ico: '<span style="font-size:72px;line-height:128px">🧙</span>', d: 'Elemental spells: fire, frost and lightning.', lock: true },
+  { k: 'warrior', n: 'Warrior', ico: heroIco(128), d: 'Steel and fury. Strong attacks fueled by Rage.' }
+];
+function showClassPick() {
+  document.head.insertAdjacentHTML('beforeend', '<style>'
+    + '#clsov{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center}'
+    + '#clsbox{background:var(--card);color:var(--tx);border:4px solid #111;border-radius:10px;box-shadow:0 6px 0 rgba(0,0,0,.4);padding:26px 34px 24px;text-align:center;max-width:94vw}'
+    + '#clsbox h2{margin:0 0 4px;font-size:24px;letter-spacing:.06em}#clsbox>small{color:var(--mut)}'
+    + '.clsrow{display:flex;gap:26px;justify-content:center;margin:22px 0 24px;flex-wrap:wrap}'
+    + '.clsc{position:relative;width:170px;min-height:260px;padding:14px 12px;box-sizing:border-box;border:4px solid #111;border-radius:8px;background:var(--bg);display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:transform .12s,box-shadow .12s}'
+    + '.clsc:not(.lock):hover{transform:translateY(-3px)}'
+    + '.clsc.on{border-color:var(--ac);box-shadow:0 0 0 3px var(--ac),0 0 18px var(--ac)}'
+    + '.clsc b{font-size:18px}.clsc small{color:var(--mut);font-size:12px;line-height:1.35}'
+    + '.clsc.lock{cursor:not-allowed}.clsc.lock>*{filter:grayscale(1);opacity:.4}'
+    + '.clsc .clk{position:absolute;top:8px;right:8px;font-size:11px;font-weight:700;color:var(--mut);filter:none;opacity:1}'
+    + '#clsok{font-size:16px;font-weight:700;padding:6px 26px;background:var(--ac);color:var(--on-ac);border-color:var(--ac)}#clsok:disabled{opacity:.4;cursor:default}'
+    + '</style>');
+  const ov = document.createElement('div'); ov.id = 'clsov';
+  ov.innerHTML = `<div id="clsbox"><h2>CHOOSE YOUR CLASS</h2><small>This choice shapes your abilities.</small><div class="clsrow">`
+    + CLASSES.map(c => `<div class="clsc${c.lock ? ' lock' : ''}" data-cls="${c.k}">${c.ico}<b>${c.n}</b><small>${c.d}</small>${c.lock ? '<span class="clk">🔒 Soon</span>' : ''}</div>`).join('')
+    + `</div><button id="clsok" disabled>Accept</button></div>`;
+  document.body.appendChild(ov);
+  let pick = null;
+  ov.querySelectorAll('.clsc:not(.lock)').forEach(el => el.onclick = () => {
+    pick = el.dataset.cls; ov.querySelectorAll('.clsc').forEach(x => x.classList.toggle('on', x === el)); $('clsok').disabled = false;
+  });
+  $('clsok').onclick = () => { if (!pick) return; me.cls = pick; delete me.clsPick; saveGame(); ov.remove(); render(); };
+}
+if (me.clsPick) showClassPick();
+
