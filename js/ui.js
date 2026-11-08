@@ -2274,7 +2274,7 @@ function render() {
     const fmEl = $('fm');
     if (fmEl) {
       fmEl.innerHTML = mobIco(m, 128);   // grafika przeciwnika (pixel art) albo emoji
-      const fpEl = $('fp'); if (fpEl && !fpEl.dataset.hero) { fpEl.dataset.hero = 1; fpEl.innerHTML = heroIco(128); }   // postać gracza (raz – nie miga przy odświeżaniu)
+      const fpEl = $('fp'), hk = me.cls || 'warrior'; if (fpEl && fpEl.dataset.hero !== hk) { fpEl.dataset.hero = hk; fpEl.innerHTML = heroIco(128); }   // postać gracza (raz – nie miga przy odświeżaniu)
       fmEl.classList.toggle('boss', isBoss(m));
     }
     $('nm').innerHTML = `${m.n} <button class="ib" data-a="info">ℹ️</button>${lvlTag(m, isBoss(m))}`;
@@ -3029,8 +3029,8 @@ document.head.insertAdjacentHTML('beforeend', '<style>.dmgnum{position:fixed;z-i
 // żeby przy kolejnych odświeżeniach ekranu nie pytać serwera ponownie (od razu emoji, bez mrugania).
 const mobImg = m => m.img || `enemies/enemy_${m.n.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '')}.png`;
 window.MOB_MISS = window.MOB_MISS || new Set();
-// BOHATER: pixel art 32×32 z assets/hero/basic_hero.png (w oknie walki 128 px = ×4, ostre piksele); brak pliku → 🧙
-const heroIco = px => `<img src="${ASSETS_DIR}/hero/basic_hero.png" alt="" draggable="false" style="display:block;margin:0 auto;width:${px}px;height:${px}px;object-fit:contain;image-rendering:pixelated" onerror="this.outerHTML='🧙'">`;
+// BOHATER: pixel art 32×32 z assets/hero/hero_<klasa>.png (w oknie walki 128 px = ×4, ostre piksele); brak pliku → 🧙
+const heroIco = px => `<img src="${ASSETS_DIR}/hero/hero_${me.cls || 'warrior'}.png" alt="" draggable="false" style="display:block;margin:0 auto;width:${px}px;height:${px}px;object-fit:contain;image-rendering:pixelated" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='${ASSETS_DIR}/hero/basic_hero.png'}else this.outerHTML='🧙'">`;   // sprite wybranej klasy (hero_warrior / hero_mage / hero_warlock); brak pliku → basic_hero → 🧙
 const mobIco = (m, px) => MOB_MISS.has(mobImg(m))
   ? `<span class="ic">${m.e}</span>`
   : `<img src="${ASSETS_DIR}/${mobImg(m)}" alt="" draggable="false" style="display:block;margin:0 auto;width:${px}px;height:${px}px;object-fit:contain;image-rendering:pixelated" onerror="MOB_MISS.add('${mobImg(m)}');this.outerHTML='<span class=\\'ic\\'>${m.e}</span>'">`;
