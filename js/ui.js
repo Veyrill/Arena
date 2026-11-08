@@ -3034,18 +3034,20 @@ function boltFx(fig) {
   setTimeout(() => { svg.remove(); fl.remove(); }, 260);
 }
 const popStack = new Map();   // postać → [czas ostatniej liczby, ile liczb w serii]
+// TEMPO WALKI: wszystkie pauzy między ruchami ×FIGHT_SLOW (1.3 = o 30% wolniej); wyskok postaci, liczby obrażeń i błysk też wolniejsze o 30%
+const FIGHT_SLOW = 1.3;
 function dmgPop(fig, v, crit, kind) {
   if (!fig || !fig.offsetParent || skipFight) return;
   // BŁYSK: przeciwnik na ułamek sekundy mocno się rozjaśnia (nie całkiem biały), gdy dostaje obrażenia (cios, krwawienie, podpalenie)
-  if (fig.id === 'fm' && kind !== 'heal' && kind !== 'shield' && v > 0) fig.animate([{ filter: 'brightness(2.4) saturate(.55)' }, { filter: 'none' }], { duration: 100, easing: 'ease-out' });   // rozjaśnienie (kolor zostaje), 0.1 s
+  if (fig.id === 'fm' && kind !== 'heal' && kind !== 'shield' && v > 0) fig.animate([{ filter: 'brightness(2.4) saturate(.55)' }, { filter: 'none' }], { duration: 130, easing: 'ease-out' });   // rozjaśnienie (kolor zostaje), 0.1 s
   const r = fig.getBoundingClientRect(), e = document.createElement('div');
   // kilka liczb nad tą samą postacią w odstępie < 0.5 s – każda kolejna 24 px wyżej (maks. 2 poziomy w górę, potem od nowa); nigdy wyżej niż górna krawędź okna walki
   const now = performance.now(), ps = popStack.get(fig) || [0, 0], lvl = now - ps[0] < 500 ? (ps[1] + 1) % 3 : 0; popStack.set(fig, [now, lvl]);   // maks. 3 poziomy (0 / 24 / 48 px), potem znowu od dołu – przy szybkim klikaniu liczby nie uciekają w górę
   e.className = 'dmgnum ' + (crit ? 'crit ' : '') + kind; e.textContent = (kind === 'heal' ? '+' : '') + Math.round(v) + (crit ? '!' : '');   // bez znaku minus; leczenie z plusem
   e.style.left = (r.left + r.width / 2 + (Math.random() - .5) * 34) + 'px'; const fb = FIGHTBOX.getBoundingClientRect(); e.style.top = Math.max(r.top - 14 - lvl * 24, fb.top + 50, 40) + 'px';   // tuż nad postacią (kolejne w serii wyżej)
-  fxLayer().appendChild(e); setTimeout(() => e.remove(), crit ? 1700 : 1100);
+  fxLayer().appendChild(e); setTimeout(() => e.remove(), crit ? 2200 : 1450);
 }
-document.head.insertAdjacentHTML('beforeend', '<style>.dmgnum{position:fixed;z-index:70;transform:translate(-50%,0);font-weight:900;font-size:22px;pointer-events:none;white-space:nowrap;text-shadow:0 2px 0 #000,0 0 4px #000,1px 0 0 #000,-1px 0 0 #000;animation:dmgup 1s ease-out forwards}.dmgnum.out{color:#fff}.dmgnum.ab{color:#ffe14d}.dmgnum.shield{color:#5aa9ff}.dmgnum.bolt{color:#ffd84a}.dmgnum.fire{color:#ff7a1a}.dmgnum.burn{color:#ff9a3c;font-size:16px}.dmgnum.heal{color:#3fdc6f}.dmgnum.in{color:#ff5a4f}.dmgnum.bleed{color:#c0392b;font-size:16px}.dmgnum.crit{font-size:34px;letter-spacing:1px;-webkit-text-stroke:1.5px #000;paint-order:stroke fill;text-shadow:0 3px 0 #000,0 0 6px #000,2px 0 0 #000,-2px 0 0 #000;animation:dmgcrit 1.6s ease-out forwards}@keyframes dmgup{0%{opacity:0;transform:translate(-50%,6px) scale(.8)}15%{opacity:1;transform:translate(-50%,-6px) scale(1.05)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-46px) scale(1)}}@keyframes dmgcrit{0%{opacity:0;transform:translate(-50%,6px) scale(.6)}12%{opacity:1;transform:translate(-50%,-10px) scale(1.35)}25%{transform:translate(-50%,-14px) scale(1.1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-56px) scale(1)}}</style>');
+document.head.insertAdjacentHTML('beforeend', '<style>.dmgnum{position:fixed;z-index:70;transform:translate(-50%,0);font-weight:900;font-size:22px;pointer-events:none;white-space:nowrap;text-shadow:0 2px 0 #000,0 0 4px #000,1px 0 0 #000,-1px 0 0 #000;animation:dmgup 1.3s ease-out forwards}.dmgnum.out{color:#fff}.dmgnum.ab{color:#ffe14d}.dmgnum.shield{color:#5aa9ff}.dmgnum.bolt{color:#ffd84a}.dmgnum.fire{color:#ff7a1a}.dmgnum.burn{color:#ff9a3c;font-size:16px}.dmgnum.heal{color:#3fdc6f}.dmgnum.in{color:#ff5a4f}.dmgnum.bleed{color:#c0392b;font-size:16px}.dmgnum.crit{font-size:34px;letter-spacing:1px;-webkit-text-stroke:1.5px #000;paint-order:stroke fill;text-shadow:0 3px 0 #000,0 0 6px #000,2px 0 0 #000,-2px 0 0 #000;animation:dmgcrit 2.1s ease-out forwards}@keyframes dmgup{0%{opacity:0;transform:translate(-50%,6px) scale(.8)}15%{opacity:1;transform:translate(-50%,-6px) scale(1.05)}70%{opacity:1}100%{opacity:0;transform:translate(-50%,-46px) scale(1)}}@keyframes dmgcrit{0%{opacity:0;transform:translate(-50%,6px) scale(.6)}12%{opacity:1;transform:translate(-50%,-10px) scale(1.35)}25%{transform:translate(-50%,-14px) scale(1.1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-56px) scale(1)}}</style>');
 
 // GRAFIKI PRZECIWNIKÓW: każdy przeciwnik szuka pliku assets/enemies/enemy_<nazwa>.png – nazwa małymi literami,
 // spacje i inne znaki → „_” (Falcon → enemy_falcon, Ice Dragon → enemy_ice_dragon, Spider Servant → enemy_spider_servant).
@@ -3085,7 +3087,7 @@ $('go').onclick = async () => {
     render();
     const io = { sim: false, manual: true }; fightIo = io;
     { const sb = $('skillbar'); if (sb) sb.classList.add('fighting'); }   // w trakcie walki slot ataku jest szary poza Twoją turą   // manual: atak gracza dopiero po kliknięciu slotu 1 / klawisza 1 (symulacja szans – bez czekania)
-    for (const ms of fightGen(mob, io)) { if (ms === 'wait') { if (!skipFight) await waitAttack(); continue; } if (!skipFight) await slp(ms); }   // pauzy między ciosami; po Skip – bez pauz i bez czekania na atak
+    for (const ms of fightGen(mob, io)) { if (ms === 'wait') { if (!skipFight) await waitAttack(); continue; } if (!skipFight) await slp(ms * FIGHT_SLOW); }   // pauzy między ciosami; po Skip – bez pauz i bez czekania na atak
     const { ph } = io.res, upd = io.upd;
     if (skipFight) { sayMute = false; say('<i>Fight skipped.</i>', 'miss'); upd(); }   // koniec pominiętej walki: log znowu działa
     fightOn = false;
