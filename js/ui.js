@@ -1200,7 +1200,9 @@ const ABILS = {
   decap: { n: 'Decapitate', ico: '💀', cost: 40, mul: 3.5, cd: 0, lvl: 15, need: 'exec', d: 'Usable only when the enemy is below 20% health. Strikes for 350% of your average weapon damage.' }
 };
 const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = zwykły atak (stały)
-const abTip = id => { const a = ABILS[id]; return `<b>${a.n}</b>${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${a.d}`; };
+// obrażenia umiejętności dla aktualnych statystyk: mnożnik × średnie obrażenia postaci (jedna liczba – umiejętność zawsze bije średnią)
+const abDmg = a => { if (!a.mul) return 0; const d = der(); return Math.round((d.min + d.max) / 2 * a.mul); };
+const abTip = id => { const a = ABILS[id], dm = abDmg(a); return `<b>${a.n}</b>${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${a.d}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage.` : ''}`; };
 let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
 // pasek: ikony umiejętności w slotach 2–Tab (przebudowa tylko, gdy zmieni się rozmieszczenie – nie miga)
 function renderBarAbils() {
@@ -1208,6 +1210,7 @@ function renderBarAbils() {
   BAR_KEYS.forEach(k => {
     const s = document.querySelector(`#skillbar .sk[data-key="${k}"]`); if (!s) return;
     const id = me.abils && me.abils[me.bar[k]] && ABILS[me.bar[k]] ? me.bar[k] : null, sig = id || '';   // usunięta umiejętność (np. stary Revenge w zapisie) = pusty slot
+    if (id) s.dataset.tip = abTip(id);   // dymek zawsze aktualny (obrażenia zależą od statystyk)
     if (s.dataset.ab === sig && s.dataset.built) return;
     s.dataset.ab = sig; s.dataset.built = 1;
     s.classList.toggle('ab', !!id); s.draggable = !!id;
@@ -1263,7 +1266,7 @@ function renderAbilTab() {
   el.innerHTML = Object.entries(ABILS).map(([id, a]) => {
     const has = me.abils && me.abils[id], lvOk = me.lvl >= a.lvl;
     return `<div class="abrow${has ? ' has' : ''}"><div class="abico" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${a.ico}</div><div class="abinf"><b>${a.n}</b><small>${a.d}</small>`
-      + `<small>${a.gain ? 'Generates' : 'Cost'}: <b style="color:#f07b16">${a.gain ? '+' + a.gain : a.cost} Rage</b> · Cooldown: ${a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'} · Requires level ${a.lvl}</small></div>`
+      + `<small>${a.gain ? 'Generates' : 'Cost'}: <b style="color:#f07b16">${a.gain ? '+' + a.gain : a.cost} Rage</b> · Cooldown: ${a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'} · Requires level ${a.lvl}${abDmg(a) ? ` · Damage: <b style="color:#ff8080">${abDmg(a)}</b>` : ''}</small></div>`
       + (has ? `<span class="abok">Learned</span>` : `<button onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>${lvOk ? 'Learn (free)' : 'Level ' + a.lvl}</button>`) + `</div>`;
   }).join('') + `<small style="color:var(--mut);display:block;margin-top:8px">Learned abilities appear on your skill bar. Drag them to change their slot.</small>`;
 }
