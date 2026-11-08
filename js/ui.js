@@ -1193,15 +1193,15 @@ addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEX
 // ROTACJA WARRIORA: Pommel Strike (opener, +Rage) → Battle Fury (buff do odnawiania) → Overhead Blow (spam) → Revenge (po krytyku wroga) → Decapitate (execute); bez Rage – zwykły atak (slot 1)
 // gain = Rage za użycie; free = nie zabiera tury (po nim działasz dalej); buffT = tury buffa; need: 'crit' = tylko w turze po krytyku wroga, 'exec' = wróg poniżej 20% HP
 const ABILS = {
-  overhead: { n: 'Overhead Blow', ico: '💥', cost: 30, mul: 1.4, cd: 1, lvl: 3, d: 'A heavy strike for 140% of your average weapon damage. Uses your turn.' },
-  pommel: { n: 'Pommel Strike', ico: '🗡️', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, d: 'A quick blow with the hilt for 60% of your average weapon damage. Generates 25 Rage.' },
+  overhead: { n: 'Overhead Blow', ico: '💥', cost: 30, mul: 1.4, cd: 1, lvl: 3, d: 'A heavy strike for 140% of your weapon damage. Uses your turn.' },
+  pommel: { n: 'Pommel Strike', ico: '🗡️', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, d: 'A quick blow with the hilt for 60% of your weapon damage. Generates 25 Rage.' },
   fury: { n: 'Battle Fury', ico: '📯', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, d: 'Does not use your turn. For 5 turns you deal 20% more damage and your attacks generate 2 more Rage.' },
-  revenge: { n: 'Revenge', ico: '💢', cost: 0, gain: 10, mul: 1.2, cd: 0, lvl: 12, need: 'crit', d: 'Usable only in your next turn after you take a critical hit. Strikes for 120% of your average weapon damage and generates 10 Rage.' },
-  decap: { n: 'Decapitate', ico: '💀', cost: 40, mul: 3.5, cd: 0, lvl: 15, need: 'exec', d: 'Usable only when the enemy is below 20% health. Strikes for 350% of your average weapon damage.' }
+  revenge: { n: 'Revenge', ico: '💢', cost: 0, gain: 10, mul: 1.2, cd: 0, lvl: 12, need: 'crit', d: 'Usable only in your next turn after you take a critical hit. Strikes for 120% of your weapon damage and generates 10 Rage.' },
+  decap: { n: 'Decapitate', ico: '💀', cost: 40, mul: 3.5, cd: 0, lvl: 15, need: 'exec', d: 'Usable only when the enemy is below 20% health. Strikes for 350% of your weapon damage.' }
 };
 const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = zwykły atak (stały)
-// obrażenia umiejętności dla aktualnych statystyk: mnożnik × średnie obrażenia postaci (jedna liczba – umiejętność zawsze bije średnią)
-const abDmg = a => { if (!a.mul) return 0; const d = der(); return Math.round((d.min + d.max) / 2 * a.mul); };
+// obrażenia umiejętności dla aktualnych statystyk: zakres obrażeń postaci × mnożnik (losowane w walce jak zwykły atak), np. "6–10"
+const abDmg = a => { if (!a.mul) return ''; const d = der(); return `${Math.round(d.min * a.mul)}–${Math.round(d.max * a.mul)}`; };
 const abTip = id => { const a = ABILS[id], dm = abDmg(a); return `<b>${a.n}</b>${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${a.d}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage.` : ''}`; };
 let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
 // pasek: ikony umiejętności w slotach 2–Tab (przebudowa tylko, gdy zmieni się rozmieszczenie – nie miga)
@@ -2754,7 +2754,8 @@ function* fightGen(mob, io) {
         const ab = act !== 'atk' && !(ABILS[act] || {}).free && abOk(act) ? ABILS[act] : null;
         if (furyT > 0 && !A.force) A = Object.assign({}, A, { min: A.min * 1.2, max: A.max * 1.2 });   // Battle Fury: +20% obrażeń (także umiejętności)
         if (ab && ab.need) delete abReady[ab.need];
-        if (ab) { const avg = (A.min + A.max) / 2 * ab.mul; A = Object.assign({}, A, { min: avg, max: avg }); rageBar -= ab.cost; abCd[act] = ab.cd; if (UI) setRage(rageBar); say(`<b>${ab.n}!</b> (${ab.gain ? '+' + ab.gain : '−' + ab.cost} Rage)`, 'crit'); }
+        if (ab) { A = Object.assign({}, A, { min: A.min * ab.mul, max: A.max * ab.mul });   // umiejętność: losowo z zakresu obrażeń × mnożnik
+           rageBar -= ab.cost; abCd[act] = ab.cd; if (UI) setRage(rageBar); say(`<b>${ab.n}!</b> (${ab.gain ? '+' + ab.gain : '−' + ab.cost} Rage)`, 'crit'); }
         firstHit = false;
         pTurns++;   // DPS METER: Twoja tura
         { const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); mh -= dr(ab ? ab.n : execute ? 'Death Sentence' : 'Attack', dm); if (UI) dmgPop(fm, dm, hit.crit, 'out'); }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
