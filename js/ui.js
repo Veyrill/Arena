@@ -2817,6 +2817,15 @@ function* fightGen(mob, io) {
         for (let h = 0, nh = ab && ab.hits || 1; h < nh && mh > 0; h++) {   // Bladestorm: 3 ciosy, każdy z osobną szansą na krytyk
           if (h) yield 230;
           const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); abDealt += Math.min(dm, Math.max(0, mh)); mh -= dr(ab ? ab.n : execute ? 'Death Sentence' : 'Attack', dm); if (UI) dmgPop(fm, dm, hit.crit, ab ? 'ab' : 'out');   // umiejętność: żółta liczba (krytyk – żółta w formacie krytyka)
+          // BLADESTORM: każdy cios oprócz ostatniego liczy się osobno dla pasywek „za cios / za krytyk” (ostatni obsługuje kod niżej, jak przy zwykłym ataku);
+          // nowe stosy Rage Within / Battle Fervor działają już od następnego ciosu tej samej serii
+          if (h < nh - 1 && mh > 0) {
+            const boost = (f0, f1) => { A = Object.assign({}, A, { min: A.min * f1 / f0, max: A.max * f1 / f0 }); };
+            if (U.rage && hit.crit && U.rage * (rage + 1) <= 30) { boost(1 + U.rage * rage / 100, 1 + U.rage * (rage + 1) / 100); rage++; pbuf.rage = { st: rage, tip: `Weapon damage +${U.rage * rage}% (max 30%)` }; renderPBuffs(pbuf); }
+            if (U.fervor && fervor < 5) { boost(1 + U.fervor * fervor / 100, 1 + U.fervor * (fervor + 1) / 100); fervor++; pbuf.fervor = { st: fervor, tip: `Damage +${U.fervor * fervor}% (${fervor}/5)` }; renderPBuffs(pbuf); }
+            if (U.mark && mark < 5) { mark++; updCrit(); deb.mark = { st: mark, tip: `Your critical hit chance against the enemy: +${U.mark * mark}% (${mark}/5)` }; curses(); }
+            if (U.lacerate && hit.crit) { bleed = Math.min(bleedMax, bleed + 1); bleedT = bleedDur; deb.bleed = bleedInfo(); renderDebuffs(deb); }
+          }
         }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
         if (!ab) { rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT + (furyT > 0 ? 2 : 0)); if (UI) setRage(rageBar); }   // RAGE: +8 za zwykły atak (+2 z Battle Fury), maks. 100
         if (ab && ab.gain) { rageBar = Math.min(RAGE_MAX, rageBar + ab.gain); if (UI) setRage(rageBar); }   // Pommel Strike +25, Revenge +10
