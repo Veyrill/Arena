@@ -1140,7 +1140,11 @@ const frailHp = max => Math.max(1, Math.round(max * (1 - (ub().efrail || 0) / 10
 // KUPOWANIE STATYSTYK: cena wielomianowa 15 + 3 × n² (n = ile razy ta statystyka była już kupiona): 15, 18, 27, 42, 63 … 10. ≈ 315, 20. ≈ 1215, 30. ≈ 2715
 const cost = k => 15 + 3 * up[k] ** 2;
 // XP za przeciwnika: poziom×20+10 (Lynx = 30)
-const xpOf = m => m.l * 20 + 10;   // także w DEV (Lynx = 30 XP; dawne 1000 XP w DEV usunięte – poziom ustawia się w panelu DEV)
+// XP ZA PRZECIWNIKA: m.l × 20 + 10, a od ok. 20 poziomu postaci mnożnik tak, by awans nie wymagał więcej niż ~8.5 walk z przeciwnikami na Twoim poziomie
+// (mnożnik = wymagane XP / (8.5 × XP przeciwnika na Twoim poziomie), min. 1: poziom 20 ≈ ×1.01, 30 ≈ ×1.2, 40 ≈ ×1.38, 60 ≈ ×1.74, 79 ≈ ×2.08)
+const XP_FIGHTS_CAP = 8.5;
+const xpMul = (L = me.lvl) => Math.max(1, (120 * L + 3 * L * L - 70) / ((L * 20 + 10) * XP_FIGHTS_CAP));
+const xpOf = m => Math.round((m.l * 20 + 10) * xpMul());   // także w DEV (Lynx = 30 XP; dawne 1000 XP w DEV usunięte – poziom ustawia się w panelu DEV)
 // WARTOŚĆ przedmiotu (sprzedaż, Value w dymku) = 50% wartości bazowej (priceBase); sklep liczy cenę od wartości bazowej, więc ceny w sklepie bez zmian
 const priceBase = i => i.val !== undefined ? i.val : Math.round((4 + me.lvl * 5) * RAR[i.r][1] ** 2);
 const price = i => Math.max(1, Math.round(priceBase(i) * 0.5));
