@@ -1107,7 +1107,8 @@ const isBoss = m => ALL_LOCS.some(l => l.mobs[l.mobs.length - 1] === m);
 // IKONY DEBUFFÓW w prawym górnym rogu okna walki (zamiast wpisów w logu). Curse of Frailty nie ma ikony.
 // st = stosy (liczba w prawym dolnym rogu, tylko dla debuffów, które się kumulują), tip = opis w dymku
 const DEBUFFS = {
-  fury: ['skill_battle_fury', 'Battle Fury', '📯'],   // buff gracza (brak pliku → 📯)
+  fury: ['skill_battle_fury', 'Battle Fury', '📯'],
+  stun: ['debuff_stun', 'Stunned', '💫'], rend: ['debuff_deep_wound', 'Deep Wound', '🩸'],   // Earthshaker / Skullsplitter (brak pliku → emoji)   // buff gracza (brak pliku → 📯)
   sunder: ['curse_sunder', 'Curse of Frailty'], exhaust: ['curse_cripple', 'Curse of Withering'], expose: ['curse_exposed', 'Exposed Weakness'], mark: ['curse_shadow_mark', 'Curse of the Void'], agony: ['curse_agony', 'Torment'], warcry: ['skill_war_cry', 'War Cry', '📯'], rage: ['skill_rage_within', 'Rage Within', '😤'], fervor: ['skill_battle_fervor', 'Battle Fervor', '🔥'],
   reap: ['curse_terror', 'Terror'], fire: ['skill_combustion', 'Fire Energy', '🔥'], water: ['skill_tidal_renewal', 'Water Energy', '💧'], tide: ['skill_soothing_tide', 'Soothing Tide', '🌊'], burn: ['skill_lingering_flames', 'Burning', '♨️'], bolt: ['skill_lightning_bolt', 'Lightning Energy', '⚡'], bleed: ['curse_lacerate', 'Bleeding'], doom: ['curse_death', 'Death Sentence']
 };
@@ -1125,7 +1126,7 @@ function renderAuras(id, list) {
   const bc = id === 'pbuffs' ? '#3fbf4f' : '#e53935';
   // ikony to pixel art 32×32 (plik 128 px = ×4) → wyświetlane dokładnie 32×32 (skala całkowita) bez wygładzania, żeby piksele były równe
   // STAŁA KOLEJNOŚĆ ikon (buffy i debuffy): ikona pojawiająca się / znikająca nie przestawia pozostałych
-  const ORD = ['fury', 'warcry', 'rage', 'fervor', 'reap', 'bolt', 'fire', 'water', 'tide', 'sunder', 'exhaust', 'expose', 'mark', 'burn', 'bleed', 'doom', 'agony'];
+  const ORD = ['stun', 'rend', 'fury', 'warcry', 'rage', 'fervor', 'reap', 'bolt', 'fire', 'water', 'tide', 'sunder', 'exhaust', 'expose', 'mark', 'burn', 'bleed', 'doom', 'agony'];
   const pos = k => { const i = ORD.indexOf(k); return i < 0 ? 99 : i; };
   el.innerHTML = Object.entries(list || {}).sort((a, b) => pos(a[0]) - pos(b[0])).map(([k, v]) => `<div data-tip="<b>${DEBUFFS[k][1]}</b>${v.tip}" style="position:relative;box-sizing:content-box;width:32px;height:32px;border:2px solid ${bc};border-radius:4px;overflow:hidden;box-shadow:0 0 4px #0008">`
     + `<img src="${ASSETS_DIR}/skills/curses/${DEBUFFS[k][0]}.png" alt="" style="display:block;width:32px;height:32px;image-rendering:pixelated" onerror="this.outerHTML='<span style=&quot;display:flex;align-items:center;justify-content:center;height:100%;font-size:18px&quot;>${DEBUFFS[k][2] || '✨'}</span>'">`
@@ -1197,6 +1198,10 @@ const ABILS = {
   pommel: { n: 'Pommel Strike', ico: '🗡️', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.' },
   fury: { n: 'Battle Fury', ico: '📯', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, d: 'Instant: does not end your turn. For 5 turns you deal 20% more damage and attacks generate 2 more Rage.' },
   revenge: { n: 'Revenge', ico: '💢', cost: 0, gain: 10, mul: 1.2, cd: 0, lvl: 12, need: 'crit', d: 'Strike back for 120% weapon damage and gain 10 Rage. Only in the turn after you take a critical hit.' },
+  // ULTIMATE (build): raz na walkę, gracz wybiera tylko jeden z trzech (me.abils – pierwszy wytrenowany blokuje pozostałe). hits = liczba ciosów, rend = krwawienie (% zadanych obrażeń przez rendT tur), stunT = ogłuszenie na N tur wroga
+  storm: { n: 'Bladestorm', ico: '🌪️', cost: 60, mul: 1.2, hits: 3, cd: 0, lvl: 20, ult: true, d: 'Three strikes in a row, each for 120% weapon damage with its own chance to crit. Once per fight.' },
+  split: { n: 'Skullsplitter', ico: '🪓', cost: 60, mul: 3, rend: 0.5, rendT: 10, cd: 0, lvl: 20, ult: true, d: 'A crushing blow for 300% weapon damage. The wound bleeds for 50% of the damage dealt over 10 turns. Once per fight.' },
+  quake: { n: 'Earthshaker', ico: '🔨', cost: 60, mul: 1.5, stunT: 4, cd: 0, lvl: 20, ult: true, d: 'Smash the ground for 150% weapon damage and stun the enemy for 4 turns. Once per fight.' },
   decap: { n: 'Decapitate', ico: '💀', cost: 40, mul: 3.5, cd: 0, lvl: 15, need: 'exec', d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 20% health.' }
 };
 const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = zwykły atak (stały)
@@ -1220,7 +1225,7 @@ function abUse(id) {
   if (s) { s.dataset.tip = abTip(id); refreshTip();
     if (l1 > l0) { const r = s.getBoundingClientRect(), e = document.createElement('div'); e.className = 'ablvup'; e.textContent = `LVL ${l1}!`; e.style.left = (r.left + r.width / 2) + 'px'; e.style.top = (r.top - 6) + 'px'; document.body.appendChild(e); setTimeout(() => e.remove(), 1400); } }
 }
-const abTip = id => { const a = ABILS[id], dm = abDmg(a); return `<b>${a.n}</b>${abPips(id)}${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${a.d}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage.` : ''}${abLvlBar(id)}`; };
+const abTip = id => { const a = ABILS[id], dm = abDmg(a); return `<b>${a.n}</b>${abPips(id)}${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.ult ? 'once per fight' : a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${a.d}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage${a.hits ? ` × ${a.hits}` : ''}.` : ''}${a.ult ? '<br><span style="color:#ffd36b">Ultimate: you can train only one.</span>' : ''}${abLvlBar(id)}`; };
 let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
 // pasek: ikony umiejętności w slotach 2–Tab (przebudowa tylko, gdy zmieni się rozmieszczenie – nie miga)
 function renderBarAbils() {
@@ -1247,7 +1252,7 @@ function refreshAb() {
     const a = ABILS[id], ok = !fighting ? (!a.cost && !a.need) : !!(atkResolve && (fightIo.rage || 0) >= a.cost && !cd && (!a.need || (fightIo.ready && fightIo.ready[a.need])));
     s.classList.toggle('proc', fighting && ok && !!a.need);   // Revenge / Decapitate: slot pulsuje, gdy się zapali
     s.classList.toggle('off', !ok);
-    const c = s.querySelector('.abcd'); if (c) c.textContent = cd ? cd : '';
+    const c = s.querySelector('.abcd'); if (c) { c.textContent = cd === Infinity ? 'USED' : cd ? cd : ''; c.classList.toggle('used', cd === Infinity); }   // ult po użyciu: USED do końca walki
   });
 }
 // użycie umiejętności (klik w slot / klawisz): w Twojej turze – zamiast zwykłego ataku; przed walką – startuje walkę (Rage = 0, więc bez ruchu)
@@ -1283,20 +1288,27 @@ let abDragKey = null;
 // Dymek na ikonie = pełny opis jak na pasku. Niedostępne (za niski poziom): wyszarzone, kłódka z wymaganym poziomem.
 function renderAbilTab() {
   const el = $('body-abil'); if (!el) return;
-  el.innerHTML = `<div class="abgrid">` + Object.entries(ABILS).sort((x, y) => x[1].lvl - y[1].lvl).map(([id, a]) => {
-    const has = me.abils && me.abils[id], lvOk = me.lvl >= a.lvl;
-    return `<div class="abcard${has ? ' has' : lvOk ? '' : ' lock'}">`
+  const ult = ultOf();
+  const card = ([id, a]) => {
+    const has = me.abils && me.abils[id], lvOk = me.lvl >= a.lvl, other = a.ult && ult && ult !== id;
+    return `<div class="abcard${a.ult ? ' ult' : ''}${has ? ' has' : lvOk && !other ? '' : ' lock'}">`
       + `<div class="abtile" data-tip="${abTip(id).replace(/"/g, '&quot;')}"><span class="abti">${a.ico}</span>${lvOk ? '' : `<span class="ablock">🔒 Lv ${a.lvl}</span>`}</div>`
       + `<b class="abnm">${a.n}</b>${has ? abPips(id) : ''}`
-      + (has ? `<span class="abok">Learned</span>` : `<button class="abtrain" onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>Train</button>`)
-      + `</div>`;   // opis tylko w dymku (najechanie na kafelek)
-  }).join('') + `</div>`;
+      + (has ? `<span class="abok">Learned</span>` : other ? `<span class="abnot">Not chosen</span>` : `<button class="abtrain" onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>Train</button>`)
+      + `</div>`;
+  };
+  const all = Object.entries(ABILS).sort((x, y) => x[1].lvl - y[1].lvl);
+  // zwykłe umiejętności, potem grupa ULTIMATE (złota ramka, „choose one”)
+  el.innerHTML = `<div class="abgrid">${all.filter(e => !e[1].ult).map(card).join('')}</div>`
+    + `<div class="abultg"><span class="abultl">ULTIMATE · ${ult ? 'your build: ' + ABILS[ult].n : 'choose one'}</span><div class="abgrid">${all.filter(e => e[1].ult).map(card).join('')}</div></div>`;
 }
+const ultOf = () => Object.keys(ABILS).find(k => ABILS[k].ult && me.abils && me.abils[k]);   // wybrany ultimate (build) albo undefined
 window.learnAbil = id => {
   const a = ABILS[id]; if (!a || busy || me.lvl < a.lvl || (me.abils && me.abils[id])) return;
+  if (a.ult && ultOf()) return;   // ultimate: tylko jeden build
   me.abils = me.abils || {}; me.abils[id] = true; me.bar = me.bar || {};
   for (const k in me.bar) if (!ABILS[me.bar[k]]) delete me.bar[k];   // sloty po usuniętych umiejętnościach są wolne
-  if (!Object.values(me.bar).includes(id)) { const k = !me.bar['2'] ? '2' : BAR_KEYS.find(x => !me.bar[x]); if (k) me.bar[k] = id; }   // domyślnie slot 2 (zajęty → pierwszy wolny)
+  if (!Object.values(me.bar).includes(id)) { const k = a.ult && !me.bar.Tab ? 'Tab' : !me.bar['2'] ? '2' : BAR_KEYS.find(x => !me.bar[x]); if (k) me.bar[k] = id; }   // ultimate domyślnie na Tab   // domyślnie slot 2 (zajęty → pierwszy wolny)
   saveGame(); render();
 };
 // SETTINGS (zakładka Settings): me.opts – zapisywane razem z grą.
@@ -1316,7 +1328,7 @@ document.addEventListener('click', e => {
 // Dymek: każde źródło (Attack, umiejętności, Lightning Bolt, Fire Energy, Burning, Bleed, Death Sentence) – ikona, pasek, na turę (suma) i % udziału.
 const fmtN = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e4 ? (v / 1e3).toFixed(1) + 'K' : Math.round(v).toLocaleString('en-US');
 // ikona źródła obrażeń w dymku: Attack = obecna broń, umiejętność = jej ikona, pasywka = ikona z drzewka (brak pliku → emoji)
-const DPS_PAS = { 'Lightning Bolt': 'bolt', 'Fire Energy': 'fire', 'Burning': 'burn', 'Bleed': 'bleed', 'Death Sentence': 'doom' };
+const DPS_PAS = { 'Lightning Bolt': 'bolt', 'Fire Energy': 'fire', 'Burning': 'burn', 'Bleed': 'bleed', 'Death Sentence': 'doom', 'Deep Wound': 'rend' };
 function dpsIco(k) {
   const box = c => `<span class="dpi">${c}</span>`;
   if (k === 'Attack') return box(eq1.weapon ? sizeIco(eq1.weapon, 20) : '👊');
@@ -2659,7 +2671,7 @@ function* fightGen(mob, io) {
     const dmgBy = {}; let pTurns = 0;
     const dr = (src, v) => { const real = Math.max(0, Math.min(v, mh)); dmgBy[src] = (dmgBy[src] || 0) + real; if (UI) setDps(dmgBy, pTurns); return v; };
     if (UI) setDps({}, 0);
-    const abReady = {}; io.ready = abReady; let furyT = 0;   // abReady.crit = Revenge (tura po krytyku wroga), abReady.exec = Decapitate (wróg < 20% HP); furyT = tury Battle Fury
+    const abReady = {}; io.ready = abReady; let furyT = 0, stunT = 0, rendT = 0, rendD = 0;   // stunT: Earthshaker (tury wroga do pominięcia); rendT/rendD: Skullsplitter (tury krwawienia, obrażenia na turę)   // abReady.crit = Revenge (tura po krytyku wroga), abReady.exec = Decapitate (wróg < 20% HP); furyT = tury Battle Fury
     const abOk = id => { const a = ABILS[id]; return !!a && rageBar >= a.cost && !abCd[id] && (!a.need || !!abReady[a.need]); };
     const furyTip = () => `Damage +20%<br>Attacks generate +2 Rage<br>Turns left: ${furyT}`;
     upd(); say(`Fight against: ${mob.e} ${mob.n}!`);
@@ -2723,7 +2735,7 @@ function* fightGen(mob, io) {
     // MIST VEIL: szansa wroga na krytyk −3 / −6 / −9 pkt proc. (min. 0%) – od początku walki
     M.crit = Math.max(0, M.crit - (U.critDown || 0));
     const eDex0 = M.dex, eCrit0 = M.crit;
-    const agF = () => U.agony ? Math.max(0, 1 - 0.1 * Object.keys(deb).filter(k => k !== 'expose').length) : 1;   // ikona Exposed Weakness nie jest klątwą
+    const agF = () => U.agony ? Math.max(0, 1 - 0.1 * Object.keys(deb).filter(k => k !== 'expose' && k !== 'stun' && k !== 'rend').length) : 1;   // ikona Exposed Weakness nie jest klątwą
     const recalcEnemy = () => {
       const ag = agF(), k = (strNow() * 0.6 + 2) / (eStr0 * 0.6 + 2);
       M.arm = baseArm * (1 - sPer * sunder / 100) * ag;
@@ -2766,7 +2778,7 @@ function* fightGen(mob, io) {
         if (fervor) { const f = 1 + U.fervor * fervor / 100; A = Object.assign({}, A, { min: A.min * f, max: A.max * f }); }
         // Exposed Weakness: min. 2 klątwy na wrogu (Burning się nie liczy) → +U.expose% obrażeń; ikona na wrogu, gdy aktywne
         if (U.expose) {
-          const on = Object.keys(deb).filter(k => k !== 'expose' && k !== 'burn').length >= 2;
+          const on = Object.keys(deb).filter(k => k !== 'expose' && k !== 'burn' && k !== 'stun' && k !== 'rend').length >= 2;
           if (on && !deb.expose) { deb.expose = { tip: `Takes ${U.expose}% more damage from you (2+ curses)` }; curses(); }
           else if (!on && deb.expose) { delete deb.expose; curses(); }
           if (on) { const f = 1 + U.expose / 100; A = Object.assign({}, A, { min: A.min * f, max: A.max * f }); }
@@ -2781,9 +2793,16 @@ function* fightGen(mob, io) {
            rageBar -= ab.cost; abCd[act] = ab.cd; if (UI) setRage(rageBar); say(`<b>${ab.n}!</b> (${ab.gain ? '+' + ab.gain : '−' + ab.cost} Rage)`, 'crit'); }
         firstHit = false;
         pTurns++;   // DPS METER: Twoja tura
-        { const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); mh -= dr(ab ? ab.n : execute ? 'Death Sentence' : 'Attack', dm); if (UI) dmgPop(fm, dm, hit.crit, 'out'); }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
+        let abDealt = 0;   // suma obrażeń umiejętności (Skullsplitter: krwawienie od tej sumy)
+        for (let h = 0, nh = ab && ab.hits || 1; h < nh && mh > 0; h++) {   // Bladestorm: 3 ciosy, każdy z osobną szansą na krytyk
+          if (h) yield 230;
+          const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); abDealt += Math.min(dm, Math.max(0, mh)); mh -= dr(ab ? ab.n : execute ? 'Death Sentence' : 'Attack', dm); if (UI) dmgPop(fm, dm, hit.crit, 'out');
+        }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
         if (!ab) { rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT + (furyT > 0 ? 2 : 0)); if (UI) setRage(rageBar); }   // RAGE: +8 za zwykły atak (+2 z Battle Fury), maks. 100
         if (ab && ab.gain) { rageBar = Math.min(RAGE_MAX, rageBar + ab.gain); if (UI) setRage(rageBar); }   // Pommel Strike +25, Revenge +10
+        if (ab && ab.ult) { abCd[act] = Infinity; if (UI) refreshAb(); }   // ULTIMATE: raz na walkę
+        if (ab && ab.rend && mh > 0) { rendT = ab.rendT; rendD = Math.max(1, Math.round(abDealt * ab.rend / ab.rendT)); deb.rend = { st: rendT, tip: `Loses ${rendD} health per turn<br>Turns left: ${rendT}` }; renderDebuffs(deb); }   // Skullsplitter: krwawienie
+        if (ab && ab.stunT && mh > 0) { stunT = ab.stunT; deb.stun = { st: stunT, tip: `Loses its turn<br>Turns left: ${stunT}` }; renderDebuffs(deb); }   // Earthshaker: ogłuszenie
         // Rage Within: każdy Twój krytyk +U.rage% obrażeń broni do końca walki (działa od następnego ciosu)
         if (U.rage && hit.crit && U.rage * (rage + 1) <= 30) { rage++; pbuf.rage = { st: rage, tip: `Weapon damage +${U.rage * rage}% (max 30%)` }; renderPBuffs(pbuf); }   // limit +30%
         // Lightning Bolt: +1 stos po ataku; przy 5 stosach piorun (15% / 30% / 45% średnich obrażeń, bez redukcji pancerza), potem 1 stos
@@ -2852,6 +2871,15 @@ function* fightGen(mob, io) {
           renderDebuffs(deb); upd();
           if (mh <= 0) break;
         }
+        // Skullsplitter: krwawienie (stała kwota co turę wroga)
+        if (rendT > 0) {
+          mh -= dr('Deep Wound', rendD); rendT--; if (UI) dmgPop(fm, rendD, false, 'bleed');
+          if (rendT) deb.rend = { st: rendT, tip: `Loses ${rendD} health per turn<br>Turns left: ${rendT}` }; else delete deb.rend;
+          renderDebuffs(deb); upd();
+          if (mh <= 0) break;
+        }
+        // Earthshaker: ogłuszony wróg nie atakuje (po krwawieniu / podpaleniu), tura wraca do Ciebie
+        if (stunT > 0) { stunT--; if (stunT) deb.stun = { st: stunT, tip: `Loses its turn<br>Turns left: ${stunT}` }; else delete deb.stun; renderDebuffs(deb); say(`${mob.n} is stunned and loses its turn.`, 'miss'); yield 300; turn ^= 1; upd(); continue; }
         { const dm = hit(mob.n, 'You', M, p, fm, (t, c) => say(t, c));
           // Elemental Barrier: tarcza pochłania obrażenia (najpierw tarcza, potem zdrowie)
           const ab = Math.min(sh, dm); if (ab > 0) { sh -= ab; say(`Elemental Barrier absorbs <b>${ab}</b>${sh ? ` (${sh} left)` : ' – the shield breaks!'}`, 'miss'); }
