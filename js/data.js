@@ -261,7 +261,24 @@ export const DUN6 = { n: 'The Spirit Forest', e: '🦌', req: 80, mobs: [
 DUN6.mobs[0].lore = 'Hunters say that every wolf that dies in the north comes back here as light. This one leads the pack of the dead. You will hear its howl long before you see it, and when you finally see it, it is already running at you through the trees, leaving no tracks in the snow.';
 DUN6.mobs[1].lore = 'The oldest stag of the forest, its antlers so wide that the branches bend away to let it pass. Its body is made of pale blue light, and when it walks, the forest grows quiet. It does not want to fight. But nothing living has ever been allowed to stand in its glade and leave.';
 DUN6.mobs[2].lore = 'The forest has many spirits, but only one master. This wyrm was the first creature to die here, long before there were trees. Its body faded into green light, but its grin never did. It sleeps under the roots of the oldest tree and wakes only when something alive dares to enter the heart of the forest.';
-export const DUNS = [DUN, DUN2, DUN3, DUN4, DUN5, DUN6];   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
+// RAID: The Black Glacier (req 80) – 6 bossów jeden po drugim (jak w lochu), poziomy 90–100; baza Chaos Emperor + wzrost za poziom (lvUp), role jak w lochach.
+// raid: true – nie pokazuje się w zakładce Dungeons, tylko w Raids. Na razie bez dropów (docelowo zestaw mityczny Blackfrost).
+export const RAID1 = { n: 'The Black Glacier', e: '🖤', req: 80, raid: true, mobs: [
+  pgClone('Blackfrost Wolf', '🐺', 90, 'Chaos Emperor', lvUp(10, { hp: 0.9, dmg: 1.15, crit: 12 })),            // szybki
+  pgClone('Frozen Sentinel', '🗿', 92, 'Chaos Emperor', lvUp(12, { hp: 1.15, dmg: 0.75, arm: 1.4, dodge: 3 })),   // czołg
+  pgClone('The Shattered Knight', '🛡️', 94, 'Chaos Emperor', lvUp(14, { hp: 1.05, dmg: 1.05, crit: 15 })),      // mocny we wszystkim
+  pgClone('Ice Wraith Matron', '👻', 96, 'Chaos Emperor', lvUp(16, { hp: 0.9, dmg: 1.15, crit: 12 })),          // szybki
+  pgClone('The Black Mammoth', '🦣', 98, 'Chaos Emperor', lvUp(18, { hp: 1.15, dmg: 0.75, arm: 1.4, dodge: 3 })), // czołg
+  pgClone('The Frozen Night', '🐉', 100, 'Chaos Emperor', lvUp(20, { hp: 1.3, dmg: 1.05, crit: 15 }))           // finał: więcej HP
+] };
+RAID1.mobs[0].lore = 'A wolf carved from black ice, with eyes like two cold turquoise sparks. It was the first thing the glacier swallowed, and the first thing it sends back. It never tires and never bleeds, and its howl freezes the air in your lungs.';
+RAID1.mobs[1].lore = 'A guardian built from blocks of black ice by the order that tried to seal the glacier. It still obeys its last command: let no one pass. The order is long gone, but the Sentinel does not know that, and it would not care.';
+RAID1.mobs[2].lore = 'The last knight of the order, frozen inside his own armor. The black ice grew into the steel and through his heart, and now the armor moves without him. Through the black visor you can still see the faint light of the oath he swore.';
+RAID1.mobs[3].lore = 'She led the prayers of the order, and she prayed until the cold took her voice. Now she drifts through the frozen halls in a cloak of frost, singing without sound. Where she passes, even the black ice grows thicker.';
+RAID1.mobs[4].lore = 'A mammoth that wandered into the glacier a thousand years ago and never found the way out. The ice made it part of the mountain. Its tusks are black as night and sharp as glass, and the whole cavern shakes when it walks.';
+RAID1.mobs[5].lore = 'The heart of the glacier. They say the night itself fell here and froze, and from it came a dragon of black ice with turquoise cracks glowing like stars. Every knight of the order fell before it. It has waited a thousand years for someone strong enough to wake it.';
+export const RAIDS = [RAID1];
+export const DUNS = [DUN, DUN2, DUN3, DUN4, DUN5, DUN6, ...RAIDS];   // raidy na końcu listy (ten sam mechanizm walk co lochy, osobna zakładka)   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
 
 // IKONY SKILLI: grafiki z assets/skills (pixel art 16×16, plik 64×64). f = nazwa pliku bez .png, e = emoji zapasowe, px = rozmiar.
 // Małe nody (statystyki): plusy – zielony Dexterity, żółty Strength, czerwony Vitality – 16 px (×1), środek: 32 px (×2) – zawsze całkowita skala, więc piksele są ostre.

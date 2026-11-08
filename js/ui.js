@@ -1867,7 +1867,8 @@ function render() {
   const d = der(), g = gear(), r = Math.round;
 
   document.querySelectorAll('#nav button').forEach(btn => {
-    btn.classList.toggle('on', btn.dataset.v === view);
+    const inRaid = view === 'dun' && dloc != null && curDun().raid;   // otwarty raid = podświetlona zakładka Raids
+    btn.classList.toggle('on', inRaid ? btn.dataset.v === 'raid' : btn.dataset.v === view);
     if (btn.dataset.v === 'upg') btn.classList.toggle('new', spDot && me.sp > 0);
     if (btn.dataset.v === 'fish') btn.classList.toggle('new', fishSpDot());   // Fishing Skill Points do wydania
     btn.disabled = busy || (fishing.active && btn.dataset.v === 'exp');
@@ -2261,7 +2262,13 @@ function render() {
   $('body-exp').innerHTML = eloc == null ? (
       ACTS[actI].locs ? locTiles : lockedLocs
     ) : back('eback', `${ALL_LOCS[eloc].e} ${ALL_LOCS[eloc].n}`) + `<div class="tiles">` + ALL_LOCS[eloc].mobs.map((m, i) => `<button class="tile${i == esel ? ' sel' : ''}${i == ALL_LOCS[eloc].mobs.length - 1 ? ' boss' : ''}${mobOpen(eloc, i) ? '' : ' mlock'}" data-a="esel" data-i="${i}"${busy || fishing.active || !mobOpen(eloc, i) ? ' disabled' : ''}>${lvlTag(m, i == ALL_LOCS[eloc].mobs.length - 1)}${winTag(m)}${mobIco(m, 64)}<b>${m.n}</b><small>+${xpOf(m)} XP</small></button>`).join('') + `</div>`;
-  $('body-dun').innerHTML = dloc == null ? `<div class="grid9">` + Array.from({ length: 9 }, (_, i) => { const X = DUNS[i]; if (!X) return `<div class="tile lock"><span class="ic">🔒</span></div>`;   // kafelek każdego lochu z DUNS, reszta – kłódki
+  { const h = document.querySelector('#v-dun h2'); if (h) h.textContent = dloc != null && curDun().raid ? 'Raids' : 'Dungeons'; }
+  // ZAKŁADKA RAIDS: kafelki raidów (od req poziomu); kliknięcie otwiera raid w widoku lochu (ten sam mechanizm: kolejni bossowie, przerwy, opisy)
+  { const rb = $('body-raid'); if (rb) rb.innerHTML = `<div class="grid9">` + DUNS.map((X, i) => [X, i]).filter(([X]) => X.raid).map(([X, i]) => !dunLvlOk(i)
+      ? `<div class="tile lock"><span class="ic">${X.e}</span><b>${X.n}</b><small style="color:var(--ac);font-weight:700">From level ${X.req}</small></div>`
+      : `<button class="tile" data-a="rloc" data-i="${i}"><span class="ic">${X.e}</span><b>${X.n}</b><small>${Math.min(dProgOf(i), X.mobs.length)}/${X.mobs.length}</small></button>`).join('') + `</div>`; }
+  const DL = DUNS.map((X, i) => i).filter(i => !DUNS[i].raid);   // zakładka Dungeons: bez raidów
+  $('body-dun').innerHTML = dloc == null ? `<div class="grid9">` + Array.from({ length: 9 }, (_, j) => { const i = DL[j], X = DUNS[i]; if (!X) return `<div class="tile lock"><span class="ic">🔒</span></div>`;   // kafelek każdego lochu z DUNS, reszta – kłódki
         return !dunLvlOk(i) ? `<div class="tile lock"><span class="ic">${X.e}</span><b>${X.n}</b><small style="color:var(--ac);font-weight:700">From level ${X.req || 10}</small></div>` : `<button class="tile" data-a="dloc" data-i="${i}"><span class="ic">${X.e}</span><b>${X.n}</b><small>${Math.min(dProgOf(i), X.mobs.length)}/${X.mobs.length}</small></button>`; }).join('') + `</div>` : (dfight ? back('dfback', `${D.e} ${D.n}`) : back('dback', `${D.e} ${D.n} · ${Math.min(dunProg(), N)}/${N}`))
       // LEWO: dropy oglądanego przeciwnika (dview), PRAWO: kolumna przeciwników (każdego można kliknąć, żeby zobaczyć dropy;
       // walczyć można tylko z kolejnym niepokonanym = dprog, dalsi zablokowani do czasu pokonania poprzedniego)
@@ -3492,7 +3499,8 @@ document.addEventListener('click', e => {
     else if (a == 'esel') { if (mobOpen(eloc, +b.dataset.i)) { setEsel(+b.dataset.i); endExp(); setLastMob(null); } }   // zablokowany (niepokonany poprzedni) – nie da się wybrać
     else if (a == 'dloc') { const d = +b.dataset.i || 0; if (dunLvlOk(d)) { setDloc(d); dfight = false; const pr = dProgOf(d), n = DUNS[d].mobs.length; dsel = pr < n && !fishing.active ? pr : -1; dview = Math.min(pr, n - 1); } }   // otwarcie: wybrany kolejny niepokonany
     else if (a == 'dsel') { const n = +b.dataset.i; dview = n; dsel = n <= dunProg() && !fishing.active ? n : -1; }   // każdy: podgląd dropów; walka z każdym pokonanym i kolejnym niepokonanym
-    else if (a == 'dback') { setDloc(null); dsel = -1; dfight = false; }
+    else if (a == 'dback') { const wasRaid = curDun().raid; setDloc(null); dsel = -1; dfight = false; if (wasRaid) setView('raid'); }   // z raidu wraca do zakładki Raids
+    else if (a == 'rloc') { const d = +b.dataset.i; if (dunLvlOk(d)) { setView('dun'); setDloc(d); dfight = false; const pr = dProgOf(d), n = DUNS[d].mobs.length; dsel = pr < n && !fishing.active ? pr : -1; dview = Math.min(pr, n - 1); } }   // RAIDS: otwarcie raidu
     else if (a == 'dfight') {   // Fight pod Special drops: karta lochu zamienia się w walkę i walka startuje od razu
       if (dsel >= 0 && dsel === Math.min(dview, curDun().mobs.length - 1) && !dunCd(dsel) && !fishing.active) { dfight = true; render(); setTimeout(() => $('go').onclick(), 0); return; }
     }
