@@ -2274,6 +2274,7 @@ function render() {
     const fmEl = $('fm');
     if (fmEl) {
       fmEl.innerHTML = mobIco(m, 128);   // grafika przeciwnika (pixel art) albo emoji
+      { const pn = $('pname'); if (pn) pn.textContent = me.name || 'You'; }   // nazwa postaci zamiast „You”
       const fpEl = $('fp'), hk = me.cls || 'warrior'; if (fpEl && fpEl.dataset.hero !== hk) { fpEl.dataset.hero = hk; fpEl.innerHTML = heroIco(128); }   // postać gracza (raz – nie miga przy odświeżaniu)
       fmEl.classList.toggle('boss', isBoss(m));
     }
@@ -3774,18 +3775,26 @@ function showClassPick() {
     + '.clsc b{font-size:18px}.clsc small{color:var(--mut);font-size:12px;line-height:1.35}'
     + '.clsc.lock{cursor:not-allowed}.clsc.lock>*{opacity:.45}.clsc.lock>img{opacity:.75}'   // zablokowana klasa: postać w kolorach (podgląd), lekko przygaszona; tekst wyblakły
     + '.clsc .clk{position:absolute;top:8px;right:8px;font-size:11px;font-weight:700;color:var(--mut);filter:none;opacity:1}'
+    + '.clsname{display:flex;flex-direction:column;align-items:center;gap:6px;margin:0 0 18px}.clsname label{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--mut);text-transform:uppercase}'
+    + '#clsnm{width:260px;padding:8px 12px;font:700 18px inherit;font-family:inherit;text-align:center;color:var(--tx);background:var(--bg);border:3px solid #111;border-radius:8px;outline:none}#clsnm:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}'
     + '#clsok{font-size:16px;font-weight:700;padding:6px 26px;background:var(--ac);color:var(--on-ac);border-color:var(--ac)}#clsok:disabled{opacity:.4;cursor:default}'
     + '</style>');
   const ov = document.createElement('div'); ov.id = 'clsov';
   ov.innerHTML = `<div id="clsbox"><h2>CHOOSE YOUR CLASS</h2><small>This choice shapes your abilities.</small><div class="clsrow">`
     + CLASSES.map(c => `<div class="clsc${c.lock ? ' lock' : ''}" data-cls="${c.k}">${c.ico}<b>${c.n}</b><small>${c.d}</small>${c.lock ? '<span class="clk">🔒 Soon</span>' : ''}</div>`).join('')
-    + `</div><button id="clsok" disabled>Accept</button></div>`;
+    + `</div><div class="clsname"><label for="clsnm">Character name</label><input id="clsnm" maxlength="16" autocomplete="off" spellcheck="false" placeholder="Enter a name"></div><button id="clsok" disabled>Accept</button></div>`;
   document.body.appendChild(ov);
+  // NAZWA POSTACI: 2–16 znaków (litery, cyfry, spacja, - i _); Accept aktywny, gdy wybrana klasa i poprawna nazwa
   let pick = null;
+  const nm = $('clsnm'), clean = v => v.replace(/[^\p{L}\p{N} _-]/gu, '').replace(/\s+/g, ' ').slice(0, 16);
+  const okName = () => nm.value.trim().length >= 2;
+  const upd = () => { $('clsok').disabled = !(pick && okName()); };
   ov.querySelectorAll('.clsc:not(.lock)').forEach(el => el.onclick = () => {
-    pick = el.dataset.cls; ov.querySelectorAll('.clsc').forEach(x => x.classList.toggle('on', x === el)); $('clsok').disabled = false;
+    pick = el.dataset.cls; ov.querySelectorAll('.clsc').forEach(x => x.classList.toggle('on', x === el)); upd(); nm.focus();
   });
-  $('clsok').onclick = () => { if (!pick) return; me.cls = pick; delete me.clsPick; saveGame(); ov.remove(); render(); };
+  nm.oninput = () => { const c = clean(nm.value); if (c !== nm.value) nm.value = c; upd(); };
+  nm.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter' && !$('clsok').disabled) $('clsok').click(); };   // klawisze nie trafiają do skrótów gry
+  $('clsok').onclick = () => { if (!pick || !okName()) return; me.cls = pick; me.name = nm.value.trim(); delete me.clsPick; saveGame(); ov.remove(); render(); };
 }
 if (me.clsPick) showClassPick();
 
