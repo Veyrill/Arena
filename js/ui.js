@@ -1285,6 +1285,17 @@ document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-hpv]'); if (!b) return;
   me.opts = Object.assign({}, me.opts, { hpVals: b.dataset.hpv === '1' }); saveGame(); render();
 });
+// DPS METER (nad „Show battle log”): suma Twoich obrażeń / liczba Twoich tur, np. „320 dmg / t”.
+// Dymek: każde źródło (Attack, umiejętności, Lightning Bolt, Fire Energy, Burning, Bleed, Death Sentence) – suma, % udziału, ile razy trafiło.
+const fmtN = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e4 ? (v / 1e3).toFixed(1) + 'k' : String(Math.round(v));
+function setDps(by, turns, cnt) {
+  const el = $('dpsm'); if (!el) return;
+  const tot = Object.values(by || {}).reduce((a, b) => a + b, 0);
+  el.textContent = turns ? `${fmtN(tot / turns)} dmg / t` : '– dmg / t';
+  const rows = Object.entries(by || {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}: <span style="font-weight:700;color:#ff8080">${fmtN(v)}</span> · ${tot ? Math.round(v / tot * 100) : 0}%${cnt && cnt[k] ? ` · ${cnt[k]}×` : ''}`);
+  el.dataset.tip = `<b>Damage per turn</b><span style="white-space:nowrap">${rows.length ? rows.join('<br>') : 'No damage yet'}<br>Total: ${fmtN(tot)} in ${turns || 0} turn${turns === 1 ? '' : 's'}</span>`;
+  refreshTip();
+}
 // RAGE (pasek pod zdrowiem bohatera): 0–100, na start walki 0; każdy zwykły atak gracza +RAGE_HIT (na razie nic nie zużywa rage)
 const RAGE_MAX = 100, RAGE_HIT = 8;
 const setRage = v => { const f = $('rg1'), t = $('rgp1'); if (f) f.style.width = v / RAGE_MAX * 100 + '%'; if (t) t.textContent = v; if (fightIo) { fightIo.rage = v; refreshAb(); } };
@@ -2215,8 +2226,8 @@ function render() {
     if (lastMob !== m && !busy) live = null;   // inny przeciwnik → panel znów pokazuje statystyki bazowe
     renderInfo(m);
     // przycisk „Show battle log” (absolutnie pod przeciwnikiem) zjeżdża pod panel ℹ️, gdy ten jest otwarty
-    { const lw = $('logwrap'), sb = $('skillbar'); if (lw) lw.style.marginTop = ((sb ? sb.offsetHeight + 26 : 0) + (showInfo ? $('info').offsetHeight : 0) + 24) + 'px'; }   // przycisk logu pod paskiem umiejętności (i pod panelem ℹ️)
-    if (lastMob !== m && !busy) { setLastMob(m); setShowInfo(false); renderDebuffs({}); const h0 = frailHp(s.hp);
+    { const lw = $('logwrap'), sb = $('skillbar'); if (lw) { const dm = $('dpsm'); lw.style.marginTop = ((sb ? sb.offsetHeight + 26 : 0) + (showInfo ? $('info').offsetHeight : 0) + 24 - (dm ? dm.offsetHeight + 6 : 0)) + 'px'; } }   // DPS meter nad przyciskiem – przycisk zostaje na swoim miejscu   // przycisk logu pod paskiem umiejętności (i pod panelem ℹ️)
+    if (lastMob !== m && !busy) { setLastMob(m); setShowInfo(false); renderDebuffs({}); setDps({}, 0); const h0 = frailHp(s.hp);
       // Elemental Barrier widoczna już przed walką: niebieska końcówka paska i HP + tarcza / maks. HP (bez ikony buffa)
       const sh0 = Math.round(d.hp * (ub().barrier || 0) / 100), tot = d.hp + sh0;
       { const u0 = ub(), N = u0.elemMaster ? 4 : 5, pv = {};   // podgląd przed walką: ikony energii z ich stosami startowymi (wszystkie 1)
@@ -2604,6 +2615,10 @@ function* fightGen(mob, io) {
     const upd = !UI ? () => {} : () => { if (live) { live.hp = Math.max(0, mh); renderInfo(mob); } { const hw = Math.max(0, ph) / barTot * 100; $('hp1').style.width = hw + '%'; $('sh1').style.left = hw + '%'; $('sh1').style.width = sh / barTot * 100 + '%'; } $('hp2').style.width = Math.max(0, mh / M.hp * 100) + '%'; $('ht1').textContent = Math.max(0, Math.round(ph + sh)) + '/' + p.hp; $('ht2').textContent = Math.max(0, Math.round(mh)) + '/' + Math.round(M.hp); hpPct(1, ph, p.hp); hpPct(2, mh, M.hp); };
     let rageBar = 0; if (UI) setRage(0);   // RAGE: nowa walka = pusty pasek
     const abCd = {}; io.cd = abCd;   // ABILITIES: odnowienia w tej walce (tury)
+    // DPS METER: rejestr obrażeń zadanych wrogowi wg źródła (bez nadwyżki ponad pozostałe HP) i licznik Twoich tur
+    const dmgBy = {}, dmgN = {}; let pTurns = 0;
+    const dr = (src, v) => { const real = Math.max(0, Math.min(v, mh)); dmgBy[src] = (dmgBy[src] || 0) + real; dmgN[src] = (dmgN[src] || 0) + 1; if (UI) setDps(dmgBy, pTurns, dmgN); return v; };
+    if (UI) setDps({}, 0);
     const abReady = {}; io.ready = abReady; let furyT = 0;   // abReady.crit = Revenge (tura po krytyku wroga), abReady.exec = Decapitate (wróg < 20% HP); furyT = tury Battle Fury
     const abOk = id => { const a = ABILS[id]; return !!a && rageBar >= a.cost && !abCd[id] && (!a.need || !!abReady[a.need]); };
     const furyTip = () => `Damage +20%<br>Attacks generate +2 Rage<br>Turns left: ${furyT}`;
@@ -2723,7 +2738,8 @@ function* fightGen(mob, io) {
         if (ab && ab.need) delete abReady[ab.need];
         if (ab) { const avg = (A.min + A.max) / 2 * ab.mul; A = Object.assign({}, A, { min: avg, max: avg }); rageBar -= ab.cost; abCd[act] = ab.cd; if (UI) setRage(rageBar); say(`<b>${ab.n}!</b> (${ab.gain ? '+' + ab.gain : '−' + ab.cost} Rage)`, 'crit'); }
         firstHit = false;
-        { const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); mh -= dm; if (UI) dmgPop(fm, dm, hit.crit, 'out'); }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
+        pTurns++;   // DPS METER: Twoja tura
+        { const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); mh -= dr(ab ? ab.n : execute ? 'Death Sentence' : 'Attack', dm); if (UI) dmgPop(fm, dm, hit.crit, 'out'); }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
         if (!ab) { rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT + (furyT > 0 ? 2 : 0)); if (UI) setRage(rageBar); }   // RAGE: +8 za zwykły atak (+2 z Battle Fury), maks. 100
         if (ab && ab.gain) { rageBar = Math.min(RAGE_MAX, rageBar + ab.gain); if (UI) setRage(rageBar); }   // Pommel Strike +25, Revenge +10
         // Rage Within: każdy Twój krytyk +U.rage% obrażeń broni do końca walki (działa od następnego ciosu)
@@ -2738,7 +2754,7 @@ function* fightGen(mob, io) {
             // Overcharge: każdy kolejny piorun o U.boltGrow% mocniejszy od POPRZEDNIEGO (mnoży się: przy 1/3 – ×1, ×1.2, ×1.44 …)
             const bd = Math.max(1, Math.round((p.min + p.max) / 2 * U.bolt / 100 * (1 + (U.boltGrow || 0) / 100) ** boltN)); boltN++;
             if (UI) { boltFx(fm); yield 55; }   // animacja pioruna (2× szybsza) – obrażenia w chwili trafienia
-            mh -= bd; if (UI) dmgPop(fm, bd, false, 'bolt');
+            mh -= dr('Lightning Bolt', bd); if (UI) dmgPop(fm, bd, false, 'bolt');
             say(`<b>Lightning Incantation</b> strikes ${mob.n} for <b>${bd}</b> damage!`, 'crit');
             bolt = 1; upd();
             yield 210;   // piorun gaśnie (~0.25 s), zanim walka pójdzie dalej
@@ -2753,7 +2769,7 @@ function* fightGen(mob, io) {
             upd(); pbuf.fire = { st: EN, tip: fireTip() }; renderPBuffs(pbuf);
             yield 450;
             const fd = Math.max(1, Math.round(M.hp * U.fire / 100));
-            mh -= fd; if (UI) { fireFx(fm); dmgPop(fm, fd, false, 'fire'); }
+            mh -= dr('Fire Energy', fd); if (UI) { fireFx(fm); dmgPop(fm, fd, false, 'fire'); }
             say(`<b>Fire Energy detonates</b> on ${mob.n} for <b>${fd}</b> damage!`, 'crit');
             fire = 1;
             if (U.burn && mh > 0) { burnT = 5; deb.burn = { st: burnT, tip: `Loses 1% of max health per turn<br>Turns left: ${burnT}` }; curses(); say(`${mob.n} is <b>Burning</b>!`, 'crit'); }
@@ -2781,7 +2797,7 @@ function* fightGen(mob, io) {
         // Burning (Lingering Flames): 1% maks. HP wroga na początku jego tury, 5 tur
         if (burnT > 0) {
           const bd = Math.max(1, Math.round(M.hp * 0.01));
-          mh -= bd; burnT--; if (UI) dmgPop(fm, bd, false, 'burn');
+          mh -= dr('Burning', bd); burnT--; if (UI) dmgPop(fm, bd, false, 'burn');
           if (burnT) deb.burn = { st: burnT, tip: `Loses 1% of max health per turn<br>Turns left: ${burnT}` }; else delete deb.burn;
           curses(); upd();
           if (mh <= 0) break;
@@ -2789,7 +2805,7 @@ function* fightGen(mob, io) {
         }
         if (bleedT > 0) {
           const bd = Math.max(1, Math.round(M.hp * 0.03 * bleed));
-          mh -= bd; bleedT--; if (!bleedT) bleed = 0; if (UI) dmgPop(fm, bd, false, 'bleed');
+          mh -= dr('Bleed', bd); bleedT--; if (!bleedT) bleed = 0; if (UI) dmgPop(fm, bd, false, 'bleed');
           if (bleed) deb.bleed = bleedInfo(); else delete deb.bleed;   // krwawienie minęło – ikona znika
           renderDebuffs(deb); upd();
           if (mh <= 0) break;
