@@ -152,6 +152,15 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 #go{display:block;width:auto;margin:20px auto 0;padding:6px 16px;background:var(--ac);color:var(--on-ac);border-color:var(--ac);font-weight:700}
 /* DPS METER: średnie obrażenia na Twoją turę; dymek = obrażenia z każdego źródła */
 #dpsm{font-size:17px;font-weight:800;color:#ff4d4d;text-shadow:1px 1px 0 #000;cursor:default;outline:none;white-space:nowrap}
+#tip:has(.dpst){max-width:none}
+.dpst{display:flex;flex-direction:column;gap:3px;width:380px;margin-top:4px;font-size:14px}
+.dprow{display:flex;align-items:center;gap:6px}
+.dpi{width:22px;height:22px;flex:none;display:flex;align-items:center;justify-content:center;font-size:16px;background:#111;border:1px solid #444;border-radius:3px;overflow:hidden}
+.dpi img{width:20px!important;height:20px!important;image-rendering:pixelated}
+.dpbar{position:relative;flex:1;height:22px;background:#1a1612;border-radius:2px;overflow:hidden;display:flex;align-items:center;justify-content:space-between;padding:0 6px;box-sizing:border-box}
+.dpbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#c0412f,#7d2418);z-index:0}
+.dpn,.dpv{position:relative;z-index:1;color:#fff;text-shadow:1px 1px 0 #000;white-space:nowrap}.dpv{font-weight:700;margin-left:10px}
+.dptot{margin-top:4px;font-size:13px;color:var(--mut)}
 #log[hidden]{display:none}   /* log walki ukryty, dopóki gracz nie kliknie „Show battle log” */
 #log{height:100px;overflow:auto;font-size:12px;border:1px solid var(--bd);border-radius:8px;padding:5px;margin:8px 0}
 #log p{margin:1px 0}.crit{color:var(--ac);font-weight:700}.miss{color:var(--mut)}

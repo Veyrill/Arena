@@ -1286,14 +1286,27 @@ document.addEventListener('click', e => {
   me.opts = Object.assign({}, me.opts, { hpVals: b.dataset.hpv === '1' }); saveGame(); render();
 });
 // DPS METER (nad „Show battle log”): suma Twoich obrażeń / liczba Twoich tur, np. „320 dmg / t”.
-// Dymek: każde źródło (Attack, umiejętności, Lightning Bolt, Fire Energy, Burning, Bleed, Death Sentence) – suma, % udziału, ile razy trafiło.
-const fmtN = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e4 ? (v / 1e3).toFixed(1) + 'k' : String(Math.round(v));
-function setDps(by, turns, cnt) {
+// Dymek: każde źródło (Attack, umiejętności, Lightning Bolt, Fire Energy, Burning, Bleed, Death Sentence) – ikona, pasek, na turę (suma) i % udziału.
+const fmtN = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e4 ? (v / 1e3).toFixed(1) + 'K' : Math.round(v).toLocaleString('en-US');
+// ikona źródła obrażeń w dymku: Attack = obecna broń, umiejętność = jej ikona, pasywka = ikona z drzewka (brak pliku → emoji)
+const DPS_PAS = { 'Lightning Bolt': 'bolt', 'Fire Energy': 'fire', 'Burning': 'burn', 'Bleed': 'bleed', 'Death Sentence': 'doom' };
+function dpsIco(k) {
+  const box = c => `<span class="dpi">${c}</span>`;
+  if (k === 'Attack') return box(eq1.weapon ? sizeIco(eq1.weapon, 20) : '👊');
+  const ab = Object.values(ABILS).find(a => a.n === k); if (ab) return box(ab.ico);
+  const d = DEBUFFS[DPS_PAS[k]];
+  return box(d ? `<img src="${ASSETS_DIR}/skills/curses/${d[0]}.png" alt="" onerror="this.outerHTML='${d[2] || '✦'}'">` : '✦');
+}
+// wiersz jak w meterach z MMO: ikona | pasek (długość względem najlepszego źródła) z nazwą | obrażenia na turę (suma) udział %
+function setDps(by, turns) {
   const el = $('dpsm'); if (!el) return;
-  const tot = Object.values(by || {}).reduce((a, b) => a + b, 0);
+  const ent = Object.entries(by || {}).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
+  const tot = ent.reduce((a, e) => a + e[1], 0), top = ent.length ? ent[0][1] : 1;
   el.textContent = turns ? `${fmtN(tot / turns)} dmg / t` : '– dmg / t';
-  const rows = Object.entries(by || {}).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}: <span style="font-weight:700;color:#ff8080">${fmtN(v)}</span> · ${tot ? Math.round(v / tot * 100) : 0}%${cnt && cnt[k] ? ` · ${cnt[k]}×` : ''}`);
-  el.dataset.tip = `<b>Damage per turn</b><span style="white-space:nowrap">${rows.length ? rows.join('<br>') : 'No damage yet'}<br>Total: ${fmtN(tot)} in ${turns || 0} turn${turns === 1 ? '' : 's'}</span>`;
+  const rows = ent.map(([k, v]) => `<div class="dprow">${dpsIco(k)}<div class="dpbar"><i style="width:${v / top * 100}%"></i><span class="dpn">${k}</span>`
+    + `<span class="dpv">${fmtN(v / turns)} (${fmtN(v)}) ${Math.round(v / tot * 100)}%</span></div></div>`).join('');
+  el.dataset.tip = `<b>Damage per turn</b><div class="dpst">${rows || '<small>No damage yet</small>'}`
+    + `<div class="dptot">Total: ${turns ? fmtN(tot / turns) : 0} / t (${fmtN(tot)}) · ${turns || 0} turn${turns === 1 ? '' : 's'}</div></div>`;
   refreshTip();
 }
 // RAGE (pasek pod zdrowiem bohatera): 0–100, na start walki 0; każdy zwykły atak gracza +RAGE_HIT (na razie nic nie zużywa rage)
@@ -2616,8 +2629,8 @@ function* fightGen(mob, io) {
     let rageBar = 0; if (UI) setRage(0);   // RAGE: nowa walka = pusty pasek
     const abCd = {}; io.cd = abCd;   // ABILITIES: odnowienia w tej walce (tury)
     // DPS METER: rejestr obrażeń zadanych wrogowi wg źródła (bez nadwyżki ponad pozostałe HP) i licznik Twoich tur
-    const dmgBy = {}, dmgN = {}; let pTurns = 0;
-    const dr = (src, v) => { const real = Math.max(0, Math.min(v, mh)); dmgBy[src] = (dmgBy[src] || 0) + real; dmgN[src] = (dmgN[src] || 0) + 1; if (UI) setDps(dmgBy, pTurns, dmgN); return v; };
+    const dmgBy = {}; let pTurns = 0;
+    const dr = (src, v) => { const real = Math.max(0, Math.min(v, mh)); dmgBy[src] = (dmgBy[src] || 0) + real; if (UI) setDps(dmgBy, pTurns); return v; };
     if (UI) setDps({}, 0);
     const abReady = {}; io.ready = abReady; let furyT = 0;   // abReady.crit = Revenge (tura po krytyku wroga), abReady.exec = Decapitate (wróg < 20% HP); furyT = tury Battle Fury
     const abOk = id => { const a = ABILS[id]; return !!a && rageBar >= a.cost && !abCd[id] && (!a.need || !!abReady[a.need]); };
