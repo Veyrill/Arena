@@ -1210,7 +1210,9 @@ function abLvl(id) {
   while (l < AB_MAX_LVL && u >= abNeed(l)) { u -= abNeed(l); l++; }
   return { l, cur: u, need: l < AB_MAX_LVL ? abNeed(l) : 0 };   // cur/need = postęp do następnego poziomu
 }
-const abLvlBar = id => { const v = abLvl(id); return v.need ? `<div class="ablv"><i style="width:${v.cur / v.need * 100}%"></i><span>${v.cur} / ${v.need}</span></div>` : `<div class="ablv max"><i style="width:100%"></i><span>MAX</span></div>`; };
+// wygląd (wariant E): romby pod nazwą = poziom (zapalone / wszystkie 5); na dole napis „Next level: x / y” i cienka linia postępu wzdłuż dolnej krawędzi dymka
+const abPips = id => { const l = abLvl(id).l; return `<span class="abpips">${Array.from({ length: AB_MAX_LVL }, (_, i) => `<i${i < l ? ' class="on"' : ''}></i>`).join('')}</span>`; };
+const abLvlBar = id => { const v = abLvl(id); return `<div class="abnext">${v.need ? `Next level: ${v.cur} / ${v.need}` : 'Max level'}</div><div class="abedge${v.need ? '' : ' max'}"><i style="width:${v.need ? v.cur / v.need * 100 : 100}%"></i></div>`; };
 // użycie w walce: +1; po awansie napis „LVL X!” nad slotem
 function abUse(id) {
   me.abXp = me.abXp || {}; const l0 = abLvl(id).l; me.abXp[id] = (me.abXp[id] || 0) + 1;
@@ -1218,7 +1220,7 @@ function abUse(id) {
   if (s) { s.dataset.tip = abTip(id); refreshTip();
     if (l1 > l0) { const r = s.getBoundingClientRect(), e = document.createElement('div'); e.className = 'ablvup'; e.textContent = `LVL ${l1}!`; e.style.left = (r.left + r.width / 2) + 'px'; e.style.top = (r.top - 6) + 'px'; document.body.appendChild(e); setTimeout(() => e.remove(), 1400); } }
 }
-const abTip = id => { const a = ABILS[id], dm = abDmg(a); return `<b>${a.n} <span class="abl">Lv ${abLvl(id).l}</span></b>${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${a.d}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage.` : ''}${abLvlBar(id)}`; };
+const abTip = id => { const a = ABILS[id], dm = abDmg(a); return `<b>${a.n}</b>${abPips(id)}${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${a.d}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage.` : ''}${abLvlBar(id)}`; };
 let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
 // pasek: ikony umiejętności w slotach 2–Tab (przebudowa tylko, gdy zmieni się rozmieszczenie – nie miga)
 function renderBarAbils() {
@@ -1281,7 +1283,7 @@ function renderAbilTab() {
   const el = $('body-abil'); if (!el) return;
   el.innerHTML = Object.entries(ABILS).map(([id, a]) => {
     const has = me.abils && me.abils[id], lvOk = me.lvl >= a.lvl;
-    return `<div class="abrow${has ? ' has' : ''}"><div class="abico" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${a.ico}</div><div class="abinf"><b>${a.n}${has ? ` <span class="abl">Lv ${abLvl(id).l}</span>` : ''}</b><small>${a.d}</small>`
+    return `<div class="abrow${has ? ' has' : ''}"><div class="abico" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${a.ico}</div><div class="abinf"><b>${a.n}</b>${has ? abPips(id) : ''}<small>${a.d}</small>`
       + `<small>${a.gain ? 'Generates' : 'Cost'}: <b style="color:#f07b16">${a.gain ? '+' + a.gain : a.cost} Rage</b> · Cooldown: ${a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'} · Requires level ${a.lvl}${abDmg(a) ? ` · Damage: <b style="color:#ff8080">${abDmg(a)}</b>` : ''}</small></div>`
       + (has ? `<span class="abok">Learned</span>` : `<button onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>${lvOk ? 'Learn (free)' : 'Level ' + a.lvl}</button>`) + `</div>`;
   }).join('') + `<small style="color:var(--mut);display:block;margin-top:8px">Learned abilities appear on your skill bar. Drag them to change their slot.</small>`;

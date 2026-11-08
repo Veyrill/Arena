@@ -112,11 +112,13 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 .sk.ab.proc{animation:abproc .7s ease-in-out infinite alternate}   /* Revenge / Decapitate gotowe – pulsuje */
 @keyframes abproc{from{box-shadow:0 0 0 2px #f07b16,0 0 6px #f07b16}to{box-shadow:0 0 0 3px #ffc06a,0 0 18px #f07b16}}
 /* POZIOM UMIEJĘTNOŚCI: „lvl X” przy nazwie, pasek postępu użyć do następnego poziomu, napis LVL X! przy awansie */
-.abl{display:inline-block;vertical-align:3px;margin-left:8px;padding:2px 7px 1px;font-size:11px;font-weight:800;line-height:1.2;letter-spacing:.04em;color:#ffc06a;background:#3a2412;border:1px solid #a84a08;border-radius:4px;box-shadow:inset 0 1px 0 #ffffff1a}
-.ablv{position:relative;height:14px;margin-top:10px;background:#2e1806;border:2px solid #111;border-radius:2px;box-shadow:0 1px 0 #ffffff14;overflow:hidden}
-.ablv i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#ffc06a 0 25%,#f07b16 25% 70%,#a84a08 70%)}
-.ablv span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;letter-spacing:.05em;color:#fff;text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000}
-.ablv.max i{background:linear-gradient(#fff3b0 0 25%,#ffd36b 25% 70%,#c9961e 70%)}
+.abpips{display:flex;gap:6px;margin:4px 0 8px 2px}
+.abpips i{width:10px;height:10px;transform:rotate(45deg);background:#3a3126;border:1px solid #111}
+.abpips i.on{background:#ff7a3d;box-shadow:0 0 4px #ff7a3d}
+.abnext{margin-top:8px;font-size:12px;color:var(--mut);text-align:right}
+.abedge{height:5px;margin:4px -12px -12px;background:#3a3126;border-radius:0 0 10px 10px;overflow:hidden}
+.abedge i{display:block;height:100%;background:linear-gradient(90deg,#c0412f,#ff7a3d)}
+.abedge.max i{background:linear-gradient(90deg,#c9961e,#ffd36b)}
 .ablvup{position:fixed;transform:translate(-50%,-100%);z-index:60;font-size:18px;font-weight:900;color:#ffd36b;text-shadow:2px 2px 0 #000;pointer-events:none;animation:ablvup 1.4s ease-out forwards}
 @keyframes ablvup{0%{opacity:0;margin-top:6px}15%{opacity:1;margin-top:0}75%{opacity:1}100%{opacity:0;margin-top:-26px}}
 /* ZAKŁADKA ABILITIES */
