@@ -1711,7 +1711,7 @@ window.buyNode = id => {
   render();
 };
 
-const NAV = [['exp', 'Expedition'], ['shop', 'Shop'], ['craft', 'Crafting'], ['upg', 'Passives'], ['abil', 'Abilities'], ['dun', 'Dungeons'], ['fish', 'Fishing'], ['upgrade', 'Tackle Upgrade'], ['cook', 'Cooking'], ['set', 'Settings']];   // Tackle = sprzęt wędkarski (wędka + haczyk)
+const NAV = [['exp', 'Expedition'], ['shop', 'Shop'], ['craft', 'Crafting'], ['upg', 'Passives'], ['abil', 'Abilities'], ['dun', 'Dungeons'], ['raid', 'Raids'], ['fish', 'Fishing'], ['upgrade', 'Tackle Upgrade'], ['cook', 'Cooking'], ['set', 'Settings']];   // Tackle = sprzęt wędkarski (wędka + haczyk)
 // spDot: czerwona kropka przy zakładce Skills, gdy są skill pointy do wydania. Znika po najechaniu myszką,
 // wraca, gdy gracz dostanie nowe skill pointy (awans, reset skilli).
 let spDot = false;
@@ -1749,6 +1749,15 @@ function renderPortrait() {
   if (f.dataset.src !== src) { f.dataset.src = src; f.style.backgroundImage = `url("${src}")`; }
   lv.textContent = me.lvl;
   el.dataset.tip = `<b>${me.name || 'Hero'}</b>${cls[0].toUpperCase() + cls.slice(1)} · Level ${me.lvl}`;
+}
+// ZAKŁADKI ODBLOKOWYWANE: Cooking – po znalezieniu pierwszego przepisu (drop, plecak albo nauczony); Tackle Upgrade – po złowieniu 15 Crucian Carp (licznik Fishpedii, jak dymek samouczka)
+const recipeFound = () => !!(fishing.recipes && Object.keys(fishing.recipes).length) || Object.keys(fishing).some(k => /^recipe[A-Z]/.test(k) && fishing[k]) || inv.some(i => i && i.isRecipe);
+const NAV_LOCK = { cook: () => !recipeFound(), upgrade: () => pediaCount('fish_carp') < TUT_CARP };
+function navLocks() {
+  for (const k in NAV_LOCK) {
+    const hide = NAV_LOCK[k](), b = document.querySelector(`#nav button[data-v="${k}"]`); if (b) b.hidden = hide;
+    if (hide && view === k) { setView('exp'); requestAnimationFrame(render); }   // ukryta zakładka nie może być otwarta
+  }
 }
 function buildNav() {
   $('nav').innerHTML = `<div id="portrait"><div class="pt-face"></div><span class="pt-lv"></span></div><b id="ptname"></b>` + NAV.map(([k, n]) => `<button data-v="${k}">${n}</button>`).join('');   // PORTRET: kółko z głową postaci + poziom (prawy dół)
@@ -1864,7 +1873,7 @@ function render() {
     btn.disabled = busy || (fishing.active && btn.dataset.v === 'exp');
   });
 
-  ['exp', 'shop', 'upg', 'abil', 'upgrade', 'dun', 'craft', 'fish', 'cook', 'set'].forEach(k => {
+  ['exp', 'shop', 'upg', 'abil', 'upgrade', 'dun', 'raid', 'craft', 'fish', 'cook', 'set'].forEach(k => {
     const el = $('v-' + k);
     if (el) el.style.display = (k === view) ? 'block' : 'none';
   });
@@ -2094,7 +2103,7 @@ function render() {
   renderAtkSlot();   // slot 1: ikona obecnej broni
   renderBarAbils(); if (view === 'abil') renderAbilTab();   // ABILITIES: pasek + zakładka
   applySettings(); if (view === 'set') renderSettings();   // SETTINGS
-  renderPortrait();
+  renderPortrait(); navLocks();
 
   const isBought = upgTree.centerHp > 0;
   // elementy dymka skilli (kolory jak w WoW: złoty opis, biały nagłówek "Next rank:", zielony koszt)

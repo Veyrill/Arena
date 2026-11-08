@@ -31,6 +31,7 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:5px 10px}
 button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cursor:default}
 .nav{display:flex;flex-direction:column;gap:6px}
+#nav button[hidden]{display:none}
 /* PORTRET postaci nad zakładkami */
 #portrait{position:relative;align-self:center;width:96px;height:96px;margin:2px 0 0;cursor:default}
 #ptname{align-self:center;max-width:100%;margin:2px 0 10px;min-height:18px;font-size:14px;font-weight:800;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -312,6 +313,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 <div class="card" id="v-upg" hidden><span id="skillresetw" style="position:absolute;top:6px;right:8px;display:inline-flex"><button id="skillreset" style="font-size:22px;line-height:1;padding:2px 8px;font-weight:700">↺</button></span><h2>Passives</h2><small style="color:var(--mut)">Mouse wheel: zoom · drag: pan the board</small><div id="body-upg" style="margin-top:6px"></div></div>
 <div class="card" id="v-abil" hidden><h2>Abilities</h2><div id="body-abil" style="margin-top:6px"></div></div>
 <div class="card" id="v-set" hidden><h2>Settings</h2><div id="body-set" style="margin-top:6px"></div></div>
+<div class="card" id="v-raid" hidden><h2>Raids</h2><div id="body-raid" style="margin-top:6px"><small style="color:var(--mut)">Coming soon.</small></div></div>
 <div class="card" id="v-dun" hidden><h2>Dungeons</h2><div id="body-dun"></div></div>
 <div class="card" id="v-craft" hidden><h2>Crafting</h2><div id="body-craft"></div></div>
 <div class="card" id="v-fish" hidden><h2>Fishing</h2><div id="body-fish"></div></div>
