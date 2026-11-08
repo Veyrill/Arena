@@ -1171,7 +1171,8 @@ let trailT0 = performance.now();
 // Ikona slotu = obecna broń (strona 1 ekwipunku), bez broni – pięść. Skip w trakcie walki wykonuje czekający atak i dalej walka idzie sama.
 let atkResolve = null, atkQueued = false;   // atkQueued: atak kliknięty przed walką – walka startuje i od razu go używa
 const atkSlot = () => document.querySelector('#skillbar .sk[data-key="1"]');
-function waitAttack() { if (atkQueued) { atkQueued = false; return Promise.resolve(); } const s = atkSlot(); if (s) s.classList.add('ready'); const pr = new Promise(r => { atkResolve = r; }); refreshAb(); return pr; }
+// atkQueued = id umiejętności → użyta od razu po starcie walki
+function waitAttack() { if (atkQueued) { if (typeof atkQueued === 'string' && fightIo) fightIo.act = atkQueued; atkQueued = false; return Promise.resolve(); } const s = atkSlot(); if (s) s.classList.add('ready'); const pr = new Promise(r => { atkResolve = r; }); refreshAb(); return pr; }
 // SKILL PRZED WALKĄ: klik w skill (albo jego klawisz), gdy walka jeszcze nie trwa, a przycisk pokazuje Fight! → startuje walkę i od razu używa tego ruchu
 function useSkillOrStart() { if (atkResolve) return doAttack(); const go = $('go'); if (!fightOn && !busy && go && !go.disabled && go.textContent.trim() === 'Fight!' && curMob()) { atkQueued = true; go.onclick(); if (!fightOn) atkQueued = false; } }   // walka nie ruszyła (np. przerwa po walce) – nie zostawiaj ataku w kolejce
 function doAttack() { if (!atkResolve) return; const f = atkResolve; atkResolve = null; const s = atkSlot(); if (s) s.classList.remove('ready'); f(); refreshAb(); }
@@ -1193,10 +1194,12 @@ const ABILS = {
   // stun: trafienie ogłusza – wróg traci swoją następną turę (Ty atakujesz znowu)
   // selfStun: po użyciu tracisz swoją następną turę (wróg atakuje dwa razy z rzędu)
   reckless: { n: 'Reckless Strike', ico: '🪓', cost: 30, mul: 2.5, cd: 3, lvl: 9, selfStun: true, d: 'A massive swing for 250% of your average weapon damage. You lose your next turn.' },
+  // gain: Rage zyskiwany za użycie (zamiast zwykłych +8)
+  pommel: { n: 'Pommel Strike', ico: '🗡️', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 12, d: 'A quick blow with the hilt for 60% of your average weapon damage. Generates 25 Rage.' },
   gauntlet: { n: 'Gauntlet Strike', ico: '🥊', cost: 20, mul: 0.5, cd: 5, lvl: 6, stun: true, d: 'A quick punch for 50% of your average weapon damage. The enemy is stunned and loses its next turn.' }
 };
 const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = zwykły atak (stały)
-const abTip = id => { const a = ABILS[id]; return `<b>${a.n}</b>Cost: ${a.cost} Rage<br>Cooldown: ${a.cd} turn${a.cd === 1 ? '' : 's'}<br>${a.d}`; };
+const abTip = id => { const a = ABILS[id]; return `<b>${a.n}</b>${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.cd} turn${a.cd === 1 ? '' : 's'}<br>${a.d}`; };
 let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
 // pasek: ikony umiejętności w slotach 2–Tab (przebudowa tylko, gdy zmieni się rozmieszczenie – nie miga)
 function renderBarAbils() {
@@ -1208,7 +1211,7 @@ function renderBarAbils() {
     s.dataset.ab = sig; s.dataset.built = 1;
     s.classList.toggle('ab', !!id); s.draggable = !!id;
     if (id) { s.dataset.tip = abTip(id); } else delete s.dataset.tip;
-    s.innerHTML = (id ? `<span class="ic">${ABILS[id].ico}</span><span class="abc">${ABILS[id].cost}</span><span class="abcd"></span>` : '') + `<span class="kb">${k}</span>`;
+    s.innerHTML = (id ? `<span class="ic">${ABILS[id].ico}</span><span class="abc">${ABILS[id].gain ? '+' + ABILS[id].gain : ABILS[id].cost}</span><span class="abcd"></span>` : '') + `<span class="kb">${k}</span>`;
   });
   refreshAb();
 }
@@ -1228,7 +1231,7 @@ function refreshAb() {
 function useAbility(id) {
   const a = ABILS[id]; if (!a) return;
   if (atkResolve && fightIo) { if ((fightIo.rage || 0) < a.cost || (fightIo.cd && fightIo.cd[id])) return; fightIo.act = id; doAttack(); return; }
-  const go = $('go'); if (!fightOn && !busy && go && !go.disabled && go.textContent.trim() === 'Fight!' && curMob()) go.onclick();
+  const go = $('go'); if (!fightOn && !busy && go && !go.disabled && go.textContent.trim() === 'Fight!' && curMob()) { if (!a.cost && !a.need) atkQueued = id; go.onclick(); }   // darmowa (np. Pommel Strike) – walka startuje i od razu jej używa
 }
 document.addEventListener('click', e => {
   const s = e.target.closest && e.target.closest('#skillbar .sk.ab'); if (s && s.dataset.ab) useAbility(s.dataset.ab);
@@ -1258,7 +1261,7 @@ function renderAbilTab() {
   el.innerHTML = Object.entries(ABILS).map(([id, a]) => {
     const has = me.abils && me.abils[id], lvOk = me.lvl >= a.lvl;
     return `<div class="abrow${has ? ' has' : ''}"><div class="abico" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${a.ico}</div><div class="abinf"><b>${a.n}</b><small>${a.d}</small>`
-      + `<small>Cost: <b style="color:#f07b16">${a.cost} Rage</b> · Cooldown: ${a.cd} turn${a.cd === 1 ? '' : 's'} · Requires level ${a.lvl}</small></div>`
+      + `<small>${a.gain ? 'Generates' : 'Cost'}: <b style="color:#f07b16">${a.gain ? '+' + a.gain : a.cost} Rage</b> · Cooldown: ${a.cd} turn${a.cd === 1 ? '' : 's'} · Requires level ${a.lvl}</small></div>`
       + (has ? `<span class="abok">Learned</span>` : `<button onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>${lvOk ? 'Learn (free)' : 'Level ' + a.lvl}</button>`) + `</div>`;
   }).join('') + `<small style="color:var(--mut);display:block;margin-top:8px">Learned abilities appear on your skill bar. Drag them to change their slot.</small>`;
 }
@@ -2704,10 +2707,11 @@ function* fightGen(mob, io) {
         // ABILITY wybrana w tej turze (klik / klawisz): zamiast zwykłego ataku; koszt w Rage, odnowienie, obrażenia = mnożnik × średnie obrażenia broni
         const act = io.act || 'atk'; io.act = 'atk';
         const ab = act !== 'atk' && ABILS[act] && rageBar >= ABILS[act].cost && !abCd[act] ? ABILS[act] : null;
-        if (ab) { const avg = (A.min + A.max) / 2 * ab.mul; A = Object.assign({}, A, { min: avg, max: avg }); rageBar -= ab.cost; abCd[act] = ab.cd; if (UI) setRage(rageBar); say(`<b>${ab.n}!</b> (−${ab.cost} Rage)`, 'crit'); }
+        if (ab) { const avg = (A.min + A.max) / 2 * ab.mul; A = Object.assign({}, A, { min: avg, max: avg }); rageBar -= ab.cost; abCd[act] = ab.cd; if (UI) setRage(rageBar); say(`<b>${ab.n}!</b> (${ab.gain ? '+' + ab.gain : '−' + ab.cost} Rage)`, 'crit'); }
         firstHit = false;
         { const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); mh -= dm; if (UI) dmgPop(fm, dm, hit.crit, 'out'); }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
         if (!ab) { rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT); if (UI) setRage(rageBar); }
+        if (ab && ab.gain) { rageBar = Math.min(RAGE_MAX, rageBar + ab.gain); if (UI) setRage(rageBar); }   // Pommel Strike: +25 Rage
         if (ab && ab.selfStun) { pStun = true; pbuf.tired = { tip: 'You lose your next turn' }; renderPBuffs(pbuf); }   // Reckless Strike
         if (ab && ab.stun && mh > 0) { stun = true; deb.stun = { tip: 'Loses its next turn' }; curses(); }   // ogłuszenie (ikona na wrogu)   // umiejętność nie ładuje Rage   // RAGE: +8 za każdy zwykły atak (także chybiony), maks. 100
         // Rage Within: każdy Twój krytyk +U.rage% obrażeń broni do końca walki (działa od następnego ciosu)
