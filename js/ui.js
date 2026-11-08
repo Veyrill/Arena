@@ -1733,8 +1733,16 @@ function designTip(k) {
     + (S ? `<br><span style="color:#e69500">Set: ${S.name}</span>` + S.bonus.map(b => `<br><span style="color:#3fdc3f">(${b.n}) Set: ${b.d}</span>`).join('') : '')
     + (rc ? `<br><br>Recipe:${rc.from ? `<br>• ${FIXED_ITEMS[rc.from].name}` : ''}` + rc.mats.map(([m, q]) => `<br>• ${q}× ${MATS[m].name}`).join('') : '');
 }
+// PORTRET nad zakładkami: głowa postaci (wycinek sprite'a klasy, ×5) w kółku, poziom w pomarańczowym kółku w prawym dolnym rogu; dymek = nazwa, klasa, poziom
+function renderPortrait() {
+  const el = $('portrait'); if (!el) return;
+  const cls = me.cls || 'warrior', f = el.querySelector('.pt-face'), src = `${ASSETS_DIR}/hero/hero_${cls}.png`;
+  if (f.dataset.src !== src) { f.dataset.src = src; f.style.backgroundImage = `url("${src}")`; }
+  el.querySelector('.pt-lv').textContent = me.lvl;
+  el.dataset.tip = `<b>${me.name || 'Hero'}</b>${cls[0].toUpperCase() + cls.slice(1)} · Level ${me.lvl}`;
+}
 function buildNav() {
-  $('nav').innerHTML = NAV.map(([k, n]) => `<button data-v="${k}">${n}</button>`).join('');
+  $('nav').innerHTML = `<div id="portrait"><div class="pt-face"></div><span class="pt-lv"></span></div>` + NAV.map(([k, n]) => `<button data-v="${k}">${n}</button>`).join('');   // PORTRET: kółko z głową postaci + poziom (prawy dół)
   const sb = document.querySelector('#nav button[data-v=upg]');
   if (sb) sb.addEventListener('mouseenter', () => { spDot = false; sb.classList.remove('new'); });
 }
@@ -2077,6 +2085,7 @@ function render() {
   renderAtkSlot();   // slot 1: ikona obecnej broni
   renderBarAbils(); if (view === 'abil') renderAbilTab();   // ABILITIES: pasek + zakładka
   applySettings(); if (view === 'set') renderSettings();   // SETTINGS
+  renderPortrait();
 
   const isBought = upgTree.centerHp > 0;
   // elementy dymka skilli (kolory jak w WoW: złoty opis, biały nagłówek "Next rank:", zielony koszt)
