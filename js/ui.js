@@ -1736,9 +1736,13 @@ function designTip(k) {
 // PORTRET nad zakładkami: głowa postaci (wycinek sprite'a klasy, ×5) w kółku, poziom w pomarańczowym kółku w prawym dolnym rogu; dymek = nazwa, klasa, poziom
 function renderPortrait() {
   const el = $('portrait'); if (!el) return;
-  const cls = me.cls || 'warrior', f = el.querySelector('.pt-face'), src = `${ASSETS_DIR}/hero/hero_${cls}.png`;
+  const f = el.querySelector('.pt-face'), lv = el.querySelector('.pt-lv');
+  // pierwsze uruchomienie / nowa gra: dopóki klasa nie jest wybrana, kółko jest puste (bez postaci i poziomu)
+  if (me.clsPick) { f.style.backgroundImage = 'none'; f.dataset.src = ''; lv.style.display = 'none'; delete el.dataset.tip; return; }
+  lv.style.display = '';
+  const cls = me.cls || 'warrior', src = `${ASSETS_DIR}/hero/hero_${cls}.png`;
   if (f.dataset.src !== src) { f.dataset.src = src; f.style.backgroundImage = `url("${src}")`; }
-  el.querySelector('.pt-lv').textContent = me.lvl;
+  lv.textContent = me.lvl;
   el.dataset.tip = `<b>${me.name || 'Hero'}</b>${cls[0].toUpperCase() + cls.slice(1)} · Level ${me.lvl}`;
 }
 function buildNav() {
