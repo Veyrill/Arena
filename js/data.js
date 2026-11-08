@@ -543,3 +543,13 @@ export const makeFixed = k => { const u = FIXED_ITEMS[k]; const o = { sl: u.sl, 
   if (u.d) { o.d = u.d.slice(); o.dv = 2; }   // broń o stałych obrażeniach (nie przeliczana przez migrację)
   if (u.req) o.req = u.req;                    // wymagany poziom postaci do założenia
   return o; };
+
+// GAŁĘZIE KLAS w drzewku Passives: prawy górny róg = Warlock (klątwy), prawy dolny = Warrior (Determination), lewy dolny = Mage (żywioły).
+// Gracz widzi tylko gałąź swojej klasy, ułożoną poziomo w prawo od środka: 3 małe nody pnia w linii prostej, środkowy tor na wysokości środka.
+export const upgBranch = n => n.x < 0 ? 'mage' : n.y < 0 ? 'warlock' : 'warrior';
+const UPG_TRUNK = ['v1', 'v2', 'v3', 'w1', 'w2', 'w3', 'lw1', 'lw2', 'lw3'];
+export const upgPos = n => {
+  const b = upgBranch(n), x = Math.abs(n.x);
+  if (UPG_TRUNK.includes(n.id)) return { x, y: 0 };
+  return { x, y: b === 'warlock' ? n.y + 225 : n.y - 225 };
+};

@@ -1,4 +1,4 @@
-import { DEV, SL, NAMES, RAR, ST, LOCS, ACTS, ALL_LOCS, ACT_START, DUN, DUNS, UPG, SKILL_ICON_CENTER, MATS, FISH, FISH_LOCKED, R, I, P, UNIQUES, makeUnique, FIXED_ITEMS, makeFixed, FISH_SETS, GEAR_SETS, namesFor, devFlag, DEV_TIME, PANEL_KEY, setTimeOff } from './data.js';
+import { DEV, SL, NAMES, RAR, ST, LOCS, ACTS, ALL_LOCS, ACT_START, DUN, DUNS, UPG, upgBranch, upgPos, SKILL_ICON_CENTER, MATS, FISH, FISH_LOCKED, R, I, P, UNIQUES, makeUnique, FIXED_ITEMS, makeFixed, FISH_SETS, GEAR_SETS, namesFor, devFlag, DEV_TIME, PANEL_KEY, setTimeOff } from './data.js';
 import { me, eq1, eq2, inv, G, up, upgTree, fishing, upgradeItem, equipPage, currentZoom, panX, panY, panMoved, panDrag, view, eloc, esel, dloc, dprog, busy, cdEnd, sellMode, drag, lastMob, showInfo, showDunUnlockMsg, dunMsgClosed, showNoRodMsg, buffStrEnd, lastMouseE, setEquipPage, setView, setEloc, setEsel, setDloc, setDprog, setBusy, setSellMode, setLastMouseE, setDrag, setPanDrag, setPanMoved, setPanX, setPanY, setCurrentZoom, setShowInfo, setLastMob, setShowDunUnlockMsg, setDunMsgClosed, setShowNoRodMsg, setCdEnd, setBuffStrEnd, buffDexEnd, setBuffDexEnd, foodBuff, setUpgradeItem, eact, actsUnlocked, setEact, setActsUnlocked, locUnlocked, setLocUnlocked, gear, der, ub, mstats, HP_MUL, ENEMY_HP, CRIT_K, CRIT_C, CRIT_CAP } from './state.js';
 import { hasRod, buyRod, upgradeRod, upgradeGear, upgradeCost, makeRod, makeHook, isRod, isUpgradable, gearLevel, gearMaxLevel, previewGear, fishPower, canFish, ROD_TIERS, HOOK_TIERS } from './fishing.js';
 import { hit, armorRed, ARMOR_K } from './combat.js';
@@ -2087,9 +2087,10 @@ function render() {
   const skCost = `<div style='margin-top:12px;color:#3fdc3f'>Cost: ${SKILL_COST} ${spIco(16)} skill point</div>`;
   const T = upgTree.nodes, X = 1400, Y = 400,   // X = połowa szerokości planszy (2800 px – miejsce na 3 dodatkowe małe nody w ścieżkach)
   P0 = { center: { x: 0, y: 0 } };
-  UPG.forEach(n => P0[n.id] = n);
-  const shown = UPG;   // całe drzewko widoczne od początku (dawniej ścieżki odkrywały się dopiero po kupieniu Shatter / Determination – pole vis zostaje w data.js, ale nie jest już używane)
-  const corners = [[-210, -106]];   // zablokowany róg (lewa góra); prawy dół i lewy dół zajęły nowe odnogi
+  // tylko gałąź Twojej klasy, przestawiona poziomo w prawo (upgPos); kopie nodów z nowymi x / y
+  const shown = UPG.filter(n => upgBranch(n) === (me.cls || 'warrior')).map(n => Object.assign({}, n, upgPos(n)));
+  shown.forEach(n => P0[n.id] = n);   // całe drzewko widoczne od początku (dawniej ścieżki odkrywały się dopiero po kupieniu Shatter / Determination – pole vis zostaje w data.js, ale nie jest już używane)
+  const corners = [];   // (dawniej zablokowany róg – przy jednej gałęzi niepotrzebny)   // zablokowany róg (lewa góra); prawy dół i lewy dół zajęły nowe odnogi
   const lockTip = '<b>Locked</b><br>Coming in future updates';
   // node jest dostępny dopiero po kupieniu poprzedniego (req), przy wystarczającej ilości złota
   const nst = n => isMaxed(n.id) ? 'bought' : (n.ph || !reqOk(n) || me.sp < SKILL_COST || busy) ? (T[n.id] ? 'bought' : 'disabled') : 'avail';

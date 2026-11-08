@@ -1,4 +1,4 @@
-import { allMobsFlat, UPG, DEV, makeUnique, makeFixed, devFlag, GEAR_SETS } from './data.js';
+import { allMobsFlat, UPG, upgBranch, DEV, makeUnique, makeFixed, devFlag, GEAR_SETS } from './data.js';
 
 // sp = skill points: +1 za każdy zdobyty poziom, każdy skill w drzewku kosztuje 1 sp
 // start: 0 skill pointów (także w DEV) – punkty tylko z awansów; w DEV można je ustawić w panelu (Character → Skill Points)
@@ -104,7 +104,7 @@ export let upgTree = { centerHp: 0, nodes: {} };
 export let fishing = { active: false, startAt: 0, nextAt: 0, rodLevel: 0, sel: 'fish_carp', hookGiven: false, sp: DEV ? 999 : 0, guides: {}, caught: {}, skills: {} };   // sp = Fishing Skill Points (start: 0, +1 za pierwszego Crucian Carp; DEV: 999); skills[id] = kupiona ranga w Fishing Skill Tree   // caught[id ryby] = złowiona choć raz (boczne menu pokazuje ją nawet przy za małym FP)   // guides[id ryby] = ile Fishing Guide zdobyto z tej ryby (limit: guideCap w ui.js)
 export let upgradeItem = null;
 export let equipPage = 1;
-export let currentZoom = 1, panX = 0, panY = 0, panMoved = false, panDrag = null;
+export let currentZoom = 0.5, panX = -300, panY = 0, panMoved = false, panDrag = null;   // start: cała gałąź klasy widoczna (środek drzewka przy lewej krawędzi)
 export let view = 'exp', eloc = null, esel = -1, dloc = null, dprog = 0;
 export let busy = false, cdEnd = 0, sellMode = false, drag = null, lastMob = null, showInfo = false;
 // eact = wybrany akt w Wyprawie (null = menu aktów), actsUnlocked = czy pokonano już Fire Lorda
@@ -180,7 +180,7 @@ export function ub() {
   // elemMaster = Master of All Elements (1/1): Incantations przy 4 stosach zamiast 5
   const t = { str: 0, dex: 0, con: 0, ecrit: 0, edodge: 0, edmg: 0, earm: 0, efear: 0, esign: 0, efrail: 0, sunder: 0, sunderCap: 0, hpPct: 0, mark: 0, rend: 0, dexPct: 0, agony: 0, firstDmg: 0, strEff: 0, warcry: 0, critBonus: 0, endure: 0, vitEff: 0, armPct: 0, critEff: 0, rage: 0, fervor: 0, barrier: 0, bolt: 0, boltGrow: 0, fire: 0, burn: 0, water: 0, tide: 0, critDown: 0, elemMaster: 0, exhaust: 0, lacerate: 0, expose: 0, reap: 0, fester: 0, doom: 0 };
   UPG.forEach(n => {
-    if (upgTree.nodes[n.id] && n.eff) {
+    if (upgTree.nodes[n.id] && n.eff && upgBranch(n) === (me.cls || 'warrior')) {   // liczą się tylko nody gałęzi Twojej klasy
       // nodes[id] = kupiona ranga (1..max); efekt jednej rangi × ranga
       for (const k in n.eff) t[k] += n.eff[k] * upgTree.nodes[n.id];
     }
