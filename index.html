@@ -109,6 +109,8 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 .sk .abc{position:absolute;left:3px;top:2px;font-size:11px;font-weight:700;line-height:1;color:#ffb347;z-index:2;text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000}
 .sk .abcd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;z-index:3;pointer-events:none;text-shadow:2px 2px 0 #000}
 .sk.abover{outline:3px solid #f07b16;outline-offset:1px}
+.sk.ab.proc{animation:abproc .7s ease-in-out infinite alternate}   /* Revenge / Decapitate gotowe – pulsuje */
+@keyframes abproc{from{box-shadow:0 0 0 2px #f07b16,0 0 6px #f07b16}to{box-shadow:0 0 0 3px #ffc06a,0 0 18px #f07b16}}
 /* ZAKŁADKA ABILITIES */
 #body-abil{display:flex;flex-direction:column;gap:8px}
 .abrow{display:flex;align-items:center;gap:14px;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg)}
