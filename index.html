@@ -151,7 +151,14 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 :root:not([data-theme=dark]) .resv.win{color:#e8b54a}
 #go{display:block;width:auto;margin:20px auto 0;padding:6px 16px;background:var(--ac);color:var(--on-ac);border-color:var(--ac);font-weight:700}
 /* DPS METER: średnie obrażenia na Twoją turę; dymek = obrażenia z każdego źródła */
-#dpsm{font-size:17px;font-weight:800;color:#ff4d4d;text-shadow:1px 1px 0 #000;cursor:default;outline:none;white-space:nowrap}
+/* odznaka: ikonka wykresu + liczba + „dmg / turn”; po najechaniu podnosi się i świeci (zaprasza do sprawdzenia szczegółów) */
+#dpsm{display:inline-flex;align-items:center;gap:7px;padding:4px 10px 4px 8px;border:2px solid #5c2a22;border-radius:8px;background:linear-gradient(#3a1d18,#24120f);box-shadow:0 2px 0 #000a;cursor:help;outline:none;white-space:nowrap;transition:transform .12s,border-color .12s,box-shadow .12s}
+#dpsm:hover,#dpsm:focus-visible{transform:translateY(-2px);border-color:#ff6a4d;box-shadow:0 2px 0 #000a,0 0 12px #ff4d4d88}
+#dpsm b{font-size:18px;font-weight:800;color:#ff5a4a;text-shadow:1px 1px 0 #000}
+#dpsm small{font-size:11px;font-weight:700;color:#c9a49a;letter-spacing:.03em}
+#dpsm .dpic{display:flex;align-items:flex-end;gap:2px;height:14px}
+#dpsm .dpic i{width:4px;background:#ff5a4a;border-radius:1px}#dpsm .dpic i:nth-child(1){height:6px}#dpsm .dpic i:nth-child(2){height:14px}#dpsm .dpic i:nth-child(3){height:10px}
+#dpsm:hover .dpic i{background:#ffb36b}
 #tip:has(.dpst){max-width:none}
 .dpst{display:flex;flex-direction:column;gap:3px;width:380px;margin-top:4px;font-size:14px}
 .dprow{display:flex;align-items:center;gap:6px}
@@ -278,7 +285,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 <div class="row" id="fbackrow" style="display:none"><button data-a="fback">← Back</button><b id="fres"></b></div>
 <div class="arena"><div><div class="fig" id="fp">🧙</div><b>You</b><div class="hpw" tabindex="0"><div class="bar" style="position:relative"><i class="hpg" id="hg1" style="width:100%"></i><i id="hp1" style="width:100%"></i><i id="sh1"></i><span class="hpv" id="hpv1"></span><span class="hpp" id="hpp1"></span></div><small id="ht1" class="hptip"></small></div><div class="bar rage" id="rgw"><i id="rg1" style="width:0%"></i><span class="hpp" id="rgp1">0</span></div></div>
 <div style="font-size:18px">VS</div>
-<div style="position:relative"><div class="fig" id="fm"></div><b id="nm"></b><div class="hpw" tabindex="0"><div class="bar"><i class="hpg" id="hg2" style="width:100%"></i><i id="hp2" style="width:100%"></i><span class="hpv" id="hpv2"></span><span class="hpp" id="hpp2"></span></div><small id="ht2" class="hptip"></small></div><div class="bar rage" style="visibility:hidden" aria-hidden="true"></div><div id="logwrap" style="position:absolute;right:0;top:100%;margin-top:24px;display:flex;flex-direction:column;align-items:flex-end;gap:6px"><span id="dpsm" tabindex="0">– dmg / t</span><button id="logbtn" style="font-size:12px;padding:3px 10px">Show battle log</button></div></div></div>
+<div style="position:relative"><div class="fig" id="fm"></div><b id="nm"></b><div class="hpw" tabindex="0"><div class="bar"><i class="hpg" id="hg2" style="width:100%"></i><i id="hp2" style="width:100%"></i><span class="hpv" id="hpv2"></span><span class="hpp" id="hpp2"></span></div><small id="ht2" class="hptip"></small></div><div class="bar rage" style="visibility:hidden" aria-hidden="true"></div><div id="logwrap" style="position:absolute;right:0;top:100%;margin-top:24px;display:flex;align-items:center;gap:8px"><span id="dpsm" tabindex="0"><span class="dpic"><i></i><i></i><i></i></span><b id="dpsv">–</b><small>dmg/t</small></span><button id="logbtn" style="font-size:12px;padding:3px 10px">Show battle log</button></div></div></div>
 <div class="skillbar" id="skillbar"><div class="sk" data-key="1"><span class="kb">1</span></div><div class="sk" data-key="2"><span class="kb">2</span></div><div class="sk" data-key="3"><span class="kb">3</span></div><div class="sk" data-key="4"><span class="kb">4</span></div><div class="sk" data-key="5"><span class="kb">5</span></div><div class="sk" data-key="Q"><span class="kb">Q</span></div><div class="sk" data-key="W"><span class="kb">W</span></div><div class="sk" data-key="E"><span class="kb">E</span></div><div class="sk" data-key="R"><span class="kb">R</span></div><div class="sk" data-key="Tab"><span class="kb">Tab</span></div></div>
 <div class="info" id="info"></div>
 <div id="loot" hidden></div><button id="go">Fight!</button><div id="log" hidden></div></div>

@@ -1302,7 +1302,7 @@ function setDps(by, turns) {
   const el = $('dpsm'); if (!el) return;
   const ent = Object.entries(by || {}).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
   const tot = ent.reduce((a, e) => a + e[1], 0), top = ent.length ? ent[0][1] : 1;
-  el.textContent = turns ? `${fmtN(tot / turns)} dmg / t` : '– dmg / t';
+  { const v = $('dpsv'); if (v) v.textContent = turns ? fmtN(tot / turns) : '–'; }
   const rows = ent.map(([k, v]) => `<div class="dprow">${dpsIco(k)}<div class="dpbar"><i style="width:${v / top * 100}%"></i><span class="dpn">${k}</span>`
     + `<span class="dpv">${fmtN(v / turns)} (${fmtN(v)}) ${Math.round(v / tot * 100)}%</span></div></div>`).join('');
   el.dataset.tip = `<b>Damage per turn</b><div class="dpst">${rows || '<small>No damage yet</small>'}`
@@ -2239,7 +2239,7 @@ function render() {
     if (lastMob !== m && !busy) live = null;   // inny przeciwnik → panel znów pokazuje statystyki bazowe
     renderInfo(m);
     // przycisk „Show battle log” (absolutnie pod przeciwnikiem) zjeżdża pod panel ℹ️, gdy ten jest otwarty
-    { const lw = $('logwrap'), sb = $('skillbar'); if (lw) { const dm = $('dpsm'); lw.style.marginTop = ((sb ? sb.offsetHeight + 26 : 0) + (showInfo ? $('info').offsetHeight : 0) + 24 - (dm ? dm.offsetHeight + 6 : 0)) + 'px'; } }   // DPS meter nad przyciskiem – przycisk zostaje na swoim miejscu   // przycisk logu pod paskiem umiejętności (i pod panelem ℹ️)
+    { const lw = $('logwrap'), sb = $('skillbar'); if (lw) { const dm = $('dpsm'); lw.style.marginTop = ((sb ? sb.offsetHeight + 26 : 0) + (showInfo ? $('info').offsetHeight : 0) + 24 - (dm ? Math.max(0, dm.offsetHeight - lw.querySelector('#logbtn').offsetHeight) / 2 : 0)) + 'px'; } }   // DPS meter obok przycisku logu (ten sam wiersz)   // przycisk logu pod paskiem umiejętności (i pod panelem ℹ️)
     if (lastMob !== m && !busy) { setLastMob(m); setShowInfo(false); renderDebuffs({}); setDps({}, 0); const h0 = frailHp(s.hp);
       // Elemental Barrier widoczna już przed walką: niebieska końcówka paska i HP + tarcza / maks. HP (bez ikony buffa)
       const sh0 = Math.round(d.hp * (ub().barrier || 0) / 100), tot = d.hp + sh0;
