@@ -255,12 +255,12 @@ const lvUp = (d, k) => ({ ...k, hp: (k.hp || 1) * 1.098 ** d, dmg: (k.dmg || 1) 
 export const DUN6 = { n: 'The Spirit Forest', e: '🦌', req: 80, mobs: [
   pgClone('Spirit Wolf', '🐺', 82, 'Chaos Emperor', lvUp(2, { hp: 0.9, dmg: 1.15, crit: 12 })),                 // szybki: mniej HP, mocne i częste krytyki
   pgClone('Spirit Stag', '🦌', 86, 'Chaos Emperor', lvUp(6, { hp: 1.15, dmg: 0.75, arm: 1.4, dodge: 3 })),        // czołg: dużo HP i pancerza, słabsze ciosy
-  pgClone('The Great Spirit Owl', '🦉', 90, 'Chaos Emperor', lvUp(10, { hp: 1.05, dmg: 1.05, crit: 15 }))       // boss: ostatni przeciwnik gry
+  pgClone('The Grove Wyrm', '🐉', 90, 'Chaos Emperor', lvUp(10, { hp: 1.05, dmg: 1.05, crit: 15 }))       // boss: ostatni przeciwnik gry
 ] };
 // OPISY (lore) – las, w którym żyją duchy zwierząt: półprzezroczyste, świecące na turkusowo
 DUN6.mobs[0].lore = 'Hunters say that every wolf that dies in the north comes back here as light. This one leads the pack of the dead. You will hear its howl long before you see it, and when you finally see it, it is already running at you through the trees, leaving no tracks in the snow.';
 DUN6.mobs[1].lore = 'The oldest stag of the forest, its antlers so wide that the branches bend away to let it pass. Its body is made of pale blue light, and when it walks, the forest grows quiet. It does not want to fight. But nothing living has ever been allowed to stand in its glade and leave.';
-DUN6.mobs[2].lore = 'The keeper of the forest, older than the trees themselves. It watches from the highest branch with eyes like two full moons and sees every soul that enters. Legends say it decides which spirits may rest and which must stay. You came to the forest alive. It has not yet decided which you are.';
+DUN6.mobs[2].lore = 'The forest has many spirits, but only one master. This wyrm was the first creature to die here, long before there were trees. Its body faded into green light, but its grin never did. It sleeps under the roots of the oldest tree and wakes only when something alive dares to enter the heart of the forest.';
 export const DUNS = [DUN, DUN2, DUN3, DUN4, DUN5, DUN6];   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
 
 // IKONY SKILLI: grafiki z assets/skills (pixel art 16×16, plik 64×64). f = nazwa pliku bez .png, e = emoji zapasowe, px = rozmiar.
