@@ -1279,14 +1279,18 @@ let abDragKey = null;
   sb.addEventListener('dragend', () => { abDragKey = null; sb.querySelectorAll('.abover').forEach(x => x.classList.remove('abover')); });
 }
 // ZAKŁADKA ABILITIES: lista umiejętności – wymagany poziom, koszt w Rage, odnowienie; Learn (na razie za darmo)
+// ZAKŁADKA ABILITIES: rząd kafelków (od najniższego wymaganego poziomu) – duża ikona, nazwa, romby poziomu, przycisk Train, opis.
+// Dymek na ikonie = pełny opis jak na pasku. Niedostępne (za niski poziom): wyszarzone, kłódka z wymaganym poziomem.
 function renderAbilTab() {
   const el = $('body-abil'); if (!el) return;
-  el.innerHTML = Object.entries(ABILS).map(([id, a]) => {
+  el.innerHTML = `<div class="abgrid">` + Object.entries(ABILS).sort((x, y) => x[1].lvl - y[1].lvl).map(([id, a]) => {
     const has = me.abils && me.abils[id], lvOk = me.lvl >= a.lvl;
-    return `<div class="abrow${has ? ' has' : ''}"><div class="abico" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${a.ico}</div><div class="abinf"><b>${a.n}</b>${has ? abPips(id) : ''}<small>${a.d}</small>`
-      + `<small>${a.gain ? 'Generates' : 'Cost'}: <b style="color:#f07b16">${a.gain ? '+' + a.gain : a.cost} Rage</b> · Cooldown: ${a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'} · Requires level ${a.lvl}${abDmg(a) ? ` · Damage: <b style="color:#ff8080">${abDmg(a)}</b>` : ''}</small></div>`
-      + (has ? `<span class="abok">Learned</span>` : `<button onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>${lvOk ? 'Learn (free)' : 'Level ' + a.lvl}</button>`) + `</div>`;
-  }).join('') + `<small style="color:var(--mut);display:block;margin-top:8px">Learned abilities appear on your skill bar. Drag them to change their slot.</small>`;
+    return `<div class="abcard${has ? ' has' : lvOk ? '' : ' lock'}">`
+      + `<div class="abtile" data-tip="${abTip(id).replace(/"/g, '&quot;')}"><span class="abti">${a.ico}</span>${lvOk ? '' : `<span class="ablock">🔒 Lv ${a.lvl}</span>`}</div>`
+      + `<b class="abnm">${a.n}</b>${has ? abPips(id) : ''}`
+      + (has ? `<span class="abok">Learned</span>` : `<button class="abtrain" onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>Train</button>`)
+      + `<small class="abds">${a.d}</small></div>`;
+  }).join('') + `</div><small style="color:var(--mut);display:block;margin-top:12px">Learned abilities appear on your skill bar. Drag them to change their slot.</small>`;
 }
 window.learnAbil = id => {
   const a = ABILS[id]; if (!a || busy || me.lvl < a.lvl || (me.abils && me.abils[id])) return;

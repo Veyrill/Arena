@@ -122,12 +122,20 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 .ablvup{position:fixed;transform:translate(-50%,-100%);z-index:60;font-size:18px;font-weight:900;color:#ffd36b;text-shadow:2px 2px 0 #000;pointer-events:none;animation:ablvup 1.4s ease-out forwards}
 @keyframes ablvup{0%{opacity:0;margin-top:6px}15%{opacity:1;margin-top:0}75%{opacity:1}100%{opacity:0;margin-top:-26px}}
 /* ZAKŁADKA ABILITIES */
-#body-abil{display:flex;flex-direction:column;gap:8px}
-.abrow{display:flex;align-items:center;gap:14px;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg)}
-.abrow.has{border-color:#f07b16}
-.abico{width:52px;height:52px;flex:none;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(#46505e,#2d3440);border:3px solid #111;border-radius:8px}
-.abinf{flex:1;display:flex;flex-direction:column;gap:3px}.abinf small{color:var(--mut)}
-.abok{font-weight:700;color:#f07b16}
+.abgrid{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-start}
+.abcard{width:116px;display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center}
+.abtile{position:relative;width:104px;height:104px;display:flex;align-items:center;justify-content:center;background:linear-gradient(#46505e,#2d3440);border:3px solid #111;border-radius:10px;box-shadow:0 0 0 2px #3a3027;cursor:help;transition:transform .12s,box-shadow .12s}
+.abtile:hover{transform:translateY(-2px);box-shadow:0 0 0 2px #f07b16,0 0 12px #f07b1666}
+.abcard.has .abtile{box-shadow:0 0 0 2px #f07b16}
+.abti{font-size:54px;line-height:1}
+.abcard.lock .abti{filter:grayscale(1);opacity:.35}
+.ablock{position:absolute;left:0;right:0;bottom:6px;font-size:11px;font-weight:800;color:#f0e6d2;text-shadow:1px 1px 0 #000}
+.abnm{font-size:13px;line-height:1.2;margin-top:3px}
+.abcard .abpips{margin:0;justify-content:center}
+.abtrain{width:100%;padding:4px 0;font-weight:700}
+.abtrain:not(:disabled){background:var(--ac);color:var(--on-ac);border-color:var(--ac)}
+.abds{font-size:11px;line-height:1.35;color:var(--mut)}
+.abok{font-size:12px;font-weight:700;color:#f07b16}
 /* ZAKŁADKA SETTINGS */
 .setrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg)}
 .setrow small{color:var(--mut);display:block;margin-top:2px}
