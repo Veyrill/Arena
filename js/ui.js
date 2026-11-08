@@ -1289,8 +1289,8 @@ function renderAbilTab() {
       + `<div class="abtile" data-tip="${abTip(id).replace(/"/g, '&quot;')}"><span class="abti">${a.ico}</span>${lvOk ? '' : `<span class="ablock">🔒 Lv ${a.lvl}</span>`}</div>`
       + `<b class="abnm">${a.n}</b>${has ? abPips(id) : ''}`
       + (has ? `<span class="abok">Learned</span>` : `<button class="abtrain" onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>Train</button>`)
-      + `<small class="abds">${a.d}</small></div>`;
-  }).join('') + `</div><small style="color:var(--mut);display:block;margin-top:12px">Learned abilities appear on your skill bar. Drag them to change their slot.</small>`;
+      + `</div>`;   // opis tylko w dymku (najechanie na kafelek)
+  }).join('') + `</div>`;
 }
 window.learnAbil = id => {
   const a = ABILS[id]; if (!a || busy || me.lvl < a.lvl || (me.abils && me.abils[id])) return;
