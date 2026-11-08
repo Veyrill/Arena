@@ -2239,7 +2239,8 @@ function render() {
     if (lastMob !== m && !busy) live = null;   // inny przeciwnik → panel znów pokazuje statystyki bazowe
     renderInfo(m);
     // przycisk „Show battle log” (absolutnie pod przeciwnikiem) zjeżdża pod panel ℹ️, gdy ten jest otwarty
-    { const lw = $('logwrap'), sb = $('skillbar'); if (lw) { const dm = $('dpsm'); lw.style.marginTop = ((sb ? sb.offsetHeight + 26 : 0) + (showInfo ? $('info').offsetHeight : 0) + 24 - (dm ? Math.max(0, dm.offsetHeight - lw.querySelector('#logbtn').offsetHeight) / 2 : 0)) + 'px'; } }   // DPS meter obok przycisku logu (ten sam wiersz)   // przycisk logu pod paskiem umiejętności (i pod panelem ℹ️)
+    { const lw = $('logwrap'), sb = $('skillbar'); if (lw) { const dm = $('dpsm'); lw.style.marginTop = ((sb ? sb.offsetHeight + 26 : 0) + (showInfo ? $('info').offsetHeight : 0) + 24 - (dm ? Math.max(0, dm.offsetHeight - 24) / 2 : 0)) + 'px';
+      const g = $('go'); if (dm && g && g.offsetParent) { const gr = g.getBoundingClientRect(), dr = dm.getBoundingClientRect(); lw.style.marginTop = (parseFloat(lw.style.marginTop) + (gr.top + gr.height / 2) - (dr.top + dr.height / 2)) + 'px'; } } }   // środek odznaki na wysokości przycisku Fight! / Skip   // DPS meter wyśrodkowany w miejscu dawnego „Show battle log” (szer. 132 px, środek na tej samej wysokości)   // przycisk logu pod paskiem umiejętności (i pod panelem ℹ️)
     if (lastMob !== m && !busy) { setLastMob(m); setShowInfo(false); renderDebuffs({}); setDps({}, 0); const h0 = frailHp(s.hp);
       // Elemental Barrier widoczna już przed walką: niebieska końcówka paska i HP + tarcza / maks. HP (bez ikony buffa)
       const sh0 = Math.round(d.hp * (ub().barrier || 0) / 100), tot = d.hp + sh0;
@@ -3414,7 +3415,7 @@ document.addEventListener('click', e => {
 
 $('sellbtn').onclick = () => { setSellMode(!sellMode); render(); };
 // LOG WALKI: domyślnie ukryty; przycisk pod przeciwnikiem (po prawej) pokazuje / chowa go (wybór zapamiętany do końca sesji)
-$('logbtn').onclick = () => { const l = $('log'); l.hidden = !l.hidden; $('logbtn').textContent = l.hidden ? 'Show battle log' : 'Hide battle log'; if (!l.hidden) l.scrollTop = l.scrollHeight; };
+// (przycisk „Show battle log” usunięty – log walki jest nadal zapisywany w ukrytym #log, ale nie da się go już otworzyć)
 
 // reset skilli: zwraca wszystkie skill pointy wydane w drzewku i cofa wszystkie węzły (łącznie z "Surprise Attack")
 $('skillreset').onclick = () => {
