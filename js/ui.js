@@ -1178,8 +1178,10 @@ function doAttack() { if (!atkResolve) return; const f = atkResolve; atkResolve 
 function renderAtkSlot() {
   const s = atkSlot(); if (!s) return;
   const w = eq1.weapon, key = (w ? 'w:' + (w.name || '') + (w.ic || '') + (w.img || '') : 'fist');
+  // OPIS ZWYKŁEGO ATAKU (dymek na slocie 1) – jak przy umiejętnościach; obrażenia = aktualne obrażenia postaci
+  { const d = der(); s.dataset.tip = `<b>Attack</b>Cost: none<br>Generates: ${RAGE_HIT} Rage<br>Cooldown: none<br>Strikes with your ${w ? 'weapon' : 'fists'} for ${Math.round(d.min)}–${Math.round(d.max)} damage. Uses your turn.<br>Use it when you have no Rage for abilities.`; s.removeAttribute('title'); }
   if (s.dataset.k === key) return; s.dataset.k = key;
-  s.classList.add('atk'); s.title = 'Attack (1)';
+  s.classList.add('atk');
   s.innerHTML = (w ? sizeIco(w, 48) : '<span class="ic">👊</span>') + '<span class="kb">1</span>';
 }
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#skillbar .sk[data-key="1"]')) useSkillOrStart(); });
