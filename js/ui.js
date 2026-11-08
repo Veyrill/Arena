@@ -1211,8 +1211,8 @@ const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = 
 // obrażenia umiejętności dla aktualnych statystyk: zakres obrażeń postaci × mnożnik (losowane w walce jak zwykły atak), np. "6–10"
 const abDmg = a => { if (!a.mul) return ''; const d = der(); return `${Math.round(d.min * a.mul)}–${Math.round(d.max * a.mul)}`; };
 // POZIOMY UMIEJĘTNOŚCI (na razie bez efektu): rosną od używania w walce. me.abXp = { id: liczba użyć }.
-// Poziom n → n+1 wymaga 10 × n użyć (lvl 2 po 10, lvl 3 po kolejnych 20, lvl 4 po 30, lvl 5 po 40); maks. lvl 5.
-const AB_MAX_LVL = 5, abNeed = l => 10 * l;
+// Progi (takie same dla każdej umiejętności): lvl 2 po 10 użyciach, lvl 3 po kolejnych 40, lvl 4 po 150, lvl 5 po 400 – razem 600; maks. lvl 5.
+const AB_LVL_NEED = [10, 40, 150, 400], AB_MAX_LVL = 5, abNeed = l => AB_LVL_NEED[l - 1];   // użycia z poziomu l na l+1
 function abLvl(id) {
   let u = (me.abXp && me.abXp[id]) || 0, l = 1;
   while (l < AB_MAX_LVL && u >= abNeed(l)) { u -= abNeed(l); l++; }
