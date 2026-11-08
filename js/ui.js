@@ -3776,7 +3776,7 @@ function showClassPick() {
     + '.clsc.lock{cursor:not-allowed}.clsc.lock>*{opacity:.45}.clsc.lock>img{opacity:.75}'   // zablokowana klasa: postać w kolorach (podgląd), lekko przygaszona; tekst wyblakły
     + '.clsc .clk{position:absolute;top:8px;right:8px;font-size:11px;font-weight:700;color:var(--mut);filter:none;opacity:1}'
     + '.clsname{display:flex;flex-direction:column;align-items:center;gap:6px;margin:0 0 18px}.clsname label{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--mut);text-transform:uppercase}'
-    + '#clsnm{width:260px;padding:8px 12px;font:700 18px inherit;font-family:inherit;text-align:center;color:var(--tx);background:var(--bg);border:3px solid #111;border-radius:8px;outline:none}#clsnm:focus{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}'
+    + '#clsnm{width:260px;padding:8px 12px;font:700 18px inherit;font-family:inherit;text-align:center;color:var(--tx);background:var(--bg);border:3px solid #111;border-radius:8px;outline:none}#clsnm:focus{border-color:#111;box-shadow:none}'
     + '#clsok{font-size:16px;font-weight:700;padding:6px 26px;background:var(--ac);color:var(--on-ac);border-color:var(--ac)}#clsok:disabled{opacity:.4;cursor:default}'
     + '</style>');
   const ov = document.createElement('div'); ov.id = 'clsov';
