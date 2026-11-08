@@ -111,6 +111,14 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 .sk.abover{outline:3px solid #f07b16;outline-offset:1px}
 .sk.ab.proc{animation:abproc .7s ease-in-out infinite alternate}   /* Revenge / Decapitate gotowe – pulsuje */
 @keyframes abproc{from{box-shadow:0 0 0 2px #f07b16,0 0 6px #f07b16}to{box-shadow:0 0 0 3px #ffc06a,0 0 18px #f07b16}}
+/* POZIOM UMIEJĘTNOŚCI: „lvl X” przy nazwie, pasek postępu użyć do następnego poziomu, napis LVL X! przy awansie */
+.abl{display:inline;font-size:14px;font-weight:700;color:#ff4d4d;margin-left:6px}
+.ablv{position:relative;height:14px;margin-top:8px;background:#f2efe8;border:2px solid #111;overflow:hidden}
+.ablv i{position:absolute;left:0;top:0;bottom:0;background:#e8212b}
+.ablv span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#111;text-shadow:0 0 2px #fff}
+.ablv.max i{background:linear-gradient(90deg,#e8a321,#ffd36b)}
+.ablvup{position:fixed;transform:translate(-50%,-100%);z-index:60;font-size:18px;font-weight:900;color:#ffd36b;text-shadow:2px 2px 0 #000;pointer-events:none;animation:ablvup 1.4s ease-out forwards}
+@keyframes ablvup{0%{opacity:0;margin-top:6px}15%{opacity:1;margin-top:0}75%{opacity:1}100%{opacity:0;margin-top:-26px}}
 /* ZAKŁADKA ABILITIES */
 #body-abil{display:flex;flex-direction:column;gap:8px}
 .abrow{display:flex;align-items:center;gap:14px;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg)}

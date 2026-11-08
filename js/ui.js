@@ -1202,7 +1202,23 @@ const ABILS = {
 const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = zwykły atak (stały)
 // obrażenia umiejętności dla aktualnych statystyk: zakres obrażeń postaci × mnożnik (losowane w walce jak zwykły atak), np. "6–10"
 const abDmg = a => { if (!a.mul) return ''; const d = der(); return `${Math.round(d.min * a.mul)}–${Math.round(d.max * a.mul)}`; };
-const abTip = id => { const a = ABILS[id], dm = abDmg(a); return `<b>${a.n}</b>${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${a.d}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage.` : ''}`; };
+// POZIOMY UMIEJĘTNOŚCI (na razie bez efektu): rosną od używania w walce. me.abXp = { id: liczba użyć }.
+// Poziom n → n+1 wymaga 10 × n użyć (lvl 2 po 10, lvl 3 po kolejnych 20, lvl 4 po 30, lvl 5 po 40); maks. lvl 5.
+const AB_MAX_LVL = 5, abNeed = l => 10 * l;
+function abLvl(id) {
+  let u = (me.abXp && me.abXp[id]) || 0, l = 1;
+  while (l < AB_MAX_LVL && u >= abNeed(l)) { u -= abNeed(l); l++; }
+  return { l, cur: u, need: l < AB_MAX_LVL ? abNeed(l) : 0 };   // cur/need = postęp do następnego poziomu
+}
+const abLvlBar = id => { const v = abLvl(id); return v.need ? `<div class="ablv"><i style="width:${v.cur / v.need * 100}%"></i><span>${v.cur}/${v.need}</span></div>` : `<div class="ablv max"><i style="width:100%"></i><span>MAX</span></div>`; };
+// użycie w walce: +1; po awansie napis „LVL X!” nad slotem
+function abUse(id) {
+  me.abXp = me.abXp || {}; const l0 = abLvl(id).l; me.abXp[id] = (me.abXp[id] || 0) + 1;
+  const l1 = abLvl(id).l, s = [...document.querySelectorAll('#skillbar .sk.ab')].find(x => x.dataset.ab === id);
+  if (s) { s.dataset.tip = abTip(id); refreshTip();
+    if (l1 > l0) { const r = s.getBoundingClientRect(), e = document.createElement('div'); e.className = 'ablvup'; e.textContent = `LVL ${l1}!`; e.style.left = (r.left + r.width / 2) + 'px'; e.style.top = (r.top - 6) + 'px'; document.body.appendChild(e); setTimeout(() => e.remove(), 1400); } }
+}
+const abTip = id => { const a = ABILS[id], dm = abDmg(a); return `<b>${a.n} <span class="abl">lvl ${abLvl(id).l}</span></b>${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${a.d}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage.` : ''}${abLvlBar(id)}`; };
 let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
 // pasek: ikony umiejętności w slotach 2–Tab (przebudowa tylko, gdy zmieni się rozmieszczenie – nie miga)
 function renderBarAbils() {
@@ -1265,7 +1281,7 @@ function renderAbilTab() {
   const el = $('body-abil'); if (!el) return;
   el.innerHTML = Object.entries(ABILS).map(([id, a]) => {
     const has = me.abils && me.abils[id], lvOk = me.lvl >= a.lvl;
-    return `<div class="abrow${has ? ' has' : ''}"><div class="abico" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${a.ico}</div><div class="abinf"><b>${a.n}</b><small>${a.d}</small>`
+    return `<div class="abrow${has ? ' has' : ''}"><div class="abico" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${a.ico}</div><div class="abinf"><b>${a.n}${has ? ` <span class="abl">lvl ${abLvl(id).l}</span>` : ''}</b><small>${a.d}</small>`
       + `<small>${a.gain ? 'Generates' : 'Cost'}: <b style="color:#f07b16">${a.gain ? '+' + a.gain : a.cost} Rage</b> · Cooldown: ${a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'} · Requires level ${a.lvl}${abDmg(a) ? ` · Damage: <b style="color:#ff8080">${abDmg(a)}</b>` : ''}</small></div>`
       + (has ? `<span class="abok">Learned</span>` : `<button onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>${lvOk ? 'Learn (free)' : 'Level ' + a.lvl}</button>`) + `</div>`;
   }).join('') + `<small style="color:var(--mut);display:block;margin-top:8px">Learned abilities appear on your skill bar. Drag them to change their slot.</small>`;
@@ -2722,7 +2738,7 @@ function* fightGen(mob, io) {
           yield 'wait';
           const fa = io.act; if (!(fa && ABILS[fa] && ABILS[fa].free)) break;
           io.act = 'atk';
-          if (abOk(fa)) { const a = ABILS[fa]; rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; pbuf.fury = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b> (−${a.cost} Rage)`, 'crit'); yield 200; }
+          if (abOk(fa)) { const a = ABILS[fa]; if (UI) abUse(fa); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; pbuf.fury = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b> (−${a.cost} Rage)`, 'crit'); yield 200; }
         }
       } else yield 325;   // WALKA RĘCZNA: w Twojej turze walka czeka na atak (slot 1 albo klawisz 1)
       if (turn == 0) {
@@ -2754,6 +2770,7 @@ function* fightGen(mob, io) {
         const ab = act !== 'atk' && !(ABILS[act] || {}).free && abOk(act) ? ABILS[act] : null;
         if (furyT > 0 && !A.force) A = Object.assign({}, A, { min: A.min * 1.2, max: A.max * 1.2 });   // Battle Fury: +20% obrażeń (także umiejętności)
         if (ab && ab.need) delete abReady[ab.need];
+        if (ab && UI) abUse(act);   // poziom umiejętności: +1 użycie
         if (ab) { A = Object.assign({}, A, { min: A.min * ab.mul, max: A.max * ab.mul });   // umiejętność: losowo z zakresu obrażeń × mnożnik
            rageBar -= ab.cost; abCd[act] = ab.cd; if (UI) setRage(rageBar); say(`<b>${ab.n}!</b> (${ab.gain ? '+' + ab.gain : '−' + ab.cost} Rage)`, 'crit'); }
         firstHit = false;
