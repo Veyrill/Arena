@@ -219,7 +219,8 @@ export function der(over) {
   const hpPer = 4 + (u.vitEff || 0);   // HP za punkt Vitality (Headstrong: 4 → 5 przy 3/3)
   const baseHp = 40 + c * hpPer + me.lvl * 10;
   const foodPct = Date.now() < foodBuff.end ? foodBuff.pct : 0;   // jedzenie: +5…35% maks. HP (sumuje się z % ze skilli)
-  const finalHp = Math.round(baseHp * HP_MUL * (1 + ((u.hpPct || 0) + foodPct) / 100));   // × HP_MUL (1.7)   // Shadow Prayers i Iron Will: po +6.67% / 13.33% / 20% maks. HP
+  const fortPct = upgTree.centerHp ? 5 : 0;   // Fortitude (środkowy skill drzewka, dawniej Surprise Attack): +5% maks. HP
+  const finalHp = Math.round(baseHp * HP_MUL * (1 + ((u.hpPct || 0) + foodPct + fortPct) / 100));   // × HP_MUL (1.7)   // Shadow Prayers i Iron Will: po +6.67% / 13.33% / 20% maks. HP
   const dmgMul = 1 + (u.edmg || 0) / 100;
   // OBRAŻENIA = obrażenia broni × (1 + Strength / 100): każdy punkt Strength = +1% obrażeń broni.
   // Brutal Force podnosi to do +1.1% za punkt przy 3/3. Bez broni: pięści 1–2.

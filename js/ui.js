@@ -1850,7 +1850,7 @@ function render() {
   const tips = {
     'Strength': `Each point: +${+(d.strDmg * 100).toFixed(2)}% weapon damage (now +${Math.round((d.strMul - 1) * 100)}%, ×${d.strMul.toFixed(2)}). From items: +${g.str}, from upgrades: +${UB.str}. Scroll of Strength: +10%.`,
     'Dexterity': `Raises critical hit chance: Dexterity / (Dexterity + ${CRIT_K} × level + ${CRIT_C}). Now: ${+d.crit.toFixed(1)}%, max ${CRIT_CAP}%${d.critSet ? ` (+${d.critSet}% from set bonus)` : ''}. Every point above ${CRIT_K * me.lvl + CRIT_C} (50% at your level) adds +0.1% critical damage instead (now ${d.critOver} points, ×${d.critMul.toFixed(2)}).`
-      + `  The higher your level, the more Dexterity you need. Higher Dexterity than the enemy = you attack first. Scroll of Dexterity: +10%.${UB.dexPct ? ` Unholy Grace: +${+UB.dexPct.toFixed(2)}%.` : ''}`,
+      + `  The higher your level, the more Dexterity you need. Scroll of Dexterity: +10%.${UB.dexPct ? ` Unholy Grace: +${+UB.dexPct.toFixed(2)}%.` : ''}`,
     'Vitality': `Each point: +${+d.hpPer.toFixed(2)} health (now +${Math.round(d.con * d.hpPer)}).`,
     'Health': `(40 + Vitality×${+d.hpPer.toFixed(2)} + level×10) ×${HP_MUL}${UB.hpPct ? `, +${+UB.hpPct.toFixed(2)}% from skills` : ''}${d.foodPct ? `, +${d.foodPct}% from food` : ''} = ${d.hp}.`,
     'Damage': `${g.dmin ? 'Weapon' : 'Fists'} ${d.wmin}-${d.wmax} × ${d.strMul.toFixed(2)} (${d.str} Strength)${UB.edmg ? `, +${UB.edmg}% from upgrades` : ''}. Each hit is a random value in this range, crit ×${d.critMul.toFixed(2)}.`,
@@ -2118,14 +2118,14 @@ function render() {
     return `<div class="upg-node${n.k == 's' ? ' small' : ''} ${st}" data-id="${n.id}" style="left:${X + n.x}px;top:${Y + n.y}px" data-tip="${tipOf(n)}"${st == 'avail' ? ` onclick="window.buyNode('${n.id}')"` : ''}><span class="ic">${n.ph ? '🔒' : n.ic}</span>${badge}</div>`;
   }).join('') + corners.map(([x, y]) => `<div class="upg-node disabled" style="left:${X + x}px;top:${Y + y}px" data-tip="${lockTip}"><span class="ic">🔒</span></div>`).join('');
   const centerState = isBought ? 'bought' : (me.sp < SKILL_COST || busy ? 'disabled' : 'avail');
-  const centerTip = skTitle('Surprise Attack') + skRank(`Rank ${isBought ? 1 : 0}/1`) + skDesc('You always strike first in combat.<br>Without this skill, whoever has more Dexterity attacks first.') + (isBought ? '' : skCost);
+  const centerTip = skTitle('Fortitude') + skRank(`Rank ${isBought ? 1 : 0}/1`) + skDesc('Maximum health +5%.') + (isBought ? '' : skCost);
 
   // przycisk resetu skilli: aktywny tylko, gdy coś jest kupione (i nie trwa walka)
   const rb = $('skillreset'), refund = skillRefund();
   if (rb) {
     rb.disabled = busy || refund === 0;
     // dymek w stylu opisów przedmiotów (obsługiwany przez wspólny system data-tip, działa też na wyłączonym przycisku)
-    $('skillresetw').dataset.tip = `<b>Reset skills</b>Refunds all purchased skills, including "Surprise Attack".<br>Refund: ${refund} skill point${refund === 1 ? '' : 's'}` + (busy ? '<br>Unavailable during combat' : refund ? '' : '<br>No skills purchased');
+    $('skillresetw').dataset.tip = `<b>Reset skills</b>Refunds all purchased skills, including "Fortitude".<br>Refund: ${refund} skill point${refund === 1 ? '' : 's'}` + (busy ? '<br>Unavailable during combat' : refund ? '' : '<br>No skills purchased');
   }
 
   // ikona środkowego skilla (piorun) z assets/skills – SKILL_ICON_CENTER z data.js (gdy brak pliku: ⚡)
@@ -2255,7 +2255,9 @@ function render() {
   { const dcd = view == 'dun' && m && dsel >= 0 ? dunCd(dsel) : 0;   // loch: przerwa po wygranej → przycisk z licznikiem
     const done = expRes && !fightOn;   // wyprawa po walce: Collect (wygrana) / Back (przegrana)
     $('go').disabled = done ? busy : fightOn ? skipFight : (busy || fishing.active || dcd > 0);
-    $('go').textContent = done ? (expRes.win ? 'Collect' : 'Back') : fightOn ? 'Skip ⏭' : dcd > 0 ? `Next fight in ${fmtCd(dcd)}` : 'Fight!'; }   // w trakcie walki: Skip
+    $('go').textContent = done ? (expRes.win ? 'Collect' : 'Back') : fightOn ? 'Skip ⏭' : dcd > 0 ? `Next fight in ${fmtCd(dcd)}` : 'Fight!';
+    $('go').style.visibility = $('go').textContent === 'Fight!' ? 'hidden' : '';   // bez przycisku Fight! – walkę zaczyna atak (slot 1) albo umiejętność; miejsce zostaje (układ się nie przesuwa)
+  }   // w trakcie walki: Skip
   refreshTip();
   checkSetFx();   // efekt po osiągnięciu progu bonusu setowego (2/4, 4/4)
 }
@@ -2614,11 +2616,8 @@ function* fightGen(mob, io) {
     const UI = !io.sim, p = der(io.over), M = mstats(mob, io.sim), fp = UI ? $('fp') : null, fm = UI ? $('fm') : null;
     const say = UI ? sayOut : () => {}, renderPBuffs = UI ? rPBOut : () => {}, renderDebuffs = UI ? rDBOut : () => {};   // symulacja: bez ekranu i logu
     p.lvl = me.lvl; M.lvl = mob.l;   // poziomy do wzoru pancerza (redukcja liczona od poziomu atakującego)
-    // kto zaczyna: "Surprise Attack" = zawsze Ty; inaczej większa Zręczność (remis = losowo)
-    let turn;
-    if (upgTree.centerHp) { turn = 0; }
-    else if (p.dex !== M.dex) { turn = p.dex > M.dex ? 0 : 1; }
-    else { turn = Math.random() < .5 ? 0 : 1; }
+    // kto zaczyna: zawsze Ty (walkę rozpoczyna Twój atak / umiejętność)
+    let turn = 0;
     let ph = p.hp, mh = frailHp(M.hp), rounds = 0;   // Curse of Frailty: wróg zaczyna z obniżonym HP (maks. HP bez zmian)
     // ELEMENTAL BARRIER: tarcza = % maks. HP (3.33% za rangę); obrażenia od wroga najpierw zdejmują tarczę, potem zdrowie
     let sh = Math.round(p.hp * (ub().barrier || 0) / 100);
@@ -2707,7 +2706,7 @@ function* fightGen(mob, io) {
     // po każdej zmianie klątw: przelicz wroga i odśwież ikony debuffów (Torment działa bez własnej ikony na pasku buffów)
     const curses = () => { recalcEnemy(); renderDebuffs(deb); };
     renderDebuffs(deb);
-    say(upgTree.centerHp ? 'You strike first (Surprise Attack).' : turn === 0 ? `You strike first (Dexterity ${p.dex} vs ${Math.round(M.dex)}).` : `${mob.n} strikes first (Dexterity ${Math.round(M.dex)} vs ${p.dex}).`, 'miss');
+    say('You strike first.', 'miss');
     while (ph > 0 && mh > 0 && rounds++ < 200) {   // limit 200 rund (było 120) – długie walki z przeciwnikami Aktu 3
       if (turn == 0) { for (const k in abCd) if (abCd[k] > 0) abCd[k]--; if (UI) refreshAb(); }   // odnowienie: −1 na początku każdej Twojej tury
       if (turn == 0) abReady.exec = mh < M.hp * 0.2;   // Decapitate: wróg poniżej 20% HP
