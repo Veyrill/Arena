@@ -240,7 +240,16 @@ export const DUN4 = { n: 'The Wyrm Graveyard', e: '🦴', req: 60, mobs: [
 DUN4.mobs[0].lore = 'Its mother laid her egg on the day she came here to die, and the young dragon lived only one night. Nothing is left of it now but bleached bones and a few torn strips of leather that were once its wings. The graveyard would not let it rest, and it now crawls between the ribs of its ancestors, faster than it ever was in life. It never learned to fly, but it learned how to hunt.';
 DUN4.mobs[1].lore = 'He was the last of the dragon riders, and when his dragon fell, he followed it into the valley and never left. Under his grey hood, only a cold green light remains where his face used to be. He still carries the same shovel he used to dig a thousand graves, and a staff made from the bone of his first dragon. He believes you came to rob the dead, and no thief has ever left his valley.';
 DUN4.mobs[2].lore = 'This one belonged to the last rider, and it was the first dragon ever buried in the valley. It refused to stay dead, and the curse answered with green fire that now burns through the cracks in its dark scales. Its body is rotten and its heart is gone, yet it still rises every night to guard its old friend. To end this, you must break a bond that even death could not break.';
-export const DUNS = [DUN, DUN2, DUN3, DUN4];   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
+export const DUN5 = { n: 'The Lost Valley', e: '🦖', req: 70, mobs: [
+  pgClone('Razorclaw Raptor', '🦎', 72, 'Storm Lord', { hp: 0.9, dmg: 1.15, crit: 12 }),           // szybki: zwinny drapieżnik – mniej HP, mocne i częste krytyki
+  pgClone('Thunderhorn', '🦏', 76, 'Ancient Dragon', { hp: 1.15, dmg: 0.75, arm: 1.4, dodge: 3 }),  // czołg: triceratops w kościanej kryzie
+  pgClone('The Tyrant King', '🦖', 80, 'Chaos Emperor', { hp: 1.05, dmg: 1.05, crit: 15 })          // boss: prastary tyranozaur
+] };
+// OPISY (lore) przeciwników The Lost Valley – dolina w kraterze wygasłego wulkanu, gdzie czas się zatrzymał
+DUN5.mobs[0].lore = 'It is no taller than a man, but it is faster than any horse, with a curved claw on each foot sharp enough to open armor. It never hunts alone. If you can see one, two more are already circling behind you in the ferns, waiting for the first to make you look away.';
+DUN5.mobs[1].lore = 'It grazes quietly in the steaming meadows, until something comes too close. Then it charges with the weight of a falling mountain, three horns lowered like spears. Its bone frill is covered in old scars from teeth much bigger than yours, and it survived every one of them.';
+DUN5.mobs[2].lore = 'The ruler of the valley, so old that its scales have grown together into armor. Broken swords of forgotten heroes are still stuck between its teeth. When it roars, every bird in the crater goes silent. It does not hunt because it is hungry. It hunts because nothing has ever told it no.';
+export const DUNS = [DUN, DUN2, DUN3, DUN4, DUN5];   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
 
 // IKONY SKILLI: grafiki z assets/skills (pixel art 16×16, plik 64×64). f = nazwa pliku bez .png, e = emoji zapasowe, px = rozmiar.
 // Małe nody (statystyki): plusy – zielony Dexterity, żółty Strength, czerwony Vitality – 16 px (×1), środek: 32 px (×2) – zawsze całkowita skala, więc piksele są ostre.
