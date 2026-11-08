@@ -1219,14 +1219,14 @@ function renderBarAbils() {
   });
   refreshAb();
 }
-// stan slotów w walce: szary, gdy nie Twoja tura / za mało Rage / odnowienie (licznik tur na slocie)
+// stan slotów: przed walką świecą tylko te, których można użyć od razu (Rage = 0: darmowe, bez warunku); w walce szary, gdy nie Twoja tura / za mało Rage / odnowienie (licznik tur na slocie)
 function refreshAb() {
   const fighting = !!fightIo;
   BAR_KEYS.forEach(k => {
     const s = document.querySelector(`#skillbar .sk[data-key="${k}"]`); if (!s) return;
     const id = s.dataset.ab; if (!id) { s.classList.remove('off'); return; }
     const cd = fighting && fightIo.cd ? fightIo.cd[id] || 0 : 0;
-    const a = ABILS[id], ok = !fighting || !!(atkResolve && (fightIo.rage || 0) >= a.cost && !cd && (!a.need || (fightIo.ready && fightIo.ready[a.need])));
+    const a = ABILS[id], ok = !fighting ? (!a.cost && !a.need) : !!(atkResolve && (fightIo.rage || 0) >= a.cost && !cd && (!a.need || (fightIo.ready && fightIo.ready[a.need])));
     s.classList.toggle('proc', fighting && ok && !!a.need);   // Revenge / Decapitate: slot pulsuje, gdy się zapali
     s.classList.toggle('off', !ok);
     const c = s.querySelector('.abcd'); if (c) c.textContent = cd ? cd : '';
