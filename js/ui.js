@@ -1738,6 +1738,7 @@ function renderPortrait() {
   const el = $('portrait'); if (!el) return;
   const f = el.querySelector('.pt-face'), lv = el.querySelector('.pt-lv');
   // pierwsze uruchomienie / nowa gra: dopóki klasa nie jest wybrana, kółko jest puste (bez postaci i poziomu)
+  const pn = $('ptname'); if (pn) pn.textContent = me.clsPick ? '' : (me.name || 'Hero');   // nazwa postaci pod kółkiem (pusta przed wyborem klasy)
   if (me.clsPick) { f.style.backgroundImage = 'none'; f.dataset.src = ''; lv.style.display = 'none'; delete el.dataset.tip; return; }
   lv.style.display = '';
   const cls = me.cls || 'warrior', src = `${ASSETS_DIR}/hero/hero_${cls}.png`;
@@ -1746,7 +1747,7 @@ function renderPortrait() {
   el.dataset.tip = `<b>${me.name || 'Hero'}</b>${cls[0].toUpperCase() + cls.slice(1)} · Level ${me.lvl}`;
 }
 function buildNav() {
-  $('nav').innerHTML = `<div id="portrait"><div class="pt-face"></div><span class="pt-lv"></span></div>` + NAV.map(([k, n]) => `<button data-v="${k}">${n}</button>`).join('');   // PORTRET: kółko z głową postaci + poziom (prawy dół)
+  $('nav').innerHTML = `<div id="portrait"><div class="pt-face"></div><span class="pt-lv"></span></div><b id="ptname"></b>` + NAV.map(([k, n]) => `<button data-v="${k}">${n}</button>`).join('');   // PORTRET: kółko z głową postaci + poziom (prawy dół)
   const sb = document.querySelector('#nav button[data-v=upg]');
   if (sb) sb.addEventListener('mouseenter', () => { spDot = false; sb.classList.remove('new'); });
 }
