@@ -1299,7 +1299,7 @@ function renderAbilTab() {
   };
   const all = Object.entries(ABILS).sort((x, y) => x[1].lvl - y[1].lvl);
   // zwykłe umiejętności, potem grupa ULTIMATE (złota ramka, „choose one”)
-  el.innerHTML = `<div class="abgrid">${all.filter(e => !e[1].ult).map(card).join('')}</div>`
+  el.innerHTML = `<div class="abgrid abmain">${all.filter(e => !e[1].ult).map(card).join('')}</div>`
     + `<div class="abultg"><span class="abultl">ULTIMATE · ${ult ? 'your build: ' + ABILS[ult].n : 'choose one'}</span><div class="abgrid">${all.filter(e => e[1].ult).map(card).join('')}</div></div>`;
 }
 const ultOf = () => Object.keys(ABILS).find(k => ABILS[k].ult && me.abils && me.abils[k]);   // wybrany ultimate (build) albo undefined

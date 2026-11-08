@@ -137,7 +137,13 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 .abds{font-size:11px;line-height:1.35;color:var(--mut)}
 .abok{font-size:12px;font-weight:700;color:#f07b16}
 /* ULTIMATE: osobna grupa ze złotą ramką; wybrany = złoto, pozostałe „Not chosen” */
-.abultg{margin-top:14px;padding:10px 12px 12px;border:1px solid #8a6a2a;border-radius:10px;background:linear-gradient(#3a2d17,#241c12)}
+/* zwykłe umiejętności: kafelki rozciągnięte na całą szerokość (kwadratowe); grupa ULTIMATE wyśrodkowana */
+.abgrid.abmain{flex-wrap:nowrap;gap:12px}
+.abmain .abcard{flex:1 1 0;min-width:0;width:auto}
+.abmain .abtile{width:100%;height:auto;aspect-ratio:1}
+.abmain .abti{font-size:56px}
+.abultg{width:fit-content;margin-left:auto;margin-right:auto;text-align:center;margin-top:14px;padding:10px 12px 12px;border:1px solid #8a6a2a;border-radius:10px;background:linear-gradient(#3a2d17,#241c12)}
+.abultg .abgrid{justify-content:center}
 .abultl{display:block;margin-bottom:8px;font-size:11px;font-weight:800;letter-spacing:.12em;color:#ffd36b}
 .abcard.ult .abtile{box-shadow:0 0 0 2px #8a6a2a}.abcard.ult.has .abtile{box-shadow:0 0 0 2px #ffd36b,0 0 12px #ffd36b66}
 .abnot{font-size:11px;color:#6f604f}
