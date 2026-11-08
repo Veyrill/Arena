@@ -205,7 +205,7 @@ DUN.req = 10;   // wymagany poziom gracza (wejście do lochu)
 const pgClone = (n, e, l, src, k) => {
   const all = ALL_LOCS.flatMap(x => x.mobs), st = all.find(m => m.n === src).st, b = 1;
   return { n, e, l, sd: [], drop: [], st: { hp: Math.round(st.hp * b * 0.9 * (k.hp || 1)), min: st.min * b * (k.dmg || 1), max: st.max * b * (k.dmg || 1),
-    arm: st.arm * b * (k.arm || 1), dex: st.dex * b, crit: k.crit ?? st.crit, ...(k.dodge != null ? { dodge: k.dodge } : {}) } };
+    arm: st.arm * b * (k.arm || 1), dex: st.dex * b * (k.dex || 1), crit: k.crit ?? st.crit, ...(k.dodge != null ? { dodge: k.dodge } : {}) } };
 };
 export const DUN2 = { n: 'The Proving Grounds', e: '🏟️', req: 30, mobs: [
   pgClone('Pit Fighter', '🤺', 33, 'Crocodile', { hp: 0.85, dmg: 1.1, crit: 12 }),                     // szybki zabijaka: mniej HP, mocniej i częściej krytycznie
@@ -249,7 +249,19 @@ export const DUN5 = { n: 'The Lost Valley', e: '🦖', req: 70, mobs: [
 DUN5.mobs[0].lore = 'It is no taller than a man, but it is faster than any horse, with a curved claw on each foot sharp enough to open armor. It never hunts alone. If you can see one, two more are already circling behind you in the ferns, waiting for the first to make you look away.';
 DUN5.mobs[1].lore = 'It grazes quietly in the steaming meadows, until something comes too close. Then it charges with the weight of a falling mountain, three horns lowered like spears. Its bone frill is covered in old scars from teeth much bigger than yours, and it survived every one of them.';
 DUN5.mobs[2].lore = 'The ruler of the valley, so old that its scales have grown together into armor. Broken swords of forgotten heroes are still stuck between its teeth. When it roars, every bird in the crater goes silent. It does not hunt because it is hungry. It hunts because nothing has ever told it no.';
-export const DUNS = [DUN, DUN2, DUN3, DUN4, DUN5];   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
+// THE ROYAL MENAGERIE (req 80) – przeciwnicy powyżej maks. poziomu gracza (82 / 86 / 90). Bazą jest Chaos Emperor (80, najsilniejszy w akcie 3),
+// wzmocniony o wzrost statystyk na poziom z aktu 3 (HP ×1.098, obrażenia ×1.036, pancerz ×1.035, Dexterity ×1.028 za poziom), potem mnożniki roli jak w innych lochach.
+const lvUp = (d, k) => ({ ...k, hp: (k.hp || 1) * 1.098 ** d, dmg: (k.dmg || 1) * 1.036 ** d, arm: (k.arm || 1) * 1.035 ** d, dex: 1.028 ** d });
+export const DUN6 = { n: 'The Royal Menagerie', e: '🦁', req: 80, mobs: [
+  pgClone('The Manticore', '🦂', 82, 'Chaos Emperor', lvUp(2, { hp: 0.9, dmg: 1.15, crit: 12 })),               // szybki: mniej HP, mocne i częste krytyki
+  pgClone('The Chimera', '🐐', 86, 'Chaos Emperor', lvUp(6, { hp: 1.15, dmg: 0.75, arm: 1.4, dodge: 3 })),        // czołg: dużo HP i pancerza, słabsze ciosy
+  pgClone('The Behemoth', '🐘', 90, 'Chaos Emperor', lvUp(10, { hp: 1.05, dmg: 1.05, crit: 15 }))               // boss: ostatni przeciwnik gry
+] };
+// OPISY (lore) – pałac szalonego króla, który zbierał bestie z legend; klatki pękły sto lat temu
+DUN6.mobs[0].lore = 'A lion with the face of an old man, the wings of a bat and the tail of a scorpion. It was the pride of the collection, and the king fed it with his own hand. It still wears a golden collar with its name engraved on it. It answers to that name only to find out who knows it.';
+DUN6.mobs[1].lore = 'Three heads on one body: a lion, a goat and a serpent. Each one wants something different, and each one attacks on its own. The keepers said its cage was never quiet, because the heads argued even in their sleep.';
+DUN6.mobs[2].lore = 'The largest creature ever caught, as big as a hill, with tusks like stone columns and skin as hard as rock. It was the one that broke the cages that night. Now it lies on the shattered throne of the mad king, because in the end it became the king of the palace itself.';
+export const DUNS = [DUN, DUN2, DUN3, DUN4, DUN5, DUN6];   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
 
 // IKONY SKILLI: grafiki z assets/skills (pixel art 16×16, plik 64×64). f = nazwa pliku bez .png, e = emoji zapasowe, px = rozmiar.
 // Małe nody (statystyki): plusy – zielony Dexterity, żółty Strength, czerwony Vitality – 16 px (×1), środek: 32 px (×2) – zawsze całkowita skala, więc piksele są ostre.
