@@ -1204,6 +1204,9 @@ const ABILS = {
   quake: { n: 'Earthshaker', ico: '🔨', cost: 60, mul: 1.5, stunT: 4, cd: 0, lvl: 20, ult: true, d: 'Smash the ground for 150% weapon damage and stun the enemy for 4 turns. Once per fight.' },
   decap: { n: 'Decapitate', ico: '💀', cost: 40, mul: 3.5, cd: 0, lvl: 15, need: 'exec', d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 20% health.' }
 };
+// KLASA: każda umiejętność należy do klasy (cls; brak = 'warrior'). Zakładka Abilities i pasek pokazują tylko umiejętności klasy gracza (me.cls).
+const abCls = a => a.cls || 'warrior';
+const myAb = id => !!ABILS[id] && abCls(ABILS[id]) === (me.cls || 'warrior');
 const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = zwykły atak (stały)
 // obrażenia umiejętności dla aktualnych statystyk: zakres obrażeń postaci × mnożnik (losowane w walce jak zwykły atak), np. "6–10"
 const abDmg = a => { if (!a.mul) return ''; const d = der(); return `${Math.round(d.min * a.mul)}–${Math.round(d.max * a.mul)}`; };
@@ -1232,7 +1235,7 @@ function renderBarAbils() {
   if (!me.bar) me.bar = {};
   BAR_KEYS.forEach(k => {
     const s = document.querySelector(`#skillbar .sk[data-key="${k}"]`); if (!s) return;
-    const id = me.abils && me.abils[me.bar[k]] && ABILS[me.bar[k]] ? me.bar[k] : null, sig = id || '';   // usunięta umiejętność (np. stary Revenge w zapisie) = pusty slot
+    const id = me.abils && me.abils[me.bar[k]] && myAb(me.bar[k]) ? me.bar[k] : null, sig = id || '';   // tylko umiejętności Twojej klasy   // usunięta umiejętność (np. stary Revenge w zapisie) = pusty slot
     if (id) s.dataset.tip = abTip(id);   // dymek zawsze aktualny (obrażenia zależą od statystyk)
     if (s.dataset.ab === sig && s.dataset.built) return;
     s.dataset.ab = sig; s.dataset.built = 1;
@@ -1268,7 +1271,7 @@ addEventListener('keydown', e => {
   if (e.repeat || /INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '') || FIGHTBOX.hidden) return;
   const k = e.key === 'Tab' ? 'Tab' : e.key.length === 1 ? e.key.toUpperCase() : ''; if (!BAR_KEYS.includes(k)) return;
   e.preventDefault();   // Tab nie przeskakuje między przyciskami, gdy widać okno walki
-  const id = me.bar && me.bar[k]; if (id && me.abils && me.abils[id]) useAbility(id);
+  const id = me.bar && me.bar[k]; if (id && me.abils && me.abils[id] && myAb(id)) useAbility(id);
 });
 // PRZECIĄGANIE na pasku: złap umiejętność i upuść na inny slot (2–Tab) – zamiana miejsc (na pusty slot = przeniesienie)
 let abDragKey = null;
@@ -1297,14 +1300,15 @@ function renderAbilTab() {
       + (has ? `<span class="abok">Learned</span>` : other ? `<span class="abnot">Not chosen</span>` : `<button class="abtrain" onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>Train</button>`)
       + `</div>`;
   };
-  const all = Object.entries(ABILS).sort((x, y) => x[1].lvl - y[1].lvl);
+  const all = Object.entries(ABILS).filter(e => myAb(e[0])).sort((x, y) => x[1].lvl - y[1].lvl);   // tylko umiejętności Twojej klasy
+  if (!all.length) { el.innerHTML = `<small style="color:var(--mut)">No abilities for the ${(me.cls || 'warrior')[0].toUpperCase() + (me.cls || 'warrior').slice(1)} class yet.</small>`; return; }
   // zwykłe umiejętności, potem grupa ULTIMATE (złota ramka, „choose one”)
   el.innerHTML = `<div class="abgrid abmain">${all.filter(e => !e[1].ult).map(card).join('')}</div>`
-    + `<div class="abultg"><span class="abultl">ULTIMATE · ${ult ? 'your build: ' + ABILS[ult].n : 'choose one'}</span><div class="abgrid">${all.filter(e => e[1].ult).map(card).join('')}</div></div>`;
+    + (!all.some(e => e[1].ult) ? '' : `<div class="abultg"><span class="abultl">ULTIMATE · ${ult ? 'your build: ' + ABILS[ult].n : 'choose one'}</span><div class="abgrid">${all.filter(e => e[1].ult).map(card).join('')}</div></div>`);   // sekcja ULTIMATE tylko, gdy klasa ma ulty
 }
-const ultOf = () => Object.keys(ABILS).find(k => ABILS[k].ult && me.abils && me.abils[k]);   // wybrany ultimate (build) albo undefined
+const ultOf = () => Object.keys(ABILS).find(k => ABILS[k].ult && myAb(k) && me.abils && me.abils[k]);   // wybrany ultimate (build) albo undefined
 window.learnAbil = id => {
-  const a = ABILS[id]; if (!a || busy || me.lvl < a.lvl || (me.abils && me.abils[id])) return;
+  const a = ABILS[id]; if (!a || !myAb(id) || busy || me.lvl < a.lvl || (me.abils && me.abils[id])) return;
   if (a.ult && ultOf()) return;   // ultimate: tylko jeden build
   me.abils = me.abils || {}; me.abils[id] = true; me.bar = me.bar || {};
   for (const k in me.bar) if (!ABILS[me.bar[k]]) delete me.bar[k];   // sloty po usuniętych umiejętnościach są wolne
@@ -3753,8 +3757,8 @@ render();
 // Klik w kartę = zaznaczenie, Accept = zapis klasy (me.cls) i zamknięcie okna. Do czasu Accept okno wraca po odświeżeniu strony.
 const clsIco = f => `<img src="${ASSETS_DIR}/hero/${f}.png" alt="" draggable="false" style="display:block;width:128px;height:128px;image-rendering:pixelated">`;   // sprite klasy 32×32 → 128 px
 const CLASSES = [
-  { k: 'warlock', n: 'Warlock', ico: clsIco('hero_warlock'), d: 'Curses and shadow magic. Weakens enemies over time.', lock: true },
-  { k: 'mage', n: 'Mage', ico: clsIco('hero_mage'), d: 'Elemental spells: fire, frost and lightning.', lock: true },
+  { k: 'warlock', n: 'Warlock', ico: clsIco('hero_warlock'), d: 'Curses and shadow magic. Weakens enemies over time.' },
+  { k: 'mage', n: 'Mage', ico: clsIco('hero_mage'), d: 'Elemental spells: fire, frost and lightning.' },
   { k: 'warrior', n: 'Warrior', ico: clsIco('hero_warrior'), d: 'Steel and fury. Strong attacks fueled by Rage.' }
 ];
 function showClassPick() {
