@@ -272,6 +272,8 @@ DUN3.mobs[2].sd = ['withered_crown'].map(k => ({ k, pct: 20 }));                
 DUN4.mobs[0].sd = ['drake_skull_helm', 'drake_fang', 'bonewing_boots'].map(k => ({ k, pct: 20 }));   // Bone Drake
 DUN4.mobs[1].sd = ['keeper_staff', 'gravedigger_gloves', 'dragon_scale_shield'].map(k => ({ k, pct: 20 }));   // Grave Keeper
 DUN4.mobs[2].sd = ['wyrmbone_axe', 'ribcage_plate', 'soul_lantern'].map(k => ({ k, pct: 20 }));      // The Undying Wyrm
+DUN5.mobs[0].sd = ['razorclaw_gauntlets', 'raptor_boots'].map(k => ({ k, pct: 20 }));                         // Razorclaw Raptor
+DUN5.mobs[1].sd = ['frill_shield', 'thunderhorn_helm', 'thunder_egg'].map(k => ({ k, pct: 20 }));          // Thunderhorn
 DUN5.mobs[2].sd = ['fang_club', 'tyrant_hide', 'amber_heart'].map(k => ({ k, pct: 20 }));            // The Tyrant King
 DUN6.mobs[2].sd = ['spirit_scepter', 'wisp_ring'].map(k => ({ k, pct: 20 }));                        // The Grove Wyrm (Mossguard Helm – do wygenerowania)
 // RAID: The Black Glacier (req 80) – 6 bossów jeden po drugim (jak w lochu), poziomy 90–100; baza Chaos Emperor + wzrost za poziom (lvUp), role jak w lochach.
@@ -572,6 +574,11 @@ export const FIXED_ITEMS = {
   wyrmbone_axe: { sl: 'weapon', r: 2, name: 'Wyrmbone Axe', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 76, val: 1500, img: 'dungeon/weapon_wyrmbone_axe.png', e: '🪓' },
   ribcage_plate: { sl: 'armor', r: 2, name: 'Ribcage Plate', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 76, val: 1500, img: 'dungeon/armor_ribcage_plate.png', e: '🛡️' },
   soul_lantern: { sl: 'trinket', r: 2, name: 'Soul Lantern', s: { str: 10, dex: 10, con: 10 }, req: 76, val: 1500, img: 'dungeon/trinket_soul_lantern.png', e: '🏮' },
+  razorclaw_gauntlets: { sl: 'gloves', r: 2, name: 'Razorclaw Gauntlets', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 72, val: 1500, img: 'dungeon/gloves_razorclaw.png', e: '🧤' },
+  raptor_boots: { sl: 'boots', r: 2, name: 'Raptor Boots', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 72, val: 1500, img: 'dungeon/boots_raptor.png', e: '👢' },
+  frill_shield: { sl: 'shield', r: 2, name: 'Frill Shield', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 76, val: 1550, img: 'dungeon/shield_frill.png', e: '🛡️' },
+  thunderhorn_helm: { sl: 'helm', r: 2, name: 'Thunderhorn Helm', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 76, val: 1550, img: 'dungeon/helm_thunderhorn.png', e: '⛑️' },
+  thunder_egg: { sl: 'trinket', r: 2, name: 'Thunder Egg', s: { str: 10, dex: 10, con: 10 }, req: 76, val: 1550, img: 'dungeon/trinket_thunder_egg.png', e: '🥚' },
   fang_club: { sl: 'weapon', r: 2, name: 'Fang Club', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 80, val: 1600, img: 'dungeon/weapon_fang_club.png', e: '🏏' },
   tyrant_hide: { sl: 'armor', r: 2, name: 'Tyrant Hide', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 80, val: 1600, img: 'dungeon/armor_tyrant_hide.png', e: '🛡️' },
   amber_heart: { sl: 'amulet', r: 2, name: 'Amber Heart', s: { str: 10, dex: 10, con: 10 }, req: 80, val: 1600, img: 'dungeon/amulet_amber_heart.png', e: '📿' },

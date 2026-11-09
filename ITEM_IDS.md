@@ -114,6 +114,11 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 2043 | Keeper Staff |
 | 2044 | Gravedigger Gloves |
 | 2045 | Dragon Scale Shield |
+| 2046 | Razorclaw Gauntlets |
+| 2047 | Raptor Boots |
+| 2048 | Frill Shield |
+| 2049 | Thunderhorn Helm |
+| 2050 | Thunder Egg |
 
 ## Fishing gear
 
