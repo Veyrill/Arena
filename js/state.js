@@ -60,6 +60,7 @@ export let inv = DEV ? [
   makeFixed('widowgrip_gauntlets'),         // rękawice z lochu Widowgrip Gauntlets (rare, Spider Queen)
   makeFixed('widow_helm'),
   makeFixed('widows_heart'),                // naszyjnik z lochu Widows Heart (epic, Spider Queen 0.4%, osobna nagroda)                  // hełm z lochu Widow Helm (rare, Spider Queen)            // talizman z lochu Spider Eye Charm (rare, Spider Servant, wymaga 21 poziomu)
+  ...['champion_gladius', 'arena_helm', 'victor_shield', 'withered_crown', 'wyrmbone_axe', 'ribcage_plate', 'soul_lantern', 'fang_club', 'tyrant_hide', 'amber_heart', 'spirit_scepter', 'wisp_ring'].map(makeFixed),   // dropy z bossów lochów 2–6 (rare, 20%)
   makeFixed('boonie'),                      // kapelusz do łowienia Angler Boonie (uncommon)
   makeFixed('wellies'),                     // kalosze do łowienia Angler Wellies (uncommon)
   makeFixed('parka'),                       // płaszcz do łowienia Angler Parka (uncommon)

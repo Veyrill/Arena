@@ -83,6 +83,18 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 2012 | Widows Heart |
 | 2013 | Forgotten Fang |
 | 2014 | Chitin Halberd |
+| 2015 | Champion Gladius |
+| 2016 | Arena Helm |
+| 2017 | Victor Shield |
+| 2018 | Withered Crown |
+| 2019 | Wyrmbone Axe |
+| 2020 | Ribcage Plate |
+| 2021 | Soul Lantern |
+| 2022 | Fang Club |
+| 2023 | Tyrant Hide |
+| 2024 | Amber Heart |
+| 2025 | Spirit Scepter |
+| 2026 | Wisp Ring |
 
 ## Fishing gear
 

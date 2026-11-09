@@ -3576,6 +3576,9 @@ regI(1000, 'Equipment', 'Rusty Sword', () => ({ sl: 'weapon', r: 0, name: 'Rusty
 regI(2012, 'Dungeon', FIXED_ITEMS.widows_heart.name, () => makeFixed('widows_heart'), { fixed: 'widows_heart' });   // Widows Heart (Spider Queen, 0.4%)
 regI(2013, 'Dungeon', FIXED_ITEMS.forgotten_fang.name, () => makeFixed('forgotten_fang'), { fixed: 'forgotten_fang' });   // Forgotten Fang (Spiderling, 2%)
 regI(2014, 'Dungeon', FIXED_ITEMS.chitin_halberd.name, () => makeFixed('chitin_halberd'), { fixed: 'chitin_halberd' });   // Chitin Halberd (Spider Servant, 6%)
+// dropy z bossów lochów 2–6 (2015–2026): Grand Champion, The Withered Queen, The Undying Wyrm, The Tyrant King, The Grove Wyrm – po 20%
+['champion_gladius', 'arena_helm', 'victor_shield', 'withered_crown', 'wyrmbone_axe', 'ribcage_plate', 'soul_lantern', 'fang_club', 'tyrant_hide', 'amber_heart', 'spirit_scepter', 'wisp_ring']
+  .forEach((k, n) => regI(2015 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
 ['boonie', 'wellies', 'parka', 'lantern', 'whisker_charm', 'whisker_amulet', 'whisker_ring', 'seasoned_cap', 'seasoned_parka', 'seasoned_wellies', 'seasoned_lantern',
  'hunter_helmet', 'hunter_parka', 'hunter_wellies', 'hunter_lantern', 'tide_ring', 'lure_necklace', 'shark_eye', 'king_crown', 'king_plate', 'king_boots', 'king_lantern']
   .forEach((k, n) => regI(3001 + n, 'Fishing gear', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));

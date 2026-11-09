@@ -261,6 +261,13 @@ export const DUN6 = { n: 'The Spirit Forest', e: '🦌', req: 80, mobs: [
 DUN6.mobs[0].lore = 'Hunters say that every wolf that dies in the north comes back here as light. This one leads the pack of the dead. You will hear its howl long before you see it, and when you finally see it, it is already running at you through the trees, leaving no tracks in the snow.';
 DUN6.mobs[1].lore = 'The oldest stag of the forest, its antlers so wide that the branches bend away to let it pass. Its body is made of pale blue light, and when it walks, the forest grows quiet. It does not want to fight. But nothing living has ever been allowed to stand in its glade and leave.';
 DUN6.mobs[2].lore = 'The forest has many spirits, but only one master. This wyrm was the first creature to die here, long before there were trees. Its body faded into green light, but its grin never did. It sleeps under the roots of the oldest tree and wakes only when something alive dares to enter the heart of the forest.';
+// DROPY Z BOSSÓW LOCHÓW 2–6 (special drop, 20% każdy, jak sd w Spider's Den – maks. jeden special drop na walkę, szanse się sumują).
+// Na razie wszystkie rare, statystyki tymczasowe: +10 Strength / Dexterity / Vitality, +10 Armor (sloty z pancerzem), broń 10-10 Damage. Grafiki: assets/dungeon/.
+DUN2.mobs[2].sd = ['champion_gladius', 'arena_helm', 'victor_shield'].map(k => ({ k, pct: 20 }));   // Grand Champion
+DUN3.mobs[2].sd = ['withered_crown'].map(k => ({ k, pct: 20 }));                                     // The Withered Queen (pozostałe 2 przedmioty – do wygenerowania)
+DUN4.mobs[2].sd = ['wyrmbone_axe', 'ribcage_plate', 'soul_lantern'].map(k => ({ k, pct: 20 }));      // The Undying Wyrm
+DUN5.mobs[2].sd = ['fang_club', 'tyrant_hide', 'amber_heart'].map(k => ({ k, pct: 20 }));            // The Tyrant King
+DUN6.mobs[2].sd = ['spirit_scepter', 'wisp_ring'].map(k => ({ k, pct: 20 }));                        // The Grove Wyrm (Mossguard Helm – do wygenerowania)
 // RAID: The Black Glacier (req 80) – 6 bossów jeden po drugim (jak w lochu), poziomy 90–100; baza Chaos Emperor + wzrost za poziom (lvUp), role jak w lochach.
 // raid: true – nie pokazuje się w zakładce Dungeons, tylko w Raids. Na razie bez dropów (docelowo zestaw mityczny Blackfrost).
 export const RAID1 = { n: 'The Black Glacier', e: '🖤', req: 80, raid: true, mobs: [
@@ -533,6 +540,19 @@ export const FIXED_ITEMS = {
   // WIDOWS HEART – bardzo rzadka osobna nagroda ze Spider Queen (0.4%), epic, poza setem Widow; +35 Strength, +35 Dexterity (było 40 / 40), wymaga 26 poziomu
   widows_heart: { sl: 'amulet', r: 3, name: 'Widows Heart', s: { str: 35, dex: 35 }, req: 26, val: 2000, img: 'dungeon/amulet_widows_heart.png', e: '📿' },
   spider_eye_charm: { sl: 'trinket', r: 2, name: 'Spider Eye Charm', s: { str: 15, dex: 14, con: 14 }, req: 21, val: 750, img: 'dungeon/trinket_spider_eye.png', e: '🧿' },
+  // DROPY Z BOSSÓW LOCHÓW 2–6 – rare, statystyki tymczasowe (+10 do wszystkiego, +10 Armor w slotach z pancerzem, broń 10-10), wymagany poziom = poziom bossa (maks. 80)
+  champion_gladius: { sl: 'weapon', r: 2, name: 'Champion Gladius', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 46, val: 1000, img: 'dungeon/weapon_champion_gladius.png', e: '🗡️' },
+  arena_helm: { sl: 'helm', r: 2, name: 'Arena Helm', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 46, val: 1000, img: 'dungeon/helm_arena.png', e: '⛑️' },
+  victor_shield: { sl: 'shield', r: 2, name: 'Victor Shield', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 46, val: 1000, img: 'dungeon/shield_victor.png', e: '🛡️' },
+  withered_crown: { sl: 'helm', r: 2, name: 'Withered Crown', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 60, val: 1200, img: 'dungeon/helm_withered_crown.png', e: '👑' },
+  wyrmbone_axe: { sl: 'weapon', r: 2, name: 'Wyrmbone Axe', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 76, val: 1500, img: 'dungeon/weapon_wyrmbone_axe.png', e: '🪓' },
+  ribcage_plate: { sl: 'armor', r: 2, name: 'Ribcage Plate', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 76, val: 1500, img: 'dungeon/armor_ribcage_plate.png', e: '🛡️' },
+  soul_lantern: { sl: 'trinket', r: 2, name: 'Soul Lantern', s: { str: 10, dex: 10, con: 10 }, req: 76, val: 1500, img: 'dungeon/trinket_soul_lantern.png', e: '🏮' },
+  fang_club: { sl: 'weapon', r: 2, name: 'Fang Club', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 80, val: 1600, img: 'dungeon/weapon_fang_club.png', e: '🏏' },
+  tyrant_hide: { sl: 'armor', r: 2, name: 'Tyrant Hide', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 80, val: 1600, img: 'dungeon/armor_tyrant_hide.png', e: '🛡️' },
+  amber_heart: { sl: 'amulet', r: 2, name: 'Amber Heart', s: { str: 10, dex: 10, con: 10 }, req: 80, val: 1600, img: 'dungeon/amulet_amber_heart.png', e: '📿' },
+  spirit_scepter: { sl: 'weapon', r: 2, name: 'Spirit Scepter', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 80, val: 1800, img: 'dungeon/weapon_spirit_scepter.png', e: '🪄' },
+  wisp_ring: { sl: 'ring', r: 2, name: 'Wisp Ring', s: { str: 10, dex: 10, con: 10 }, req: 80, val: 1800, img: 'dungeon/ring_wisp.png', e: '💍' },
   boonie: { sl: 'helm', r: 1, name: "Angler Boonie", isFishGear: 1, fp: 25, fx: { treasure: 0.5 }, val: 100, img: 'fishing_gear/helm_boonie.png', e: '👒' },
   // Angler Wellies – kalosze do łowienia (slot butów na stronie 2), uncommon, 25 FP; special drop z Dorsza (2%, jednorazowo)
   wellies: { sl: 'boots', r: 1, name: "Angler Wellies", isFishGear: 1, fp: 25, fx: { bycatch: 1 }, val: 100, img: 'fishing_gear/boots_wellies.png', e: '🥾' },
