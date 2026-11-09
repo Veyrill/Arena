@@ -119,6 +119,9 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 2048 | Frill Shield |
 | 2049 | Thunderhorn Helm |
 | 2050 | Thunder Egg |
+| 2051 | Ghostfang Gauntlets |
+| 2052 | Snowstalker Boots |
+| 2053 | Moonstone |
 
 ## Fishing gear
 

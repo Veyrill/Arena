@@ -275,6 +275,7 @@ DUN4.mobs[2].sd = ['wyrmbone_axe', 'ribcage_plate', 'soul_lantern'].map(k => ({ 
 DUN5.mobs[0].sd = ['razorclaw_gauntlets', 'raptor_boots'].map(k => ({ k, pct: 20 }));                         // Razorclaw Raptor
 DUN5.mobs[1].sd = ['frill_shield', 'thunderhorn_helm', 'thunder_egg'].map(k => ({ k, pct: 20 }));          // Thunderhorn
 DUN5.mobs[2].sd = ['fang_club', 'tyrant_hide', 'amber_heart'].map(k => ({ k, pct: 20 }));            // The Tyrant King
+DUN6.mobs[0].sd = ['ghostfang_gauntlets', 'snowstalker_boots', 'moonstone'].map(k => ({ k, pct: 20 }));   // Spirit Wolf
 DUN6.mobs[2].sd = ['spirit_scepter', 'wisp_ring'].map(k => ({ k, pct: 20 }));                        // The Grove Wyrm (Mossguard Helm – do wygenerowania)
 // RAID: The Black Glacier (req 80) – 6 bossów jeden po drugim (jak w lochu), poziomy 90–100; baza Chaos Emperor + wzrost za poziom (lvUp), role jak w lochach.
 // raid: true – nie pokazuje się w zakładce Dungeons, tylko w Raids. Na razie bez dropów (docelowo zestaw mityczny Blackfrost).
@@ -582,6 +583,9 @@ export const FIXED_ITEMS = {
   fang_club: { sl: 'weapon', r: 2, name: 'Fang Club', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 80, val: 1600, img: 'dungeon/weapon_fang_club.png', e: '🏏' },
   tyrant_hide: { sl: 'armor', r: 2, name: 'Tyrant Hide', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 80, val: 1600, img: 'dungeon/armor_tyrant_hide.png', e: '🛡️' },
   amber_heart: { sl: 'amulet', r: 2, name: 'Amber Heart', s: { str: 10, dex: 10, con: 10 }, req: 80, val: 1600, img: 'dungeon/amulet_amber_heart.png', e: '📿' },
+  ghostfang_gauntlets: { sl: 'gloves', r: 2, name: 'Ghostfang Gauntlets', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 80, val: 1700, img: 'dungeon/gloves_ghostfang.png', e: '🧤' },
+  snowstalker_boots: { sl: 'boots', r: 2, name: 'Snowstalker Boots', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 80, val: 1700, img: 'dungeon/boots_snowstalker.png', e: '👢' },
+  moonstone: { sl: 'trinket', r: 2, name: 'Moonstone', s: { str: 10, dex: 10, con: 10 }, req: 80, val: 1700, img: 'dungeon/trinket_moonstone.png', e: '🌙' },
   spirit_scepter: { sl: 'weapon', r: 2, name: 'Spirit Scepter', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 80, val: 1800, img: 'dungeon/weapon_spirit_scepter.png', e: '🪄' },
   wisp_ring: { sl: 'ring', r: 2, name: 'Wisp Ring', s: { str: 10, dex: 10, con: 10 }, req: 80, val: 1800, img: 'dungeon/ring_wisp.png', e: '💍' },
   boonie: { sl: 'helm', r: 1, name: "Angler Boonie", isFishGear: 1, fp: 25, fx: { treasure: 0.5 }, val: 100, img: 'fishing_gear/helm_boonie.png', e: '👒' },
