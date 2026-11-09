@@ -113,7 +113,7 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 2042 | Bonewing Boots |
 | 2043 | Keeper Staff |
 | 2044 | Gravedigger Gloves |
-| 2045 | Tombstone Shield |
+| 2045 | Dragon Scale Shield |
 
 ## Fishing gear
 

@@ -3590,8 +3590,8 @@ regI(2014, 'Dungeon', FIXED_ITEMS.chitin_halberd.name, () => makeFixed('chitin_h
 ['golden_collar', 'rosethorn_gauntlets', 'thornstep_boots', 'thornblade', 'briar_plate', 'briar_shield'].forEach((k, n) => regI(2034 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
 // dropy z Bone Drake (The Wyrm Graveyard, 20% każdy) – 2040–2042
 ['drake_skull_helm', 'drake_fang', 'bonewing_boots'].forEach((k, n) => regI(2040 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
-// dropy z Grave Keeper (The Wyrm Graveyard, 20% każdy) – 2043–2045
-['keeper_staff', 'gravedigger_gloves', 'tombstone_shield'].forEach((k, n) => regI(2043 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
+// dropy z Grave Keeper (The Wyrm Graveyard, 20% każdy) – 2043–2045 (2045: Dragon Scale Shield zamiast Tombstone Shield, który nigdy nie wyszedł poza DEV)
+['keeper_staff', 'gravedigger_gloves', 'dragon_scale_shield'].forEach((k, n) => regI(2043 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
 ['boonie', 'wellies', 'parka', 'lantern', 'whisker_charm', 'whisker_amulet', 'whisker_ring', 'seasoned_cap', 'seasoned_parka', 'seasoned_wellies', 'seasoned_lantern',
  'hunter_helmet', 'hunter_parka', 'hunter_wellies', 'hunter_lantern', 'tide_ring', 'lure_necklace', 'shark_eye', 'king_crown', 'king_plate', 'king_boots', 'king_lantern']
   .forEach((k, n) => regI(3001 + n, 'Fishing gear', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
