@@ -266,6 +266,8 @@ DUN6.mobs[2].lore = 'The forest has many spirits, but only one master. This wyrm
 DUN2.mobs[0].sd = ['iron_cestus', 'pit_greaves', 'arena_token'].map(k => ({ k, pct: 20 }));   // Pit Fighter
 DUN2.mobs[1].sd = ['juggernaut_plate', 'titan_maul', 'war_tags'].map(k => ({ k, pct: 20 }));          // Juggernaut
 DUN2.mobs[2].sd = ['champion_gladius', 'arena_helm', 'victor_shield'].map(k => ({ k, pct: 20 }));   // Grand Champion
+DUN3.mobs[0].sd = ['golden_collar', 'rosethorn_gauntlets', 'thornstep_boots'].map(k => ({ k, pct: 20 }));   // Garden Hound
+DUN3.mobs[1].sd = ['thornblade', 'briar_plate', 'briar_shield'].map(k => ({ k, pct: 20 }));                     // Briar Knight
 DUN3.mobs[2].sd = ['withered_crown'].map(k => ({ k, pct: 20 }));                                     // The Withered Queen (pozostałe 2 przedmioty – do wygenerowania)
 DUN4.mobs[2].sd = ['wyrmbone_axe', 'ribcage_plate', 'soul_lantern'].map(k => ({ k, pct: 20 }));      // The Undying Wyrm
 DUN5.mobs[2].sd = ['fang_club', 'tyrant_hide', 'amber_heart'].map(k => ({ k, pct: 20 }));            // The Tyrant King
@@ -552,6 +554,12 @@ export const FIXED_ITEMS = {
   champion_gladius: { sl: 'weapon', r: 2, name: 'Champion Gladius', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 46, val: 1000, img: 'dungeon/weapon_champion_gladius.png', e: '🗡️' },
   arena_helm: { sl: 'helm', r: 2, name: 'Arena Helm', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 46, val: 1000, img: 'dungeon/helm_arena.png', e: '⛑️' },
   victor_shield: { sl: 'shield', r: 2, name: 'Victor Shield', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 46, val: 1000, img: 'dungeon/shield_victor.png', e: '🛡️' },
+  golden_collar: { sl: 'amulet', r: 2, name: 'Golden Collar', s: { str: 10, dex: 10, con: 10 }, req: 48, val: 1000, img: 'dungeon/amulet_golden_collar.png', e: '📿' },
+  rosethorn_gauntlets: { sl: 'gloves', r: 2, name: 'Rosethorn Gauntlets', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 48, val: 1000, img: 'dungeon/gloves_rosethorn.png', e: '🧤' },
+  thornstep_boots: { sl: 'boots', r: 2, name: 'Thornstep Boots', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 48, val: 1000, img: 'dungeon/boots_thornstep.png', e: '👢' },
+  thornblade: { sl: 'weapon', r: 2, name: 'Thornblade', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 54, val: 1100, img: 'dungeon/weapon_thornblade.png', e: '🗡️' },
+  briar_plate: { sl: 'armor', r: 2, name: 'Briar Plate', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 54, val: 1100, img: 'dungeon/armor_briar_plate.png', e: '🛡️' },
+  briar_shield: { sl: 'shield', r: 2, name: 'Briar Shield', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 54, val: 1100, img: 'dungeon/shield_briar.png', e: '🛡️' },
   withered_crown: { sl: 'helm', r: 2, name: 'Withered Crown', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 60, val: 1200, img: 'dungeon/helm_withered_crown.png', e: '👑' },
   wyrmbone_axe: { sl: 'weapon', r: 2, name: 'Wyrmbone Axe', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 76, val: 1500, img: 'dungeon/weapon_wyrmbone_axe.png', e: '🪓' },
   ribcage_plate: { sl: 'armor', r: 2, name: 'Ribcage Plate', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 76, val: 1500, img: 'dungeon/armor_ribcage_plate.png', e: '🛡️' },

@@ -102,6 +102,12 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 2031 | Iron Cestus |
 | 2032 | Pit Greaves |
 | 2033 | Arena Token |
+| 2034 | Golden Collar |
+| 2035 | Rosethorn Gauntlets |
+| 2036 | Thornstep Boots |
+| 2037 | Thornblade |
+| 2038 | Briar Plate |
+| 2039 | Briar Shield |
 
 ## Fishing gear
 

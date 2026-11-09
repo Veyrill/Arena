@@ -3586,6 +3586,8 @@ regI(2014, 'Dungeon', FIXED_ITEMS.chitin_halberd.name, () => makeFixed('chitin_h
 ['juggernaut_plate', 'titan_maul', 'war_tags'].forEach((k, n) => regI(2027 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
 // dropy z Pit Fightera (The Proving Grounds, 20% każdy) – 2031–2033 (2030 = Pit Trident, usunięty – ID nie używać ponownie)
 ['iron_cestus', 'pit_greaves', 'arena_token'].forEach((k, n) => regI(2031 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
+// dropy z Garden Hound i Briar Knight (The Thorn Garden, 20% każdy) – 2034–2039
+['golden_collar', 'rosethorn_gauntlets', 'thornstep_boots', 'thornblade', 'briar_plate', 'briar_shield'].forEach((k, n) => regI(2034 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
 ['boonie', 'wellies', 'parka', 'lantern', 'whisker_charm', 'whisker_amulet', 'whisker_ring', 'seasoned_cap', 'seasoned_parka', 'seasoned_wellies', 'seasoned_lantern',
  'hunter_helmet', 'hunter_parka', 'hunter_wellies', 'hunter_lantern', 'tide_ring', 'lure_necklace', 'shark_eye', 'king_crown', 'king_plate', 'king_boots', 'king_lantern']
   .forEach((k, n) => regI(3001 + n, 'Fishing gear', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
