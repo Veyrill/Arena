@@ -263,6 +263,7 @@ DUN6.mobs[1].lore = 'The oldest stag of the forest, its antlers so wide that the
 DUN6.mobs[2].lore = 'The forest has many spirits, but only one master. This wyrm was the first creature to die here, long before there were trees. Its body faded into green light, but its grin never did. It sleeps under the roots of the oldest tree and wakes only when something alive dares to enter the heart of the forest.';
 // DROPY Z BOSSÓW LOCHÓW 2–6 (special drop, 20% każdy, jak sd w Spider's Den – maks. jeden special drop na walkę, szanse się sumują).
 // Na razie wszystkie rare, statystyki tymczasowe: +10 Strength / Dexterity / Vitality, +10 Armor (sloty z pancerzem), broń 10-10 Damage. Grafiki: assets/dungeon/.
+DUN2.mobs[0].sd = ['pit_trident', 'iron_cestus', 'pit_greaves', 'arena_token'].map(k => ({ k, pct: 20 }));   // Pit Fighter
 DUN2.mobs[1].sd = ['juggernaut_plate', 'titan_maul', 'war_tags'].map(k => ({ k, pct: 20 }));          // Juggernaut
 DUN2.mobs[2].sd = ['champion_gladius', 'arena_helm', 'victor_shield'].map(k => ({ k, pct: 20 }));   // Grand Champion
 DUN3.mobs[2].sd = ['withered_crown'].map(k => ({ k, pct: 20 }));                                     // The Withered Queen (pozostałe 2 przedmioty – do wygenerowania)
@@ -542,6 +543,10 @@ export const FIXED_ITEMS = {
   widows_heart: { sl: 'amulet', r: 3, name: 'Widows Heart', s: { str: 35, dex: 35 }, req: 26, val: 2000, img: 'dungeon/amulet_widows_heart.png', e: '📿' },
   spider_eye_charm: { sl: 'trinket', r: 2, name: 'Spider Eye Charm', s: { str: 15, dex: 14, con: 14 }, req: 21, val: 750, img: 'dungeon/trinket_spider_eye.png', e: '🧿' },
   // DROPY Z BOSSÓW LOCHÓW 2–6 – rare, statystyki tymczasowe (+10 do wszystkiego, +10 Armor w slotach z pancerzem, broń 10-10), wymagany poziom = poziom bossa (maks. 80)
+  pit_trident: { sl: 'weapon', r: 2, name: 'Pit Trident', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 33, val: 800, img: 'dungeon/weapon_pit_trident.png', e: '🔱' },
+  iron_cestus: { sl: 'gloves', r: 2, name: 'Iron Cestus', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 33, val: 800, img: 'dungeon/gloves_iron_cestus.png', e: '🧤' },
+  pit_greaves: { sl: 'boots', r: 2, name: 'Pit Greaves', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 33, val: 800, img: 'dungeon/boots_pit_greaves.png', e: '👢' },
+  arena_token: { sl: 'trinket', r: 2, name: 'Arena Token', s: { str: 10, dex: 10, con: 10 }, req: 33, val: 800, img: 'dungeon/trinket_arena_token.png', e: '🪙' },
   juggernaut_plate: { sl: 'armor', r: 2, name: 'Juggernaut Plate', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 40, val: 900, img: 'dungeon/armor_juggernaut_plate.png', e: '🛡️' },
   titan_maul: { sl: 'weapon', r: 2, name: 'Titan Maul', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 40, val: 900, img: 'dungeon/weapon_titan_maul.png', e: '🔨' },
   war_tags: { sl: 'amulet', r: 2, name: 'War Tags', s: { str: 10, dex: 10, con: 10 }, req: 40, val: 900, img: 'dungeon/amulet_war_tags.png', e: '📿' },
