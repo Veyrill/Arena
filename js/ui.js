@@ -3600,6 +3600,8 @@ regI(2014, 'Dungeon', FIXED_ITEMS.chitin_halberd.name, () => makeFixed('chitin_h
 ['stag_helm', 'glade_shield', 'stag_heart'].forEach((k, n) => regI(2054 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
 // zbroje bossów: The Withered Queen (Withered Gown), The Grove Wyrm (Grovewyrm Scale Mail) – 2057–2058
 ['withered_gown', 'grovewyrm_scale_mail'].forEach((k, n) => regI(2057 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
+// pierścienie: Grand Champion (Champion Signet), Garden Hound (Thornband), Grave Keeper (Ouroboros Ring) – 2059–2061
+['champion_signet', 'thornband', 'ouroboros_ring'].forEach((k, n) => regI(2059 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
 ['boonie', 'wellies', 'parka', 'lantern', 'whisker_charm', 'whisker_amulet', 'whisker_ring', 'seasoned_cap', 'seasoned_parka', 'seasoned_wellies', 'seasoned_lantern',
  'hunter_helmet', 'hunter_parka', 'hunter_wellies', 'hunter_lantern', 'tide_ring', 'lure_necklace', 'shark_eye', 'king_crown', 'king_plate', 'king_boots', 'king_lantern']
   .forEach((k, n) => regI(3001 + n, 'Fishing gear', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));

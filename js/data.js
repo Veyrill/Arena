@@ -265,12 +265,12 @@ DUN6.mobs[2].lore = 'The forest has many spirits, but only one master. This wyrm
 // Na razie wszystkie rare, statystyki tymczasowe: +10 Strength / Dexterity / Vitality, +10 Armor (sloty z pancerzem), broń 10-10 Damage. Grafiki: assets/dungeon/.
 DUN2.mobs[0].sd = ['iron_cestus', 'pit_greaves', 'arena_token'].map(k => ({ k, pct: 20 }));   // Pit Fighter
 DUN2.mobs[1].sd = ['juggernaut_plate', 'titan_maul', 'war_tags'].map(k => ({ k, pct: 20 }));          // Juggernaut
-DUN2.mobs[2].sd = ['champion_gladius', 'arena_helm', 'victor_shield'].map(k => ({ k, pct: 20 }));   // Grand Champion
-DUN3.mobs[0].sd = ['golden_collar', 'rosethorn_gauntlets', 'thornstep_boots'].map(k => ({ k, pct: 20 }));   // Garden Hound
+DUN2.mobs[2].sd = ['champion_gladius', 'arena_helm', 'victor_shield', 'champion_signet'].map(k => ({ k, pct: 20 }));   // Grand Champion
+DUN3.mobs[0].sd = ['golden_collar', 'rosethorn_gauntlets', 'thornstep_boots', 'thornband'].map(k => ({ k, pct: 20 }));   // Garden Hound
 DUN3.mobs[1].sd = ['thornblade', 'briar_plate', 'briar_shield'].map(k => ({ k, pct: 20 }));                     // Briar Knight
 DUN3.mobs[2].sd = ['withered_crown', 'withered_gown'].map(k => ({ k, pct: 20 }));                                     // The Withered Queen (pozostałe 2 przedmioty – do wygenerowania)
 DUN4.mobs[0].sd = ['drake_skull_helm', 'drake_fang', 'bonewing_boots'].map(k => ({ k, pct: 20 }));   // Bone Drake
-DUN4.mobs[1].sd = ['keeper_staff', 'gravedigger_gloves', 'dragon_scale_shield'].map(k => ({ k, pct: 20 }));   // Grave Keeper
+DUN4.mobs[1].sd = ['keeper_staff', 'gravedigger_gloves', 'dragon_scale_shield', 'ouroboros_ring'].map(k => ({ k, pct: 20 }));   // Grave Keeper
 DUN4.mobs[2].sd = ['wyrmbone_axe', 'ribcage_plate', 'soul_lantern'].map(k => ({ k, pct: 20 }));      // The Undying Wyrm
 DUN5.mobs[0].sd = ['razorclaw_gauntlets', 'raptor_boots'].map(k => ({ k, pct: 20 }));                         // Razorclaw Raptor
 DUN5.mobs[1].sd = ['frill_shield', 'thunderhorn_helm', 'thunder_egg'].map(k => ({ k, pct: 20 }));          // Thunderhorn
@@ -575,6 +575,9 @@ export const FIXED_ITEMS = {
   dragon_scale_shield: { sl: 'shield', r: 2, name: 'Dragon Scale Shield', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 70, val: 1400, img: 'dungeon/shield_dragon_scale.png', e: '🛡️' },
   withered_gown: { sl: 'armor', r: 2, name: 'Withered Gown', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 60, val: 1200, img: 'dungeon/armor_withered_gown.png', e: '👗' },
   grovewyrm_scale_mail: { sl: 'armor', r: 2, name: 'Grovewyrm Scale Mail', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 80, val: 1800, img: 'dungeon/armor_grovewyrm_scale.png', e: '🛡️' },
+  champion_signet: { sl: 'ring', r: 2, name: 'Champion Signet', s: { str: 10, dex: 10, con: 10 }, req: 46, val: 1000, img: 'dungeon/ring_champion_signet.png', e: '💍' },
+  thornband: { sl: 'ring', r: 2, name: 'Thornband', s: { str: 10, dex: 10, con: 10 }, req: 48, val: 1000, img: 'dungeon/ring_thornband.png', e: '💍' },
+  ouroboros_ring: { sl: 'ring', r: 2, name: 'Ouroboros Ring', s: { str: 10, dex: 10, con: 10 }, req: 70, val: 1400, img: 'dungeon/ring_ouroboros.png', e: '💍' },
   wyrmbone_axe: { sl: 'weapon', r: 2, name: 'Wyrmbone Axe', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 76, val: 1500, img: 'dungeon/weapon_wyrmbone_axe.png', e: '🪓' },
   ribcage_plate: { sl: 'armor', r: 2, name: 'Ribcage Plate', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 76, val: 1500, img: 'dungeon/armor_ribcage_plate.png', e: '🛡️' },
   soul_lantern: { sl: 'trinket', r: 2, name: 'Soul Lantern', s: { str: 10, dex: 10, con: 10 }, req: 76, val: 1500, img: 'dungeon/trinket_soul_lantern.png', e: '🏮' },

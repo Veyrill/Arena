@@ -127,6 +127,9 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 2056 | Stag Heart |
 | 2057 | Withered Gown |
 | 2058 | Grovewyrm Scale Mail |
+| 2059 | Champion Signet |
+| 2060 | Thornband |
+| 2061 | Ouroboros Ring |
 
 ## Fishing gear
 
