@@ -95,6 +95,9 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 2024 | Amber Heart |
 | 2025 | Spirit Scepter |
 | 2026 | Wisp Ring |
+| 2027 | Juggernaut Plate |
+| 2028 | Titan Maul |
+| 2029 | War Tags |
 
 ## Fishing gear
 

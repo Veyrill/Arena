@@ -3579,6 +3579,8 @@ regI(2014, 'Dungeon', FIXED_ITEMS.chitin_halberd.name, () => makeFixed('chitin_h
 // dropy z bossów lochów 2–6 (2015–2026): Grand Champion, The Withered Queen, The Undying Wyrm, The Tyrant King, The Grove Wyrm – po 20%
 ['champion_gladius', 'arena_helm', 'victor_shield', 'withered_crown', 'wyrmbone_axe', 'ribcage_plate', 'soul_lantern', 'fang_club', 'tyrant_hide', 'amber_heart', 'spirit_scepter', 'wisp_ring']
   .forEach((k, n) => regI(2015 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
+// dropy z Juggernauta (The Proving Grounds, 20% każdy) – 2027–2029
+['juggernaut_plate', 'titan_maul', 'war_tags'].forEach((k, n) => regI(2027 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
 ['boonie', 'wellies', 'parka', 'lantern', 'whisker_charm', 'whisker_amulet', 'whisker_ring', 'seasoned_cap', 'seasoned_parka', 'seasoned_wellies', 'seasoned_lantern',
  'hunter_helmet', 'hunter_parka', 'hunter_wellies', 'hunter_lantern', 'tide_ring', 'lure_necklace', 'shark_eye', 'king_crown', 'king_plate', 'king_boots', 'king_lantern']
   .forEach((k, n) => regI(3001 + n, 'Fishing gear', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
