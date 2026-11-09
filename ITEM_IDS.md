@@ -108,6 +108,9 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 2037 | Thornblade |
 | 2038 | Briar Plate |
 | 2039 | Briar Shield |
+| 2040 | Drake Skull Helm |
+| 2041 | Drake Fang |
+| 2042 | Bonewing Boots |
 
 ## Fishing gear
 

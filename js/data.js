@@ -269,6 +269,7 @@ DUN2.mobs[2].sd = ['champion_gladius', 'arena_helm', 'victor_shield'].map(k => (
 DUN3.mobs[0].sd = ['golden_collar', 'rosethorn_gauntlets', 'thornstep_boots'].map(k => ({ k, pct: 20 }));   // Garden Hound
 DUN3.mobs[1].sd = ['thornblade', 'briar_plate', 'briar_shield'].map(k => ({ k, pct: 20 }));                     // Briar Knight
 DUN3.mobs[2].sd = ['withered_crown'].map(k => ({ k, pct: 20 }));                                     // The Withered Queen (pozostałe 2 przedmioty – do wygenerowania)
+DUN4.mobs[0].sd = ['drake_skull_helm', 'drake_fang', 'bonewing_boots'].map(k => ({ k, pct: 20 }));   // Bone Drake
 DUN4.mobs[2].sd = ['wyrmbone_axe', 'ribcage_plate', 'soul_lantern'].map(k => ({ k, pct: 20 }));      // The Undying Wyrm
 DUN5.mobs[2].sd = ['fang_club', 'tyrant_hide', 'amber_heart'].map(k => ({ k, pct: 20 }));            // The Tyrant King
 DUN6.mobs[2].sd = ['spirit_scepter', 'wisp_ring'].map(k => ({ k, pct: 20 }));                        // The Grove Wyrm (Mossguard Helm – do wygenerowania)
@@ -561,6 +562,9 @@ export const FIXED_ITEMS = {
   briar_plate: { sl: 'armor', r: 2, name: 'Briar Plate', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 54, val: 1100, img: 'dungeon/armor_briar_plate.png', e: '🛡️' },
   briar_shield: { sl: 'shield', r: 2, name: 'Briar Shield', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 54, val: 1100, img: 'dungeon/shield_briar.png', e: '🛡️' },
   withered_crown: { sl: 'helm', r: 2, name: 'Withered Crown', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 60, val: 1200, img: 'dungeon/helm_withered_crown.png', e: '👑' },
+  drake_skull_helm: { sl: 'helm', r: 2, name: 'Drake Skull Helm', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 63, val: 1300, img: 'dungeon/helm_drake_skull.png', e: '💀' },
+  drake_fang: { sl: 'amulet', r: 2, name: 'Drake Fang', s: { str: 10, dex: 10, con: 10 }, req: 63, val: 1300, img: 'dungeon/amulet_drake_fang.png', e: '🦷' },
+  bonewing_boots: { sl: 'boots', r: 2, name: 'Bonewing Boots', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 63, val: 1300, img: 'dungeon/boots_bonewing.png', e: '👢' },
   wyrmbone_axe: { sl: 'weapon', r: 2, name: 'Wyrmbone Axe', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 76, val: 1500, img: 'dungeon/weapon_wyrmbone_axe.png', e: '🪓' },
   ribcage_plate: { sl: 'armor', r: 2, name: 'Ribcage Plate', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 76, val: 1500, img: 'dungeon/armor_ribcage_plate.png', e: '🛡️' },
   soul_lantern: { sl: 'trinket', r: 2, name: 'Soul Lantern', s: { str: 10, dex: 10, con: 10 }, req: 76, val: 1500, img: 'dungeon/trinket_soul_lantern.png', e: '🏮' },
