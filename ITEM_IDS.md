@@ -98,7 +98,7 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 2027 | Juggernaut Plate |
 | 2028 | Titan Maul |
 | 2029 | War Tags |
-| 2030 | Pit Trident |
+| 2030 | ~~Pit Trident~~ (usunięty, ID zarezerwowane) |
 | 2031 | Iron Cestus |
 | 2032 | Pit Greaves |
 | 2033 | Arena Token |

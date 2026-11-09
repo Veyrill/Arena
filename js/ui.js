@@ -71,6 +71,9 @@ if (dprog > DUN.mobs.length) setDprog(DUN.mobs.length);
 // przedmioty o stałych statystykach: wymagany poziom zawsze aktualny z FIXED_ITEMS (np. komplet Forgotten: 10 → 12)
 [eq1, eq2].forEach(e => Object.values(e).forEach(i => { if (i && i.fixed && FIXED_ITEMS[i.fixed] && FIXED_ITEMS[i.fixed].req) i.req = FIXED_ITEMS[i.fixed].req; }));
 inv.forEach(i => { if (i && i.fixed && FIXED_ITEMS[i.fixed] && FIXED_ITEMS[i.fixed].req) i.req = FIXED_ITEMS[i.fixed].req; });
+// stary zapis: przedmioty usunięte z gry (klucz fixed nie istnieje już w FIXED_ITEMS, np. Pit Trident) – znikają z plecaka i ekwipunku
+for (let n = inv.length - 1; n >= 0; n--) if (inv[n] && inv[n].fixed && !FIXED_ITEMS[inv[n].fixed]) inv.splice(n, 1);
+[eq1, eq2].forEach(e => Object.keys(e).forEach(k => { if (e[k] && e[k].fixed && !FIXED_ITEMS[e[k].fixed]) delete e[k]; }));
 // stary zapis: bronie z obrażeniami jako mnożnik (np. ×1.4–2.0) albo ze starym wzorem → nowe obrażenia wg poziomu postaci (Rusty Sword: 3-6)
 { const fixW = i => {
     if (i && i.d && !i.fixed && !i.rust && i.dv === 2) { i.d = [Math.max(1, Math.round(i.d[0] * 0.9)), Math.max(2, Math.round(i.d[1] * 0.9))]; i.dv = 3; }   // broń z poprzedniej wersji: −10% obrażeń
@@ -3581,8 +3584,8 @@ regI(2014, 'Dungeon', FIXED_ITEMS.chitin_halberd.name, () => makeFixed('chitin_h
   .forEach((k, n) => regI(2015 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
 // dropy z Juggernauta (The Proving Grounds, 20% każdy) – 2027–2029
 ['juggernaut_plate', 'titan_maul', 'war_tags'].forEach((k, n) => regI(2027 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
-// dropy z Pit Fightera (The Proving Grounds, 20% każdy) – 2030–2033
-['pit_trident', 'iron_cestus', 'pit_greaves', 'arena_token'].forEach((k, n) => regI(2030 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
+// dropy z Pit Fightera (The Proving Grounds, 20% każdy) – 2031–2033 (2030 = Pit Trident, usunięty – ID nie używać ponownie)
+['iron_cestus', 'pit_greaves', 'arena_token'].forEach((k, n) => regI(2031 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
 ['boonie', 'wellies', 'parka', 'lantern', 'whisker_charm', 'whisker_amulet', 'whisker_ring', 'seasoned_cap', 'seasoned_parka', 'seasoned_wellies', 'seasoned_lantern',
  'hunter_helmet', 'hunter_parka', 'hunter_wellies', 'hunter_lantern', 'tide_ring', 'lure_necklace', 'shark_eye', 'king_crown', 'king_plate', 'king_boots', 'king_lantern']
   .forEach((k, n) => regI(3001 + n, 'Fishing gear', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
