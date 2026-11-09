@@ -130,6 +130,8 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 2059 | Champion Signet |
 | 2060 | Thornband |
 | 2061 | Ouroboros Ring |
+| 2062 | Lava Ring |
+| 2063 | Frostfang Band |
 
 ## Fishing gear
 

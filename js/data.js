@@ -272,10 +272,10 @@ DUN3.mobs[2].sd = ['withered_crown', 'withered_gown'].map(k => ({ k, pct: 20 }))
 DUN4.mobs[0].sd = ['drake_skull_helm', 'drake_fang', 'bonewing_boots'].map(k => ({ k, pct: 20 }));   // Bone Drake
 DUN4.mobs[1].sd = ['keeper_staff', 'gravedigger_gloves', 'dragon_scale_shield', 'ouroboros_ring'].map(k => ({ k, pct: 20 }));   // Grave Keeper
 DUN4.mobs[2].sd = ['wyrmbone_axe', 'ribcage_plate', 'soul_lantern'].map(k => ({ k, pct: 20 }));      // The Undying Wyrm
-DUN5.mobs[0].sd = ['razorclaw_gauntlets', 'raptor_boots'].map(k => ({ k, pct: 20 }));                         // Razorclaw Raptor
+DUN5.mobs[0].sd = ['razorclaw_gauntlets', 'raptor_boots', 'lava_ring'].map(k => ({ k, pct: 20 }));                         // Razorclaw Raptor
 DUN5.mobs[1].sd = ['frill_shield', 'thunderhorn_helm', 'thunder_egg'].map(k => ({ k, pct: 20 }));          // Thunderhorn
 DUN5.mobs[2].sd = ['fang_club', 'tyrant_hide', 'amber_heart'].map(k => ({ k, pct: 20 }));            // The Tyrant King
-DUN6.mobs[0].sd = ['ghostfang_gauntlets', 'snowstalker_boots', 'moonstone'].map(k => ({ k, pct: 20 }));   // Spirit Wolf
+DUN6.mobs[0].sd = ['ghostfang_gauntlets', 'snowstalker_boots', 'moonstone', 'frostfang_band'].map(k => ({ k, pct: 20 }));   // Spirit Wolf
 DUN6.mobs[1].sd = ['stag_helm', 'glade_shield', 'stag_heart'].map(k => ({ k, pct: 20 }));               // Spirit Stag
 DUN6.mobs[2].sd = ['spirit_scepter', 'wisp_ring', 'grovewyrm_scale_mail'].map(k => ({ k, pct: 20 }));                        // The Grove Wyrm (Mossguard Helm – do wygenerowania)
 // RAID: The Black Glacier (req 80) – 6 bossów jeden po drugim (jak w lochu), poziomy 90–100; baza Chaos Emperor + wzrost za poziom (lvUp), role jak w lochach.
@@ -578,6 +578,8 @@ export const FIXED_ITEMS = {
   champion_signet: { sl: 'ring', r: 2, name: 'Champion Signet', s: { str: 10, dex: 10, con: 10 }, req: 46, val: 1000, img: 'dungeon/ring_champion_signet.png', e: '💍' },
   thornband: { sl: 'ring', r: 2, name: 'Thornband', s: { str: 10, dex: 10, con: 10 }, req: 48, val: 1000, img: 'dungeon/ring_thornband.png', e: '💍' },
   ouroboros_ring: { sl: 'ring', r: 2, name: 'Ouroboros Ring', s: { str: 10, dex: 10, con: 10 }, req: 70, val: 1400, img: 'dungeon/ring_ouroboros.png', e: '💍' },
+  lava_ring: { sl: 'ring', r: 2, name: 'Lava Ring', s: { str: 10, dex: 10, con: 10 }, req: 72, val: 1500, img: 'dungeon/ring_lava.png', e: '💍' },
+  frostfang_band: { sl: 'ring', r: 2, name: 'Frostfang Band', s: { str: 10, dex: 10, con: 10 }, req: 80, val: 1700, img: 'dungeon/ring_frostfang.png', e: '💍' },
   wyrmbone_axe: { sl: 'weapon', r: 2, name: 'Wyrmbone Axe', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 76, val: 1500, img: 'dungeon/weapon_wyrmbone_axe.png', e: '🪓' },
   ribcage_plate: { sl: 'armor', r: 2, name: 'Ribcage Plate', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 76, val: 1500, img: 'dungeon/armor_ribcage_plate.png', e: '🛡️' },
   soul_lantern: { sl: 'trinket', r: 2, name: 'Soul Lantern', s: { str: 10, dex: 10, con: 10 }, req: 76, val: 1500, img: 'dungeon/trinket_soul_lantern.png', e: '🏮' },
