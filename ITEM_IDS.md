@@ -122,6 +122,9 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 2051 | Ghostfang Gauntlets |
 | 2052 | Snowstalker Boots |
 | 2053 | Moonstone |
+| 2054 | Stag Helm |
+| 2055 | Glade Shield |
+| 2056 | Stag Heart |
 
 ## Fishing gear
 

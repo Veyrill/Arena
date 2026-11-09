@@ -3596,6 +3596,8 @@ regI(2014, 'Dungeon', FIXED_ITEMS.chitin_halberd.name, () => makeFixed('chitin_h
 ['razorclaw_gauntlets', 'raptor_boots', 'frill_shield', 'thunderhorn_helm', 'thunder_egg'].forEach((k, n) => regI(2046 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
 // dropy z Spirit Wolf (The Spirit Forest, 20% każdy) – 2051–2053
 ['ghostfang_gauntlets', 'snowstalker_boots', 'moonstone'].forEach((k, n) => regI(2051 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
+// dropy z Spirit Stag (The Spirit Forest, 20% każdy) – 2054–2056
+['stag_helm', 'glade_shield', 'stag_heart'].forEach((k, n) => regI(2054 + n, 'Dungeon', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
 ['boonie', 'wellies', 'parka', 'lantern', 'whisker_charm', 'whisker_amulet', 'whisker_ring', 'seasoned_cap', 'seasoned_parka', 'seasoned_wellies', 'seasoned_lantern',
  'hunter_helmet', 'hunter_parka', 'hunter_wellies', 'hunter_lantern', 'tide_ring', 'lure_necklace', 'shark_eye', 'king_crown', 'king_plate', 'king_boots', 'king_lantern']
   .forEach((k, n) => regI(3001 + n, 'Fishing gear', FIXED_ITEMS[k].name, () => makeFixed(k), { fixed: k }));
