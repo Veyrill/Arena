@@ -2271,8 +2271,17 @@ function render() {
       ? `<div class="tile lock"><span class="ic">${X.e}</span><b>${X.n}</b><small style="color:var(--ac);font-weight:700">From level ${X.req}</small></div>`
       : `<button class="tile" data-a="rloc" data-i="${i}"><span class="ic">${X.e}</span><b>${X.n}</b><small>${Math.min(dProgOf(i), X.mobs.length)}/${X.mobs.length}</small></button>`).join('') + `</div>`; }
   const DL = DUNS.map((X, i) => i).filter(i => !DUNS[i].raid);   // zakładka Dungeons: bez raidów
-  $('body-dun').innerHTML = dloc == null ? `<div class="grid9">` + Array.from({ length: 9 }, (_, j) => { const i = DL[j], X = DUNS[i]; if (!X) return `<div class="tile lock"><span class="ic">🔒</span></div>`;   // kafelek każdego lochu z DUNS, reszta – kłódki
-        return !dunLvlOk(i) ? `<div class="tile lock"><span class="ic">${X.e}</span><b>${X.n}</b><small style="color:var(--ac);font-weight:700">From level ${X.req || 10}</small></div>` : `<button class="tile" data-a="dloc" data-i="${i}"><span class="ic">${X.e}</span><b>${X.n}</b><small>${Math.min(dProgOf(i), X.mobs.length)}/${X.mobs.length}</small></button>`; }).join('') + `</div>` : (dfight ? back('dfback', `${D.e} ${D.n}`) : back('dback', `${D.e} ${D.n} · ${Math.min(dunProg(), N)}/${N}`))
+  // WYBÓR LOCHU (wariant G): prosta lista – jeden wiersz na loch: kolorowy pasek z lewej, nazwa, zakres poziomów (wejście–poziom bossa),
+  // kropki postępu (po jednej na przeciwnika) i status po prawej (CLEARED / x/N / LEVEL n). Bez ikon. Zablokowane przyciemnione i nieklikalne,
+  // pierwszy odblokowany i nieukończony loch podświetlony (bieżący cel). Kliknięcie wiersza otwiera listę przeciwników lochu.
+  const dCur = DL.find(i => dunLvlOk(i) && dProgOf(i) < DUNS[i].mobs.length);
+  $('body-dun').innerHTML = dloc == null ? `<div class="dlist">` + DL.map(i => {
+        const X = DUNS[i], N = X.mobs.length, pr = Math.min(dProgOf(i), N), ok = dunLvlOk(i), c = X.col || 'var(--ac)';
+        const lv = `Level ${X.req || 10}–${Math.max(...X.mobs.map(m => m.l || 0))}`;
+        const pips = X.mobs.map((_, k) => `<span class="dpip${k < pr ? ' on' : ''}"></span>`).join('');
+        const st = !ok ? `<span class="dpill lck">LEVEL ${X.req || 10}</span>` : pr >= N ? `<span class="dpill def">CLEARED</span>` : `<span class="dpill rdy">${pr}/${N}</span>`;
+        const inner = `<b class="dnm">${X.n}</b><span class="dlv">${lv}</span><span class="dpg">${pips}</span><span class="dst">${st}</span>`;
+        return ok ? `<button class="drow${i === dCur ? ' cur' : ''}" style="--dc:${c}" data-a="dloc" data-i="${i}">${inner}</button>` : `<div class="drow lck" style="--dc:${c}">${inner}</div>`; }).join('') + `</div>` : (dfight ? back('dfback', `${D.e} ${D.n}`) : back('dback', `${D.e} ${D.n} · ${Math.min(dunProg(), N)}/${N}`))
       // LEWO: dropy oglądanego przeciwnika (dview), PRAWO: kolumna przeciwników (każdego można kliknąć, żeby zobaczyć dropy;
       // walczyć można tylko z kolejnym niepokonanym = dprog, dalsi zablokowani do czasu pokonania poprzedniego)
       + (dfight ? `<div id="dunfight-slot"></div>` : `<div class="dunwrap"><div class="dunmobs">` + D.mobs.map((m, i) => {

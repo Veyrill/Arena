@@ -77,6 +77,16 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 .gold{grid-row:1;grid-column:2;display:flex;justify-content:flex-end;padding:3px 8px;border:1px solid #e69500;border-radius:8px;font-weight:700}.gold b{color:#e69500}
 .tiles,.grid9{display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
 .grid9{grid-template-columns:repeat(3,1fr);max-width:360px}
+/* wybór lochu – lista (wariant G) */
+.dlist{display:flex;flex-direction:column;gap:6px}
+.drow{display:flex;align-items:center;gap:14px;width:100%;padding:12px 14px;border-radius:8px;background:var(--bg);border:1px solid var(--bd);border-left:4px solid var(--dc);color:var(--tx);font:inherit;text-align:left;cursor:pointer}
+button.drow:hover{border-color:var(--dc)}
+.drow.cur{background:color-mix(in srgb,var(--dc) 14%,var(--bg));border-color:var(--dc)}
+.drow.lck{opacity:.4;cursor:default}
+.drow .dnm{flex:1;font-size:15px}.drow .dlv{width:120px;color:var(--mut)}.drow .dpg{width:54px}.drow .dst{width:92px;text-align:right}
+.dpip{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:3px;background:var(--bd);box-shadow:inset 0 0 0 1px #0004}.dpip.on{background:var(--dc)}
+.dpill{font-size:10px;font-weight:800;padding:1px 6px;border-radius:9px;letter-spacing:.05em}
+.dpill.def{background:#2f4a22;color:#9fe07a}.dpill.rdy{background:#5a2a10;color:#ffb36b}.dpill.lck{background:#2a2520;color:#8f806e}
 .tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px;text-align:center;min-height:84px;border-radius:10px}
 .tile small{color:var(--mut)}.tile.sel{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 14%,transparent)}
 .tile.lock{border:1px dashed var(--bd);opacity:.45;background:transparent}

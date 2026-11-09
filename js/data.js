@@ -295,6 +295,8 @@ RAID1.mobs[3].lore = 'She led the prayers of the order, and she prayed until the
 RAID1.mobs[4].lore = 'A mammoth that wandered into the glacier a thousand years ago and never found the way out. The ice made it part of the mountain. Its tusks are black as night and sharp as glass, and the whole cavern shakes when it walks.';
 RAID1.mobs[5].lore = 'The heart of the glacier. They say the night itself fell here and froze, and from it came a dragon of black ice with turquoise cracks glowing like stars. Every knight of the order fell before it. It has waited a thousand years for someone strong enough to wake it.';
 export const RAIDS = [RAID1];
+// kolor lochu (pasek na liście wyboru lochu i kropki postępu) – zgodny z paletą przedmiotów z tego lochu
+DUN.col = '#8c54d4'; DUN2.col = '#d6a84f'; DUN3.col = '#d94b4b'; DUN4.col = '#55b8b0'; DUN5.col = '#e8793a'; DUN6.col = '#8cc8f0';
 export const DUNS = [DUN, DUN2, DUN3, DUN4, DUN5, DUN6, ...RAIDS];   // raidy na końcu listy (ten sam mechanizm walk co lochy, osobna zakładka)   // wszystkie lochy – kolejność = kafelki w zakładce Dungeons
 
 // IKONY SKILLI: grafiki z assets/skills (pixel art 16×16, plik 64×64). f = nazwa pliku bez .png, e = emoji zapasowe, px = rozmiar.
