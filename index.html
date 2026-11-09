@@ -191,6 +191,8 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 /* wynik walki w miejscu Back (po walce): Victory! zielone / Defeat czerwone; stała wysokość wiersza – okno nie skacze */
 #fbackrow{height:32px;position:relative}#fres{position:absolute;left:0;right:0;top:0;z-index:4;pointer-events:none;text-align:center;font-size:20px;letter-spacing:.03em;display:flex;flex-direction:column;align-items:center;gap:4px}   /* wynik na środku okna walki – nakładka: nie zmienia wysokości okna */
 /* WYNIK WALKI: duży napis z ciemnym cieniem + mały podpis z rozstrzelonymi literami */
+/* LOCH: napis VICTORY / DEFEAT nad oknem walki (jak na wyprawie) – nakładka, nie zmienia wysokości karty */
+#body-dun{position:relative}.dres{position:absolute;left:0;right:0;top:0;z-index:4;pointer-events:none;display:flex;flex-direction:column;align-items:center;gap:4px}
 .resv{font-size:32px;font-weight:800;line-height:1;letter-spacing:.06em;text-shadow:3px 3px 0 #000}
 .resv.win{color:#f5d88a}.resv.lose{color:#e05050}
 .ress{font-size:11px;font-weight:700;letter-spacing:.25em;color:var(--mut)}

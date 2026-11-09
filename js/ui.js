@@ -2280,7 +2280,7 @@ function render() {
         const pips = X.mobs.map((_, k) => `<span class="dpip${k < pr ? ' on' : ''}"></span>`).join('');
         const st = !ok ? `<span class="dpill lck">LEVEL ${X.req || 10}</span>` : pr >= N ? `<span class="dpill def">CLEARED</span>` : `<span class="dpill rdy">${pr}/${N}</span>`;
         const inner = `<b class="dnm">${X.n}</b><span class="dlv">${lv}</span><span class="dpg">${pips}</span><span class="dst">${st}</span>`;
-        return ok ? `<button class="drow" style="--dc:${c}" data-a="dloc" data-i="${i}">${inner}</button>` : `<div class="drow lck" style="--dc:${c}">${inner}</div>`; }).join('') + `</div>` : (dfight ? back('dfback', `${D.e} ${D.n}`) : back('dback', `${D.e} ${D.n} · ${Math.min(dunProg(), N)}/${N}`))
+        return ok ? `<button class="drow" style="--dc:${c}" data-a="dloc" data-i="${i}">${inner}</button>` : `<div class="drow lck" style="--dc:${c}">${inner}</div>`; }).join('') + `</div>` : (dfight ? back('dfback', dunRes && !fightOn ? '' : `${D.e} ${D.n}`) + (dunRes && !fightOn ? `<div class="dres">${dunRes.win ? '<span class="resv win">VICTORY</span><span class="ress">THE ENEMY HAS FALLEN</span>' : '<span class="resv lose">DEFEAT</span><span class="ress">YOU HAVE FALLEN</span>'}</div>` : '') : back('dback', `${D.e} ${D.n} · ${Math.min(dunProg(), N)}/${N}`))
       // LEWO: dropy oglądanego przeciwnika (dview), PRAWO: kolumna przeciwników (każdego można kliknąć, żeby zobaczyć dropy;
       // walczyć można tylko z kolejnym niepokonanym = dprog, dalsi zablokowani do czasu pokonania poprzedniego)
       + (dfight ? `<div id="dunfight-slot"></div>` : `<div class="dunwrap"><div class="dunmobs">` + D.mobs.map((m, i) => {
@@ -3100,6 +3100,7 @@ let fightOn = false, skipFight = false;
 // Łup trafia do plecaka dopiero po Collect (albo przy każdym innym wyjściu z ekranu wyniku: Back, inny przeciwnik, inna zakładka).
 // Do tego czasu leży w me.pendLoot (zapisywane razem z postacią) – po odświeżeniu strony trafia do plecaka przy wczytaniu gry.
 let expRes = null;
+let dunRes = null;   // LOCH: wynik ostatniej walki ({ win }) – napis VICTORY / DEFEAT nad oknem walki w lochu; znika po Back albo przy nowej walce
 function deliverLoot(list) {   // łup → plecak: sprzęt jako przedmiot, materiały przez giveMat (doliczane do stosu, bez wpisu w logu)
   for (const it of list || []) { if (it._mk) giveMatQuiet(it._mk); else inv.push(it); }
 }
@@ -3112,6 +3113,7 @@ $('go').onclick = async () => {
   if (expRes && view == 'exp') { endExp(); setEsel(-1); setLastMob(null); render(); return; }   // Collect (łup → plecak) / Back; lastMob = null → przy następnym wyborze pełne HP i tarcza
   const mob = curMob(); if (!mob || busy || fishing.active || Date.now() < cdEnd) return;
   if (view == 'dun' && dunCd(curDun().mobs.indexOf(mob)) > 0) return;   // loch: przerwa 1 h po wygranej
+  dunRes = null;   // nowa walka – stary napis VICTORY / DEFEAT znika
   setBusy(true); fightOn = true; skipFight = false; $('log').innerHTML = ''; live = null;   // nowa walka – panel ℹ️ startuje od wartości bazowych
   // try/finally: nawet jeśli w trakcie walki pojawi się błąd, gra zawsze odblokuje klikanie (busy = false)
   try {
@@ -3175,6 +3177,7 @@ $('go').onclick = async () => {
         say('<b>Act 1 complete!</b> Act selection unlocked in Expedition.', 'crit');
       }
     } else { say('<b>You lost.</b> Get stronger and try again.'); }
+    if (view == 'dun') dunRes = { win: ph > 0 };   // LOCH: napis wyniku nad oknem walki
     if (view == 'exp') { expRes = { win: ph > 0, loot, had: loot.length > 0, xp: rwXp, gold: rwGold, quest: qDone }; if (loot.length) me.pendLoot = loot; }   // pendLoot: ta sama tablica – zapis gry   // had: był łup (po założeniu wszystkiego nie piszemy „No loot”)
   } catch (err) {
     console.error('Combat error:', err);
@@ -3516,7 +3519,7 @@ document.addEventListener('click', e => {
       if (dsel >= 0 && dsel === Math.min(dview, curDun().mobs.length - 1) && !dunCd(dsel) && !fishing.active) { dfight = true; render(); setTimeout(() => $('go').onclick(), 0); return; }
     }
     else if (a == 'dfback') {   // Back z walki → z powrotem lista przeciwników i dropy
-      dfight = false;
+      dfight = false; dunRes = null;
       dJustBeat = false;   // po pokonaniu zostaje wybrany TEN SAM przeciwnik – na następnego gracz klika sam
     }
     render(); return;
