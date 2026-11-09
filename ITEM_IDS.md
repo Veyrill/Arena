@@ -125,6 +125,8 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 2054 | Stag Helm |
 | 2055 | Glade Shield |
 | 2056 | Stag Heart |
+| 2057 | Withered Gown |
+| 2058 | Grovewyrm Scale Mail |
 
 ## Fishing gear
 

@@ -268,7 +268,7 @@ DUN2.mobs[1].sd = ['juggernaut_plate', 'titan_maul', 'war_tags'].map(k => ({ k, 
 DUN2.mobs[2].sd = ['champion_gladius', 'arena_helm', 'victor_shield'].map(k => ({ k, pct: 20 }));   // Grand Champion
 DUN3.mobs[0].sd = ['golden_collar', 'rosethorn_gauntlets', 'thornstep_boots'].map(k => ({ k, pct: 20 }));   // Garden Hound
 DUN3.mobs[1].sd = ['thornblade', 'briar_plate', 'briar_shield'].map(k => ({ k, pct: 20 }));                     // Briar Knight
-DUN3.mobs[2].sd = ['withered_crown'].map(k => ({ k, pct: 20 }));                                     // The Withered Queen (pozostałe 2 przedmioty – do wygenerowania)
+DUN3.mobs[2].sd = ['withered_crown', 'withered_gown'].map(k => ({ k, pct: 20 }));                                     // The Withered Queen (pozostałe 2 przedmioty – do wygenerowania)
 DUN4.mobs[0].sd = ['drake_skull_helm', 'drake_fang', 'bonewing_boots'].map(k => ({ k, pct: 20 }));   // Bone Drake
 DUN4.mobs[1].sd = ['keeper_staff', 'gravedigger_gloves', 'dragon_scale_shield'].map(k => ({ k, pct: 20 }));   // Grave Keeper
 DUN4.mobs[2].sd = ['wyrmbone_axe', 'ribcage_plate', 'soul_lantern'].map(k => ({ k, pct: 20 }));      // The Undying Wyrm
@@ -277,7 +277,7 @@ DUN5.mobs[1].sd = ['frill_shield', 'thunderhorn_helm', 'thunder_egg'].map(k => (
 DUN5.mobs[2].sd = ['fang_club', 'tyrant_hide', 'amber_heart'].map(k => ({ k, pct: 20 }));            // The Tyrant King
 DUN6.mobs[0].sd = ['ghostfang_gauntlets', 'snowstalker_boots', 'moonstone'].map(k => ({ k, pct: 20 }));   // Spirit Wolf
 DUN6.mobs[1].sd = ['stag_helm', 'glade_shield', 'stag_heart'].map(k => ({ k, pct: 20 }));               // Spirit Stag
-DUN6.mobs[2].sd = ['spirit_scepter', 'wisp_ring'].map(k => ({ k, pct: 20 }));                        // The Grove Wyrm (Mossguard Helm – do wygenerowania)
+DUN6.mobs[2].sd = ['spirit_scepter', 'wisp_ring', 'grovewyrm_scale_mail'].map(k => ({ k, pct: 20 }));                        // The Grove Wyrm (Mossguard Helm – do wygenerowania)
 // RAID: The Black Glacier (req 80) – 6 bossów jeden po drugim (jak w lochu), poziomy 90–100; baza Chaos Emperor + wzrost za poziom (lvUp), role jak w lochach.
 // raid: true – nie pokazuje się w zakładce Dungeons, tylko w Raids. Na razie bez dropów (docelowo zestaw mityczny Blackfrost).
 export const RAID1 = { n: 'The Black Glacier', e: '🖤', req: 80, raid: true, mobs: [
@@ -573,6 +573,8 @@ export const FIXED_ITEMS = {
   keeper_staff: { sl: 'weapon', r: 2, name: 'Keeper Staff', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 70, val: 1400, img: 'dungeon/weapon_keeper_staff.png', e: '🦯' },
   gravedigger_gloves: { sl: 'gloves', r: 2, name: 'Gravedigger Gloves', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 70, val: 1400, img: 'dungeon/gloves_gravedigger.png', e: '🧤' },
   dragon_scale_shield: { sl: 'shield', r: 2, name: 'Dragon Scale Shield', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 70, val: 1400, img: 'dungeon/shield_dragon_scale.png', e: '🛡️' },
+  withered_gown: { sl: 'armor', r: 2, name: 'Withered Gown', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 60, val: 1200, img: 'dungeon/armor_withered_gown.png', e: '👗' },
+  grovewyrm_scale_mail: { sl: 'armor', r: 2, name: 'Grovewyrm Scale Mail', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 80, val: 1800, img: 'dungeon/armor_grovewyrm_scale.png', e: '🛡️' },
   wyrmbone_axe: { sl: 'weapon', r: 2, name: 'Wyrmbone Axe', s: { str: 10, dex: 10, con: 10 }, d: [10, 10], req: 76, val: 1500, img: 'dungeon/weapon_wyrmbone_axe.png', e: '🪓' },
   ribcage_plate: { sl: 'armor', r: 2, name: 'Ribcage Plate', s: { arm: 10, str: 10, dex: 10, con: 10 }, req: 76, val: 1500, img: 'dungeon/armor_ribcage_plate.png', e: '🛡️' },
   soul_lantern: { sl: 'trinket', r: 2, name: 'Soul Lantern', s: { str: 10, dex: 10, con: 10 }, req: 76, val: 1500, img: 'dungeon/trinket_soul_lantern.png', e: '🏮' },
