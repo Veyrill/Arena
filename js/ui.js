@@ -3747,6 +3747,7 @@ function spawnItem(id, r = 0, qty = 1) {
       + `<h4>Spawn item</h4><div class="dvgrid"><span>Item ID</span><input type="number" data-dv="sid" value="${p.dataset.sid || 1001}" min="1000"><span>Rarity</span><select data-dv="srar">${['Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'].map((n, r) => `<option value="${r}"${+(p.dataset.srar || 0) === r ? ' selected' : ''}>${n}</option>`).join('')}</select><span>Quantity</span><input type="number" data-dv="sqty" value="${p.dataset.sqty || 1}" min="1"></div>`
       + `<div class="dvrow" style="margin-top:6px"><button data-dva="spawn">Spawn</button><small style="color:var(--mut)">rarity: IDs 1001–1036, qty: stackables</small></div>`
       + `<h4>Progress</h4><label><input type="checkbox" data-dvf="unlockall"${devFlag('unlockall', false) ? ' checked' : ''}> Unlock all content</label>`
+      + `<div class="dvrow" style="margin-top:6px"><button data-dva="abmax">Max all abilities</button><small style="color:var(--mut)">learn + level 5</small></div>`
       + `<h4>Enemies</h4><label><input type="checkbox" data-dvf="onehp"${devFlag('onehp', true) ? ' checked' : ''}> 1 HP enemies</label>${DEV ? `<label><input type="checkbox" data-dvf="dcd"${devFlag('dcd', false) ? ' checked' : ''}> Dungeon cooldowns (1 h)</label>` : ''}`
       + `<h4>Character</h4><div class="dvgrid"><span>Level</span>${num('lvl', me.lvl)}<span>Gold</span>${num('gold', Math.floor(window.G_GLOBAL))}<span>Strength</span>${num('str', me.str)}<span>Dexterity</span>${num('dex', me.dex)}<span>Vitality</span>${num('con', me.con)}<span>Skill Points</span>${num('sp', me.sp)}</div>`
       + `<div class="dvrow" style="margin-top:6px"><button data-dva="apply">Apply</button><small style="color:var(--mut)">base stats, without items</small></div>`;
@@ -3765,6 +3766,18 @@ function spawnItem(id, r = 0, qty = 1) {
     const act = a.dataset.dva;
     if (act === 'close') { open = false; draw(); }
     else if (act === 'treset') { setTimeOff(0); render(); draw(); }
+    else if (act === 'abmax') {   // wszystkie umiejętności Twojej klasy wytrenowane (bez wymogu poziomu) i na 5 poziomie; Ultimate – tylko już wybrany (build)
+      if (busy) return;
+      const ids = Object.keys(ABILS).filter(id => myAb(id) && (!ABILS[id].ult || (me.abils && me.abils[id])));
+      me.abils = me.abils || {}; me.bar = me.bar || {}; me.abXp = me.abXp || {};
+      const full = AB_LVL_NEED.reduce((s, v) => s + v, 0);   // 600 użyć = poziom 5
+      for (const id of ids) {
+        if (!me.abils[id]) { me.abils[id] = true; if (!Object.values(me.bar).includes(id)) { const k = BAR_KEYS.find(x => !me.bar[x]); if (k) me.bar[k] = id; } }
+        me.abXp[id] = Math.max(me.abXp[id] || 0, full);
+      }
+      document.querySelectorAll('#skillbar .sk').forEach(s => delete s.dataset.built);
+      say(`DEV: ${ids.length} abilities maxed.`); saveGame(); render();
+    }
     else if (act === 'export') {   // zapis do pliku JSON (najpierw aktualny stan)
       saveGame();
       const txt = localStorage.getItem(SAVE_KEY) || '{}', d = new Date(Date.now()), pad = x => String(x).padStart(2, '0');
