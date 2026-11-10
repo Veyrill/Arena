@@ -1261,10 +1261,12 @@ function abLvl(id) {
   return { l, cur: u, need: l < AB_MAX_LVL ? abNeed(l) : 0 };   // cur/need = postęp do następnego poziomu
 }
 // wygląd (wariant E): romby pod nazwą = poziom (zapalone / wszystkie 5); na dole napis „Next level: x / y” i cienka linia postępu wzdłuż dolnej krawędzi dymka
-const abPips = id => { const l = abLvl(id).l; return `<span class="abpips">${Array.from({ length: AB_MAX_LVL }, (_, i) => `<i${i < l ? ' class="on"' : ''}></i>`).join('')}</span>`; };
-const abLvlBar = id => { const v = abLvl(id); return v.need ? `<div class="abnext">Next level: ${v.cur} / ${v.need}</div><div class="abedge"><i style="width:${v.cur / v.need * 100}%"></i></div>` : `<div class="abnext">Maxed</div>`; };   // poziom 5: sam napis Maxed (bez paska)
+// ULTIMATE: bez poziomów – bez rombów, bez paska „Next level” i bez naliczania użyć
+const abPips = id => { if (ABILS[id] && ABILS[id].ult) return ''; const l = abLvl(id).l; return `<span class="abpips">${Array.from({ length: AB_MAX_LVL }, (_, i) => `<i${i < l ? ' class="on"' : ''}></i>`).join('')}</span>`; };
+const abLvlBar = id => { if (ABILS[id] && ABILS[id].ult) return ''; const v = abLvl(id); return v.need ? `<div class="abnext">Next level: ${v.cur} / ${v.need}</div><div class="abedge"><i style="width:${v.cur / v.need * 100}%"></i></div>` : `<div class="abnext">Maxed</div>`; };   // poziom 5: sam napis Maxed (bez paska)
 // użycie w walce: +1; po awansie napis „LVL X!” nad slotem
 function abUse(id) {
+  if (ABILS[id] && ABILS[id].ult) return;   // Ultimate się nie levelują
   me.abXp = me.abXp || {}; const l0 = abLvl(id).l; me.abXp[id] = (me.abXp[id] || 0) + 1;
   const l1 = abLvl(id).l, s = [...document.querySelectorAll('#skillbar .sk.ab')].find(x => x.dataset.ab === id);
   if (s) { s.dataset.tip = abTip(id); refreshTip();
