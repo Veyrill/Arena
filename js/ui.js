@@ -1270,9 +1270,19 @@ const abLvlBar = id => { if (ABILS[id] && ABILS[id].ult) return ''; const v = ab
 function abUse(id) {
   if (ABILS[id] && ABILS[id].ult) return;   // Ultimate się nie levelują
   me.abXp = me.abXp || {}; const l0 = abLvl(id).l; me.abXp[id] = (me.abXp[id] || 0) + 1;
+  renderXpSide();   // licznik postępu po lewej
   const l1 = abLvl(id).l, s = [...document.querySelectorAll('#skillbar .sk.ab')].find(x => x.dataset.ab === id);
   if (s) { s.dataset.tip = abTip(id); refreshTip();
     if (l1 > l0) { const r = s.getBoundingClientRect(), e = document.createElement('div'); e.className = 'ablvup'; e.textContent = `LVL ${l1}!`; e.style.left = (r.left + r.width / 2) + 'px'; e.style.top = (r.top - 6) + 'px'; document.body.appendChild(e); setTimeout(() => e.remove(), 1400); } }
+}
+// LICZNIK POSTĘPU UMIEJĘTNOŚCI (po lewej od gry): wytrenowane umiejętności Twojej klasy poniżej 5 poziomu (bez Ultimate i bez wymaxowanych);
+// ikona (bez klawisza i kosztu), „Lv N” i pasek postępu do następnego poziomu – bez liczb
+function renderXpSide() {
+  const el = $('xp-side'); if (!el) return;
+  const ids = Object.keys(ABILS).filter(id => myAb(id) && !ABILS[id].ult && me.abils && me.abils[id] && abLvl(id).need).sort((x, y) => ABILS[x].lvl - ABILS[y].lvl);
+  el.hidden = !ids.length; if (!ids.length) { el.innerHTML = ''; return; }
+  el.innerHTML = ids.map(id => { const v = abLvl(id), a = abEff(id);
+    return `<div class="xpr" data-tip="<b>${a.n}</b>Level ${v.l}">${abIco(a, 'xpi')}<div class="xpt"><b>Lv ${v.l}</b><div class="xpb"><i style="width:${v.cur / v.need * 100}%"></i></div></div></div>`; }).join('');
 }
 const abTip = (id, mk) => { const a = mk ? abEff(id, mk) : abEff(id), dm = abDmg(a), d0 = ABILS[id];
   // opis liczony na żywo: % obrażeń broni wg poziomu umiejętności (np. Overhead Blow 140% → 245% na 5 poziomie)
@@ -2175,6 +2185,7 @@ function render() {
   updateFishUI();
   renderFishSide();
   renderActSide();
+  renderXpSide();   // licznik postępu umiejętności po lewej
   renderQuestSide();   // questy (tylko w Expedition, po prawej)
   renderTut();   // samouczek ulepszania wędki (dymek)
   renderAtkSlot();   // slot 1: ikona obecnej broni
