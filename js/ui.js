@@ -1355,9 +1355,10 @@ function setDps(by, turns) {
   { const v = $('dpsv'); if (v) v.textContent = turns ? fmtN(tot / turns).replace(/,/g, '') : '–'; }   // kafelek: liczba bez przecinka (1284, nie 1,284)
   const rows = ent.map(([k, v]) => `<div class="dprow">${dpsIco(k)}<div class="dpbar"><i style="width:${v / top * 100}%"></i><span class="dpn">${k}</span>`
     + `<span class="dpv">${fmtN(v / turns)} (${fmtN(v)}) ${Math.round(v / tot * 100)}%</span></div></div>`).join('');
-  el.dataset.tip = `<b>Damage per turn</b><div class="dpst">${rows || '<small>No damage yet</small>'}`
-    + `<div class="dptot">Total: ${turns ? fmtN(tot / turns) : 0} / t (${fmtN(tot)}) · ${turns || 0} turn${turns === 1 ? '' : 's'}</div></div>`;
-  refreshTip();
+  // PANEL DPS (zamiast dymka nad kafelkiem): szczegóły w karcie po prawej, widocznej w trakcie walki
+  { const ps = $('body-dps-side'); if (ps) ps.innerHTML = `<div class="dpst">${rows || '<small>No damage yet</small>'}`
+    + `<div class="dptot">Total: ${turns ? fmtN(tot / turns) : 0} / t (${fmtN(tot)}) · ${turns || 0} turn${turns === 1 ? '' : 's'}</div></div>`; }
+  placeQuestSide();   // panel DPS rośnie w trakcie walki – Questy pod nim przesuwają się razem z nim
 }
 // RAGE (pasek pod zdrowiem bohatera): 0–100, na start walki 0; każdy zwykły atak gracza +RAGE_HIT (na razie nic nie zużywa rage)
 const RAGE_MAX = 100, RAGE_HIT = 8;
@@ -1472,7 +1473,7 @@ function renderQuestSide() {
   const side = $('quest-side'); if (!side) return;
   side.hidden = view !== 'exp' || me.lvl < QUEST_LVL; if (side.hidden) return;   // od 5 poziomu
   ensureQuests();
-  const act = $('act-side'); side.style.top = act && !act.hidden && getComputedStyle(act).position === 'absolute' ? (act.offsetTop + act.offsetHeight + 10) + 'px' : '10px';
+  placeQuestSide();
   const Q = me.quests, cd = side.querySelector('[data-questcd]'); if (cd) cd.textContent = fmtCd(Q.t - Date.now());
   const rows = Q.list.map((q, k) => {
     if (q.st === 'gone' || q.st === 'done') return '';   // porzucone i ukończone (odebrane) questy nie wracają na listę
@@ -1812,10 +1813,19 @@ function renderFishSide() {
 }
 
 // boczne menu wyboru aktu (na prawo, jak wybór ryby) – tylko w Wyprawie i dopiero po pokonaniu Fire Lorda
+const dpsSideOn = () => (view === 'exp' || view === 'dun') && !!curMob() && (fightOn || (view === 'exp' && !!expRes) || (view === 'dun' && dfight && !!dunRes));
+// Questy: pod panelem, który stoi nad nimi (wybór aktu albo panel DPS)
+function placeQuestSide() {
+  const side = $('quest-side'); if (!side || side.hidden) return;
+  const up = [$('act-side'), $('dps-side')].find(x => x && !x.hidden);
+  side.style.top = up && getComputedStyle(up).position === 'absolute' ? (up.offsetTop + up.offsetHeight + 10) + 'px' : '10px';
+}
 function renderActSide() {
   const side = $('act-side');
   if (!side) return;
-  side.hidden = !(view === 'exp' && actsOn());
+  // PANEL DPS: w trakcie walki (i na ekranie wyniku, do Collect / Back) zamiast wyboru aktu; także w lochach i raidach
+  { const ds = $('dps-side'); if (ds) ds.hidden = !dpsSideOn(); }
+  side.hidden = !(view === 'exp' && actsOn()) || dpsSideOn();
   if (side.hidden) return;
   const cur = eact ?? 0, lock = busy || fishing.active;
   // akt dostępny, gdy odblokowana jest jego pierwsza lokacja (Akt 2 – po pokonaniu Fire Lorda, Akt 3 – po pokonaniu Abyss Lorda)
