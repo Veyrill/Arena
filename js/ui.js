@@ -1110,7 +1110,7 @@ const isBoss = m => ALL_LOCS.some(l => l.mobs[l.mobs.length - 1] === m);
 // IKONY DEBUFFÓW w prawym górnym rogu okna walki (zamiast wpisów w logu). Curse of Frailty nie ma ikony.
 // st = stosy (liczba w prawym dolnym rogu, tylko dla debuffów, które się kumulują), tip = opis w dymku
 const DEBUFFS = {
-  fury: ['skill_battle_fury', 'Battle Fury', '📯'],
+  fury: ['skill_battle_fury', 'Battle Fury', '📯'], cry: ['skill_battle_fury', 'Battlecry', '📯'],
   // mdeath / crip: morphy Pommel Strike (Marking Strike / Crippling Strike)
   stun: ['debuff_stun', 'Stunned', '💫'], mdeath: ['debuff_mark_of_death', 'Mark of Death', '🎯'], crip: ['debuff_crippled', 'Crippled', '🩼'], rend: ['debuff_deep_wound', 'Deep Wound', '🩸'],   // Earthshaker / Skullsplitter (brak pliku → emoji)   // buff gracza (brak pliku → 📯)
   sunder: ['curse_sunder', 'Curse of Frailty'], exhaust: ['curse_cripple', 'Curse of Withering'], expose: ['curse_exposed', 'Exposed Weakness'], mark: ['curse_shadow_mark', 'Curse of the Void'], agony: ['curse_agony', 'Torment'], warcry: ['skill_war_cry', 'War Cry', '📯'], rage: ['skill_rage_within', 'Rage Within', '😤'], fervor: ['skill_battle_fervor', 'Battle Fervor', '🔥'],
@@ -1130,7 +1130,7 @@ function renderAuras(id, list) {
   const bc = id === 'pbuffs' ? '#3fbf4f' : '#e53935';
   // ikony to pixel art 32×32 (plik 128 px = ×4) → wyświetlane dokładnie 32×32 (skala całkowita) bez wygładzania, żeby piksele były równe
   // STAŁA KOLEJNOŚĆ ikon (buffy i debuffy): ikona pojawiająca się / znikająca nie przestawia pozostałych
-  const ORD = ['stun', 'mdeath', 'crip', 'rend', 'fury', 'warcry', 'rage', 'fervor', 'reap', 'bolt', 'fire', 'water', 'tide', 'sunder', 'exhaust', 'expose', 'mark', 'burn', 'bleed', 'doom', 'agony'];
+  const ORD = ['stun', 'mdeath', 'crip', 'rend', 'fury', 'cry', 'warcry', 'rage', 'fervor', 'reap', 'bolt', 'fire', 'water', 'tide', 'sunder', 'exhaust', 'expose', 'mark', 'burn', 'bleed', 'doom', 'agony'];
   const pos = k => { const i = ORD.indexOf(k); return i < 0 ? 99 : i; };
   el.innerHTML = Object.entries(list || {}).sort((a, b) => pos(a[0]) - pos(b[0])).map(([k, v]) => `<div data-tip="<b>${DEBUFFS[k][1]}</b>${v.tip}" style="position:relative;box-sizing:content-box;width:32px;height:32px;border:2px solid ${bc};border-radius:4px;overflow:hidden;box-shadow:0 0 4px #0008">`
     + `<img src="${ASSETS_DIR}/skills/curses/${DEBUFFS[k][0]}.png" alt="" style="display:block;width:32px;height:32px;image-rendering:pixelated" onerror="this.outerHTML='<span style=&quot;display:flex;align-items:center;justify-content:center;height:100%;font-size:18px&quot;>${DEBUFFS[k][2] || '✨'}</span>'">`
@@ -1216,7 +1216,12 @@ const ABILS = {
       mark: { n: 'Marking Strike', markD: 20, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Marks the enemy with Mark of Death: your next hit against it deals 20% more damage.' },
       cripple: { n: 'Crippling Strike', crip: 10, cripT: 3, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Cripples the enemy: it deals 10% less damage for 3 turns.' }
     } },
-  fury: { n: 'Battle Fury', ico: '📯', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, d: 'Instant: does not end your turn. For 5 turns you deal 20% more damage and attacks generate 2 more Rage.' },
+  // buffD = % obrażeń z buffa (Battle Fury: 10% → 15 / 25 / 40 / 60%), lvF = dodatek do buffD na poziomie 1–5, lvT = dodatkowe tury buffa (6 tur na 5 poziomie)
+  fury: { n: 'Battle Fury', ico: '📯', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 5, 15, 30, 50], lvT: [0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
+    // dexUp = % wyższa Dexterity na czas buffa (szansa na krytyk liczona od podniesionej Dexterity)
+    morph: {
+      cry: { n: 'Battlecry', cost: 0, dexUp: 20, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' }
+    } },
   revenge: { n: 'Revenge', ico: '💢', cost: 0, gain: 10, mul: 1.2, cd: 0, lvl: 12, need: 'crit', d: 'Strike back for 120% weapon damage and gain 10 Rage. Only in the turn after you take a critical hit.' },
   // ULTIMATE (build): raz na walkę, gracz wybiera tylko jeden z trzech (me.abils – pierwszy wytrenowany blokuje pozostałe). hits = liczba ciosów, rend = krwawienie (% zadanych obrażeń przez rendT tur), stunT = ogłuszenie na N tur wroga
   storm: { n: 'Bladestorm', ico: '🌪️', cost: 60, mul: 1.2, hits: 3, cd: 0, lvl: 20, ult: true, d: 'Three strikes in a row, each for 120% weapon damage with its own chance to crit. Once per fight.' },
@@ -1232,9 +1237,10 @@ const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = 
 // POZIOM UMIEJĘTNOŚCI → efekt (na razie tylko Overhead Blow): kopia umiejętności z kosztem i mnożnikiem dla jej obecnego poziomu
 // mk = klucz morpha (domyślnie wybrany przez gracza: me.morph[id]); morph nadpisuje nazwę, opis i mnożnik (koszt zostaje z 5 poziomu)
 const abEff = (id, mk = me.morph && me.morph[id]) => {
-  const a = ABILS[id]; if (!a || !(a.lvB || a.lvC || a.lvG)) return a; const l = abLvl(id).l - 1;
-  const e = Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: a.lvAdd ? a.mul + ((a.lvB || [])[l] || 0) / 100 : a.mul * (1 + ((a.lvB || [])[l] || 0) / 100), gain: a.gain ? a.gain + ((a.lvG || [])[l] || 0) : a.gain });
-  const m = mk && a.morph && a.morph[mk]; return m ? Object.assign(e, m, { cost: a.cost + ((a.lvC || [])[4] || 0) }) : e;
+  const a = ABILS[id]; if (!a || !(a.lvB || a.lvC || a.lvG || a.lvF || a.lvT)) return a; const l = abLvl(id).l - 1;
+  const e = Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: !a.mul ? a.mul : a.lvAdd ? a.mul + ((a.lvB || [])[l] || 0) / 100 : a.mul * (1 + ((a.lvB || [])[l] || 0) / 100), gain: a.gain ? a.gain + ((a.lvG || [])[l] || 0) : a.gain,
+    buffD: a.buffD ? a.buffD + ((a.lvF || [])[l] || 0) : a.buffD, buffT: a.buffT ? a.buffT + ((a.lvT || [])[l] || 0) : a.buffT });
+  const m = mk && a.morph && a.morph[mk]; return m ? Object.assign(e, m, { cost: 'cost' in m ? m.cost : a.cost + ((a.lvC || [])[4] || 0) }) : e;   // Battlecry: koszt 0
 };
 // MORPH: dostępny po 5 poziomie wytrenowanej umiejętności, która ma warianty i jeszcze nie ma wybranego
 const canMorph = id => { const a = ABILS[id]; return !!(a && a.morph && me.abils && me.abils[id] && abLvl(id).l >= AB_MAX_LVL && !(me.morph && me.morph[id])); };
@@ -1260,6 +1266,8 @@ function abUse(id) {
 const abTip = (id, mk) => { const a = mk ? abEff(id, mk) : abEff(id), dm = abDmg(a), d0 = ABILS[id];
   // opis liczony na żywo: % obrażeń broni wg poziomu umiejętności (np. Overhead Blow 140% → 245% na 5 poziomie)
   let desc = a.d === d0.d && a.mul && a.mul !== d0.mul ? a.d.replace(`${Math.round(d0.mul * 100)}%`, `${Math.round(a.mul * 100)}%`) : a.d;
+  if (a.d === d0.d && a.buffD && a.buffD !== d0.buffD) desc = desc.replace(`${d0.buffD}% more damage`, `${a.buffD}% more damage`);   // Battle Fury: % obrażeń wg poziomu
+  if (a.d === d0.d && a.buffT && a.buffT !== d0.buffT) desc = desc.replace(`For ${d0.buffT} turns`, `For ${a.buffT} turns`);
   if (a.d === d0.d && a.gain && a.gain !== d0.gain) desc = desc.replace(`gain ${d0.gain} Rage`, `gain ${a.gain} Rage`);   // generowany Rage wg poziomu (Pommel Strike 25 → 30)
   return `<b>${a.n}</b>${abPips(id)}${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.ult ? 'once per fight' : a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${desc}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage${a.hits ? ` × ${a.hits}` : ''}.` : ''}${a.ult ? '<br><span style="color:#ffd36b">Ultimate: you can train only one.</span>' : ''}${abLvlBar(id)}`; };
 let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
@@ -2776,7 +2784,12 @@ function* fightGen(mob, io) {
     if (UI) setDps({}, 0);
     const abReady = {}; io.ready = abReady; let furyT = 0, stunT = 0, rendT = 0, rendD = 0, markD = 0, cripT = 0, cripP = 0;   // markD: Mark of Death (% do następnego ciosu), cripT/cripP: Crippling Strike (tury wroga, % mniej obrażeń)   // stunT: Earthshaker (tury wroga do pominięcia); rendT/rendD: Skullsplitter (tury krwawienia, obrażenia na turę)   // abReady.crit = Revenge (tura po krytyku wroga), abReady.exec = Decapitate (wróg < 20% HP); furyT = tury Battle Fury
     const abOk = id => { const a = abEff(id); return !!a && rageBar >= a.cost && !abCd[id] && (!a.need || !!abReady[a.need]); };
-    const furyTip = () => `Damage +20%<br>Attacks generate +2 Rage<br>Turns left: ${furyT}`;
+    // BATTLE FURY: furyP = % obrażeń (wg poziomu), furyDex = % wyższej Dexterity (Battlecry) – szansa na krytyk przeliczona od podniesionej Dexterity
+    let furyP = 0, furyDex = 0; const critRaw0 = p.critRaw;
+    const furyK = () => furyDex ? 'cry' : 'fury';   // ikona buffa: Battlecry ma własną nazwę w dymku
+    const furyTip = () => `Damage +${furyP}%${furyDex ? `<br>Dexterity +${furyDex}%` : ''}<br>Attacks generate +2 Rage<br>Turns left: ${furyT}`;
+    // crit z Dexterity: r = 100·D / (D + X) → przy D × f: r' = 100·f / (f + 100/r − 1)
+    const furyCrit = on => { p.critRaw = on && furyDex && critRaw0 > 0 ? 100 * (1 + furyDex / 100) / (1 + furyDex / 100 + 100 / critRaw0 - 1) : critRaw0; updCrit(); };
     upd(); say(`Fight against: ${mob.e} ${mob.n}!`);
     // KLĄTWY (Curses): stan na czas tej jednej walki
     const U = ub(), baseArm = M.arm;
@@ -2861,7 +2874,7 @@ function* fightGen(mob, io) {
           yield 'wait';
           const fa = io.act; if (!(fa && ABILS[fa] && ABILS[fa].free)) break;
           io.act = 'atk';
-          if (abOk(fa)) { const a = abEff(fa); if (UI) abUse(fa); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; pbuf.fury = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b> (−${a.cost} Rage)`, 'crit'); yield 200; }
+          if (abOk(fa)) { const a = abEff(fa); if (UI) abUse(fa); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; furyP = a.buffD || 0; furyDex = a.dexUp || 0; furyCrit(true); pbuf[furyK()] = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b>${a.cost ? ` (−${a.cost} Rage)` : ''}`, 'crit'); yield 200; }
         }
       } else yield 325;   // WALKA RĘCZNA: w Twojej turze walka czeka na atak (slot 1 albo klawisz 1)
       if (turn == 0) {
@@ -2899,7 +2912,7 @@ function* fightGen(mob, io) {
         // ABILITY wybrana w tej turze (klik / klawisz): zamiast zwykłego ataku; koszt w Rage, odnowienie, obrażenia = mnożnik × średnie obrażenia broni
         const act = io.act || 'atk'; io.act = 'atk';
         const ab = act !== 'atk' && !(ABILS[act] || {}).free && abOk(act) ? abEff(act) : null;   // koszt i obrażenia wg poziomu umiejętności
-        if (furyT > 0 && !A.force) A = Object.assign({}, A, { min: A.min * 1.2, max: A.max * 1.2 });   // Battle Fury: +20% obrażeń (także umiejętności)
+        if (furyT > 0 && !A.force) { const f = 1 + furyP / 100; A = Object.assign({}, A, { min: A.min * f, max: A.max * f }); }   // Battle Fury: +furyP% obrażeń (także umiejętności)
         if (ab && ab.need) delete abReady[ab.need];
         if (ab && UI) abUse(act);   // poziom umiejętności: +1 użycie
         if (ab) { A = Object.assign({}, A, { min: A.min * ab.mul, max: A.max * ab.mul });   // umiejętność: losowo z zakresu obrażeń × mnożnik
@@ -2983,7 +2996,7 @@ function* fightGen(mob, io) {
         if (U.lacerate && hit.crit && mh > 0) { bleed = Math.min(bleedMax, bleed + 1); bleedT = bleedDur; deb.bleed = bleedInfo(); renderDebuffs(deb); }
 
         // KONIEC TWOJEJ TURY: Battle Fury −1 tura; okno Revenge (tura po krytyku wroga) wygasa
-        if (furyT > 0) { furyT--; if (furyT) pbuf.fury = { st: furyT, tip: furyTip() }; else delete pbuf.fury; renderPBuffs(pbuf); }
+        if (furyT > 0) { furyT--; if (furyT) pbuf[furyK()] = { st: furyT, tip: furyTip() }; else { delete pbuf[furyK()]; furyCrit(false); } renderPBuffs(pbuf); }   // koniec buffa: Dexterity (crit) wraca
         if (abReady.crit) { delete abReady.crit; if (UI) refreshAb(); }
       } else {
         // krwawienie zadaje obrażenia na początku tury wroga: 3% maks. HP za każdy stos
