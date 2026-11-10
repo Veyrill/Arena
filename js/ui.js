@@ -1356,6 +1356,8 @@ let abDragKey = null;
 // Dymek na ikonie = pełny opis jak na pasku. Niedostępne (za niski poziom): wyszarzone, kłódka z wymaganym poziomem.
 function renderAbilTab() {
   const el = $('body-abil'); if (!el) return;
+  const subs = `<div class="absubs"><button class="absub${abSub === 'list' ? ' on' : ''}" onclick="window.abSubTab('list')">Abilities</button><button class="absub${abSub === 'plan' ? ' on' : ''}" onclick="window.abSubTab('plan')">Battle Plan</button></div>`;   // podzakładki
+  if (abSub === 'plan') { el.innerHTML = subs + renderPlanTab(); planDnD(el); return; }
   const ult = ultOf();
   const card = ([id, a0]) => {
     const a = me.abils && me.abils[id] ? abEff(id) : a0;   // po morphie: nowa nazwa / ikona
@@ -1376,7 +1378,7 @@ function renderAbilTab() {
   const morphBox = !mp ? '' : `<div class="abmorphg"><span class="abultl">MORPH · ${ABILS[mp].n} · choose one (permanent)</span>`
     + `<div class="abgrid">${Object.keys(ABILS[mp].morph).map(mcard).join('<span class="abor">OR</span>')}</div>`
     + `<button class="abmcancel" onclick="window.morphPick(null)">Cancel</button></div>`;
-  el.innerHTML = `<div class="abgrid abmain">${all.filter(e => !e[1].ult).map(card).join('')}</div>` + morphBox
+  el.innerHTML = subs + `<div class="abgrid abmain">${all.filter(e => !e[1].ult).map(card).join('')}</div>` + morphBox
     + (!all.some(e => e[1].ult) ? '' : `<div class="abultg"><span class="abultl">ULTIMATE · ${ult ? 'your build: ' + ABILS[ult].n : 'choose one'}</span><div class="abgrid">${all.filter(e => e[1].ult).map(card).join('')}</div></div>`);   // sekcja ULTIMATE tylko, gdy klasa ma ulty
 }
 // czy jest jakaś umiejętność Twojej klasy do wytrenowania: wymagany poziom osiągnięty, jeszcze nie wytrenowana; ultimate – tylko dopóki nie wybrano buildu
@@ -1391,6 +1393,81 @@ window.morphAbil = (id, k) => {
   say(`<b>${ABILS[id].n}</b> morphed into <b>${ABILS[id].morph[k].n}</b>!`, 'crit');
   saveGame(); render();
 };
+// BATTLE PLAN (zakładka w Abilities): kolejność i warunki umiejętności używanych automatycznie po kliknięciu Skip.
+// me.plan = [{ id, c: { warunek: { on, v } }, save (ult: oszczędzaj Rage), off (nie używaj) }] – sprawdzane od lewej, pierwsza gotowa spełniająca warunki = użyta; nic → Attack
+const PLAN_CONDS = {
+  eAbove: { t: 'Enemy HP ≥', u: '%', v: 50 }, eBelow: { t: 'Enemy HP ≤', u: '%', v: 30 }, myBelow: { t: 'My HP ≤', u: '%', v: 50 },
+  rage: { t: 'Rage ≥', u: '', v: 60 }, buffOn: { t: 'Battle Fury is active' }, buffOff: { t: 'Battle Fury not active' }
+};
+const PLAN_ORDER = ['decap', 'storm', 'split', 'quake', 'fury', 'pommel', 'overhead'];   // domyślna kolejność nowego planu
+const planDef = id => {   // domyślne warunki nowej pozycji planu
+  const s = { id, c: {} };
+  if (id === 'fury') s.c.buffOff = { on: true };
+  if (id === 'split') s.c.eAbove = { on: true, v: 50 };   // Skullsplitter: krwawienie ma czas zadziałać
+  if (ABILS[id].ult) s.save = true;
+  return s;
+};
+// plan bez nieznanych / niewytrenowanych umiejętności; nowo wytrenowane dopisane (wg domyślnej kolejności)
+function planGet() {
+  const ok = id => !!ABILS[id] && myAb(id) && !!(me.abils && me.abils[id]);
+  let pl = (Array.isArray(me.plan) ? me.plan : []).filter(s => s && ok(s.id));
+  const have = new Set(pl.map(s => s.id));
+  const add = Object.keys(ABILS).filter(id => ok(id) && !have.has(id)).sort((x, y) => (PLAN_ORDER.indexOf(x) + 1 || 99) - (PLAN_ORDER.indexOf(y) + 1 || 99));
+  add.forEach(id => { const s = planDef(id), at = PLAN_ORDER.indexOf(id); const j = pl.findIndex(o => PLAN_ORDER.indexOf(o.id) > at); if (!Array.isArray(me.plan) || at < 0 || j < 0) pl.push(s); else pl.splice(j, 0, s); });
+  me.plan = pl; return pl;
+}
+const planCondOk = (id, k) => k !== 'buffOn' && k !== 'buffOff' ? true : id === 'fury' ? k === 'buffOff' : !!(me.abils && me.abils.fury);   // warunki buffa tylko przy wytrenowanym Battle Fury
+const planChip = s => {
+  if (s.off) return 'Disabled';
+  const c = s.c || {}, t = Object.keys(PLAN_CONDS).filter(k => c[k] && c[k].on && planCondOk(s.id, k)).map(k => { const d = PLAN_CONDS[k]; return d.u === undefined ? (s.id === 'fury' ? 'Buff not active' : d.t) : `${d.t} ${c[k].v}${d.u}`; });
+  if (ABILS[s.id].ult) t.push('1×');
+  return t.length ? t.join(' · ') : 'When ready';
+};
+let abSub = 'list', abPlanSel = null, planDrag = null;   // podzakładka Abilities / Battle Plan; otwarta karta; przeciągana karta
+window.abSubTab = t => { abSub = t; abPlanSel = null; render(); };
+window.planOpen = i => { abPlanSel = abPlanSel === i ? null : i; render(); };
+window.planMove = (i, d) => { const pl = planGet(), j = i + d; if (j < 0 || j >= pl.length) return; [pl[i], pl[j]] = [pl[j], pl[i]]; abPlanSel = j; saveGame(); render(); };
+window.planSet = (i, k, f, v) => {
+  const s = planGet()[i]; if (!s) return;
+  if (k === 'save' || k === 'off') s[k] = !!v;
+  else { s.c = s.c || {}; const c = s.c[k] = s.c[k] || { on: false, v: PLAN_CONDS[k].v }; if (f === 'on') c.on = !!v; else { const n = Math.round(+v); if (isFinite(n)) c.v = Math.max(0, Math.min(k === 'rage' ? RAGE_MAX : 100, n)); } if (c.v === undefined && PLAN_CONDS[k].v !== undefined) c.v = PLAN_CONDS[k].v; }
+  saveGame(); render();
+};
+window.planReset = () => { me.plan = null; abPlanSel = null; planGet(); saveGame(); render(); };
+function renderPlanTab() {
+  const pl = planGet();
+  if (!pl.length) return `<small style="color:var(--mut)">Train an ability first – then set the order in which Skip uses it.</small>`;
+  const card = (s, i) => { const a = abEff(s.id), u = a.ult;
+    return `<div class="bpc${u ? ' u' : ''}${abPlanSel === i ? ' sel' : ''}${s.off ? ' off' : ''}" draggable="true" data-pi="${i}" onclick="window.planOpen(${i})">`
+      + `<span class="bpn">${i + 1}</span><span data-tip="${abTip(s.id).replace(/"/g, '&quot;')}">${abIco(a, 'bpi')}</span><b>${a.n}</b><span class="bpch">${planChip(s)}</span></div><span class="bpa">›</span>`; };
+  const atk = `<div class="bpc atk"><span class="bpn">∞</span><span class="bpi img"><img src="${ASSETS_DIR}/weapon/weapon_sword.png" alt=""></span><b>Attack</b><span class="bpch">Otherwise</span></div>`;
+  let pop = '';
+  const s = abPlanSel !== null && pl[abPlanSel];
+  if (s) {
+    const a = abEff(s.id), c = s.c || {}, i = abPlanSel;
+    const opt = k => { if (!planCondOk(s.id, k)) return ''; const d = PLAN_CONDS[k], o = c[k] || {}, val = o.v !== undefined ? o.v : d.v;
+      return `<label class="bpo"><input type="checkbox"${o.on ? ' checked' : ''} onchange="window.planSet(${i},'${k}','on',this.checked)">${s.id === 'fury' && k === 'buffOff' ? 'Buff not active' : d.t}`
+        + (d.u !== undefined ? ` <input type="number" class="bpv" min="0" max="${k === 'rage' ? RAGE_MAX : 100}" step="5" value="${val}" onclick="event.stopPropagation()" onchange="window.planSet(${i},'${k}','v',this.value)">${d.u}` : '') + `</label>`; };
+    pop = `<div class="bpop${a.ult ? ' u' : ''}"><div class="bph">${a.n}${a.ult ? ' (Ultimate, once per fight)' : ''} – use only when:</div>`
+      + Object.keys(PLAN_CONDS).map(opt).join('')
+      + (a.ult ? `<label class="bpo bpsave"><input type="checkbox"${s.save ? ' checked' : ''} onchange="window.planSet(${i},'save','',this.checked)"><span><b>Save Rage for Ultimate</b> <i>– other abilities keep ${a.cost} Rage until it is used</i></span></label>` : '')
+      + `<div class="bpf"><label class="bpo"><input type="checkbox"${s.off ? ' checked' : ''} onchange="window.planSet(${i},'off','',this.checked)">Don't use on Skip</label>`
+      + `<span class="bpmv"><button onclick="window.planMove(${i},-1)"${i ? '' : ' disabled'}>◀</button><button onclick="window.planMove(${i},1)"${i < pl.length - 1 ? '' : ' disabled'}>▶</button></span></div></div>`;
+  }
+  return `<div class="bphint">Used when you press <b>Skip</b>. Each turn the cards are checked from left to right – the first ability that is ready and meets its conditions is used. Click a card to set conditions, drag to change the order.</div>`
+    + `<div class="bpflow">${pl.map(card).join('')}${atk}</div>${pop}<button class="bpreset" onclick="window.planReset()">Reset plan</button>`;
+}
+// przeciąganie kart planu (zmiana kolejności)
+function planDnD(el) {
+  el.querySelectorAll('.bpc[data-pi]').forEach(c => {
+    c.addEventListener('dragstart', e => { planDrag = +c.dataset.pi; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'p'); } catch (x) {} c.classList.add('drag'); });
+    c.addEventListener('dragend', () => { planDrag = null; el.querySelectorAll('.bpc').forEach(x => x.classList.remove('drag', 'over')); });
+    c.addEventListener('dragover', e => { if (planDrag === null) return; e.preventDefault(); c.classList.add('over'); });
+    c.addEventListener('dragleave', () => c.classList.remove('over'));
+    c.addEventListener('drop', e => { e.preventDefault(); const from = planDrag, to = +c.dataset.pi; planDrag = null; if (from === null || from === to) return;
+      const pl = planGet(); const [m] = pl.splice(from, 1); pl.splice(to, 0, m); abPlanSel = abPlanSel === from ? to : null; saveGame(); render(); });
+  });
+}
 window.learnAbil = id => {
   const a = ABILS[id]; if (!a || !myAb(id) || busy || me.lvl < a.lvl || (me.abils && me.abils[id])) return;
   if (a.ult && ultOf()) return;   // ultimate: tylko jeden build
@@ -2809,6 +2886,28 @@ function* fightGen(mob, io) {
     if (UI) setDps({}, 0);
     const abReady = {}; io.ready = abReady; let furyT = 0, stunT = 0, rendT = 0, rendD = 0, markD = 0, cripT = 0, cripP = 0;   // markD: Mark of Death (% do następnego ciosu), cripT/cripP: Crippling Strike (tury wroga, % mniej obrażeń)   // stunT: Earthshaker (tury wroga do pominięcia); rendT/rendD: Skullsplitter (tury krwawienia, obrażenia na turę)   // abReady.crit = Revenge (tura po krytyku wroga), abReady.exec = Decapitate (wróg < 20% HP); furyT = tury Battle Fury
     const abOk = id => { const a = abEff(id); return !!a && rageBar >= a.cost && !abCd[id] && (!a.need || !!abReady[a.need]); };
+    // BATTLE PLAN (Skip): pierwsza umiejętność z planu, która jest gotowa i spełnia warunki; noFree = Battle Fury już użyty w tej turze
+    // Save Rage: dopóki Ultimate nieużyty (i jego warunek „Enemy HP ≥” jeszcze możliwy), inne umiejętności z kosztem nie schodzą poniżej kosztu Ultimate
+    const planPick = noFree => {
+      const pl = planGet(), eh = mh / M.hp * 100, myh = ph / p.hp * 100;
+      const us = pl.find(s => ABILS[s.id].ult);
+      const ue = us && us.c && us.c.eAbove;
+      const saving = us && us.save && !us.off && abCd[us.id] !== Infinity && !(ue && ue.on && eh < ue.v) ? abEff(us.id).cost : 0;
+      for (const s of pl) {
+        if (s.off || !abOk(s.id)) continue;
+        const a = abEff(s.id), c = s.c || {}, on = k => c[k] && c[k].on && planCondOk(s.id, k);
+        if (noFree && a.free) continue;
+        if (on('eAbove') && eh < c.eAbove.v) continue;
+        if (on('eBelow') && eh > c.eBelow.v) continue;
+        if (on('myBelow') && myh > c.myBelow.v) continue;
+        if (on('rage') && rageBar < c.rage.v) continue;
+        if (on('buffOn') && !(furyT > 0)) continue;
+        if (on('buffOff') && furyT > 0) continue;
+        if (saving && !a.ult && a.cost > 0 && rageBar - a.cost < saving) continue;
+        return s.id;
+      }
+      return 'atk';
+    };
     // BATTLE FURY: furyP = % obrażeń (wg poziomu), furyDex = % wyższej Dexterity (Battlecry) – szansa na krytyk przeliczona od podniesionej Dexterity
     let furyP = 0, furyDex = 0; const critRaw0 = p.critRaw;
     let furyKey = 'fury'; const furyK = () => furyKey;   // ikona buffa: morphy Battle Fury mają własną nazwę w dymku (Battlecry / Relentless Fury)
@@ -2894,9 +2993,11 @@ function* fightGen(mob, io) {
       if (turn == 0) abReady.exec = mh < M.hp * ((abEff('decap').execP || 20) / 100);   // Decapitate: wróg poniżej progu (15% → 20% na 5 poziomie; Executioner's Reach 30%)
       if (io.manual && turn == 0) {
         // UMIEJĘTNOŚCI BEZ TURY (Battle Fury): użyta → efekt od razu, a walka dalej czeka na Twój ruch w tej samej turze
+        let planFree = 0;   // Battle Plan: maks. 1 Battle Fury na turę
         for (;;) {
           if (UI) refreshAb();
           yield 'wait';
+          if (skipFight) { io.act = planPick(planFree > 0); if (ABILS[io.act] && ABILS[io.act].free) planFree++; }   // SKIP: ruch wybiera Battle Plan
           const fa = io.act; if (!(fa && ABILS[fa] && ABILS[fa].free)) break;
           io.act = 'atk';
           if (abOk(fa)) { const a = abEff(fa); if (UI) abUse(fa); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; furyP = a.buffD || 0; furyDex = a.dexUp || 0; furyKey = { 'Battlecry': 'cry', 'Relentless Fury': 'rfury' }[a.n] || 'fury'; furyCrit(true); pbuf[furyK()] = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b>${a.cost ? ` (−${a.cost} Rage)` : ''}`, 'crit'); yield 200; }
