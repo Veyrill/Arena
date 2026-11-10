@@ -1203,7 +1203,7 @@ addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEX
 // gain = Rage za użycie; free = nie zabiera tury (po nim działasz dalej); buffT = tury buffa; need: 'exec' = wróg poniżej 20% HP (Revenge usunięty z gry – stary zapis: pusty slot, ignorowany w me.abils)
 const ABILS = {
   // lvB = % dodatkowych obrażeń umiejętności na poziomie 1–5 (mnoży obrażenia), lvC = zmiana kosztu w Rage na poziomie 1–5
-  overhead: { n: 'Overhead Blow', ico: '💥', img: 'ab_overhead', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 10, 20, 50, 75], lvC: [0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
+  overhead: { n: 'Overhead Blow', ico: '💥', img: 'ab_overhead', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 10, 20, 50, 75], lvAdd: true, lvC: [0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
     // MORPH (po 5 poziomie, wybór na stałe): zastępuje umiejętność – nazwa, opis, mnożnik; heal = % zadanych obrażeń jako leczenie, critUp = % wyższa szansa i obrażenia krytyka
     morph: {
       siphon: { n: 'Siphoning Strike', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' },
@@ -1308,7 +1308,7 @@ function refreshAb() {
     const a = abEff(id), ok = !fighting ? (!a.cost && !a.need) : !!(atkResolve && (fightIo.rage || 0) >= a.cost && !cd && (!a.need || (fightIo.ready && fightIo.ready[a.need])));
     s.classList.toggle('proc', fighting && ok && !!a.need);   // Decapitate: slot pulsuje, gdy się zapali
     s.classList.toggle('off', !ok);
-    { const b = s.querySelector('.abc'); if (b) b.classList.toggle('norage', !!a.cost && (fighting ? fightIo.rage || 0 : 0) < a.cost); }   // za mało Rage → plakietka kosztu bez koloru
+    { const b = s.querySelector('.abc'); if (b) b.classList.toggle('norage', !!cd || (!!a.cost && (fighting ? fightIo.rage || 0 : 0) < a.cost)); }   // za mało Rage albo odnowienie → plakietka kosztu bez koloru
     const c = s.querySelector('.abcd'); if (c) { c.textContent = cd === Infinity ? 'USED' : cd ? cd : ''; c.classList.toggle('used', cd === Infinity); }   // ult po użyciu: USED do końca walki
   });
 }
