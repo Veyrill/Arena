@@ -1228,7 +1228,12 @@ const ABILS = {
   storm: { n: 'Bladestorm', ico: '🌪️', cost: 60, mul: 1.2, hits: 3, cd: 0, lvl: 20, ult: true, d: 'Three strikes in a row, each for 120% weapon damage with its own chance to crit. Once per fight.' },
   split: { n: 'Skullsplitter', ico: '🪓', cost: 60, mul: 3, rend: 0.5, rendT: 10, cd: 0, lvl: 20, ult: true, d: 'A crushing blow for 300% weapon damage. The wound bleeds for 50% of the damage dealt over 10 turns. Once per fight.' },
   quake: { n: 'Earthshaker', ico: '🔨', cost: 60, mul: 1.5, stunT: 4, cd: 0, lvl: 20, ult: true, d: 'Smash the ground for 150% weapon damage and stun the enemy for 4 turns. Once per fight.' },
-  decap: { n: 'Decapitate', ico: '💀', cost: 40, mul: 3.5, cd: 0, lvl: 15, need: 'exec', d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 20% health.' }
+  // execP = próg HP wroga (%), poniżej którego można użyć; lvE = dodatek do progu na poziomie 1–5 (15% → 20% na 5 poziomie); obrażenia 200% → 220 / 240 / 280 / 350%
+  decap: { n: 'Decapitate', ico: '💀', cost: 40, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 15, lvB: [0, 20, 40, 80, 150], lvAdd: true, lvE: [0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 15% health.',
+    morph: {
+      reach: { n: "Executioner's Reach", execP: 30, d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 30% health.' },
+      verdict: { n: 'Final Verdict', mul: 4.5, d: 'A finishing blow for 450% weapon damage. Only when the enemy is below 20% health.' }
+    } }
 };
 // KLASA: każda umiejętność należy do klasy (cls; brak = 'warrior'). Zakładka Abilities i pasek pokazują tylko umiejętności klasy gracza (me.cls).
 const abCls = a => a.cls || 'warrior';
@@ -1238,9 +1243,10 @@ const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = 
 // POZIOM UMIEJĘTNOŚCI → efekt (na razie tylko Overhead Blow): kopia umiejętności z kosztem i mnożnikiem dla jej obecnego poziomu
 // mk = klucz morpha (domyślnie wybrany przez gracza: me.morph[id]); morph nadpisuje nazwę, opis i mnożnik (koszt zostaje z 5 poziomu)
 const abEff = (id, mk = me.morph && me.morph[id]) => {
-  const a = ABILS[id]; if (!a || !(a.lvB || a.lvC || a.lvG || a.lvF || a.lvT)) return a; const l = abLvl(id).l - 1;
+  const a = ABILS[id]; if (!a || !(a.lvB || a.lvC || a.lvG || a.lvF || a.lvT || a.lvE)) return a; const l = abLvl(id).l - 1;
   const e = Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: !a.mul ? a.mul : a.lvAdd ? a.mul + ((a.lvB || [])[l] || 0) / 100 : a.mul * (1 + ((a.lvB || [])[l] || 0) / 100), gain: a.gain ? a.gain + ((a.lvG || [])[l] || 0) : a.gain,
-    buffD: a.buffD ? a.buffD + ((a.lvF || [])[l] || 0) : a.buffD, buffT: a.buffT ? a.buffT + ((a.lvT || [])[l] || 0) : a.buffT });
+    buffD: a.buffD ? a.buffD + ((a.lvF || [])[l] || 0) : a.buffD, buffT: a.buffT ? a.buffT + ((a.lvT || [])[l] || 0) : a.buffT,
+    execP: a.execP ? a.execP + ((a.lvE || [])[l] || 0) : a.execP });
   const m = mk && a.morph && a.morph[mk]; return m ? Object.assign(e, m, { cost: 'cost' in m ? m.cost : a.cost + ((a.lvC || [])[4] || 0) }) : e;   // Battlecry: koszt 0
 };
 // MORPH: dostępny po 5 poziomie wytrenowanej umiejętności, która ma warianty i jeszcze nie ma wybranego
@@ -1268,6 +1274,7 @@ const abTip = (id, mk) => { const a = mk ? abEff(id, mk) : abEff(id), dm = abDmg
   // opis liczony na żywo: % obrażeń broni wg poziomu umiejętności (np. Overhead Blow 140% → 245% na 5 poziomie)
   let desc = a.d === d0.d && a.mul && a.mul !== d0.mul ? a.d.replace(`${Math.round(d0.mul * 100)}%`, `${Math.round(a.mul * 100)}%`) : a.d;
   if (a.d === d0.d && a.buffD && a.buffD !== d0.buffD) desc = desc.replace(`${d0.buffD}% more damage`, `${a.buffD}% more damage`);   // Battle Fury: % obrażeń wg poziomu
+  if (a.d === d0.d && a.execP && a.execP !== d0.execP) desc = desc.replace(`below ${d0.execP}% health`, `below ${a.execP}% health`);   // Decapitate: próg HP wg poziomu
   if (a.d === d0.d && a.buffT && a.buffT !== d0.buffT) desc = desc.replace(`For ${d0.buffT} turns`, `For ${a.buffT} turns`);
   if (a.d === d0.d && a.gain && a.gain !== d0.gain) desc = desc.replace(`gain ${d0.gain} Rage`, `gain ${a.gain} Rage`);   // generowany Rage wg poziomu (Pommel Strike 25 → 30)
   return `<b>${a.n}</b>${abPips(id)}${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.ult ? 'once per fight' : a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${desc}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage${a.hits ? ` × ${a.hits}` : ''}.` : ''}${a.ult ? '<br><span style="color:#ffd36b">Ultimate: you can train only one.</span>' : ''}${abLvlBar(id)}`; };
@@ -2867,7 +2874,7 @@ function* fightGen(mob, io) {
     say('You strike first.', 'miss');
     while (ph > 0 && mh > 0 && rounds++ < 200) {   // limit 200 rund (było 120) – długie walki z przeciwnikami Aktu 3
       if (turn == 0) { for (const k in abCd) if (abCd[k] > 0) abCd[k]--; if (UI) refreshAb(); }   // odnowienie: −1 na początku każdej Twojej tury
-      if (turn == 0) abReady.exec = mh < M.hp * 0.2;   // Decapitate: wróg poniżej 20% HP
+      if (turn == 0) abReady.exec = mh < M.hp * ((abEff('decap').execP || 20) / 100);   // Decapitate: wróg poniżej progu (15% → 20% na 5 poziomie; Executioner's Reach 30%)
       if (io.manual && turn == 0) {
         // UMIEJĘTNOŚCI BEZ TURY (Battle Fury): użyta → efekt od razu, a walka dalej czeka na Twój ruch w tej samej turze
         for (;;) {
