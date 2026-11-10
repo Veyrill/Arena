@@ -738,7 +738,7 @@ const FUPG = [
   { id: 'basic', x: 0, y: 0, n: 'Basic Training', max: 1, ic: GUIDE_ICO, center: 1, d: () => 'Unlocks glowing fish.<br>Click a glowing fish to get a Fishing Guide.', eff: { glowUnlock: 1 } }
 ];
 (() => {
-  const ph = (id, req, x, y, k, lane, extra) => FUPG.push({ id, req, x, y, k, lane, ph: 1, n: 'Locked', max: 1, ic: '🔒', d: () => `${F_LANE[lane]} – coming soon`, eff: {}, ...extra });
+  const ph = (id, req, x, y, k, lane, extra) => FUPG.push({ id, req, x, y, k, lane, ph: 1, n: 'Locked', max: 1, ic: '', d: () => `${F_LANE[lane]} – coming soon`, eff: {}, ...extra });
   let x = 0, prev = 'basic';
   for (let v = 0; v < 4; v++) {
     x += 250; ph(`key${v}`, prev, x, 0, 'key', 'key', { max: 3, minSpent: F_KEY_STEP * v }); prev = `key${v}`;   // krąg (keystone), 3 rangi
@@ -1350,7 +1350,7 @@ function renderAbilTab() {
     const a = me.abils && me.abils[id] ? abEff(id) : a0;   // po morphie: nowa nazwa / ikona
     const has = me.abils && me.abils[id], lvOk = me.lvl >= a.lvl, other = a.ult && ult && ult !== id;
     return `<div class="abcard${a.ult ? ' ult' : ''}${has ? ' has' : lvOk && !other ? '' : ' lock'}">`
-      + `<div class="abtile" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${abIco(a, 'abti')}${lvOk ? '' : `<span class="ablock">🔒 Lv ${a.lvl}</span>`}</div>`
+      + `<div class="abtile" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${abIco(a, 'abti')}${lvOk ? '' : `<span class="ablock">Lv ${a.lvl}</span>`}</div>`
       + `<b class="abnm">${a.n}</b>${has ? abPips(id) : ''}`
       + (has ? (canMorph(id) ? `<button class="abtrain abmorph" onclick="window.morphPick('${id}')"${busy ? ' disabled' : ''}>Morph</button>` : `<span class="abok">${me.morph && me.morph[id] ? 'Morphed' : 'Learned'}</span>`) : other ? `<span class="abnot">Not chosen</span>` : `<button class="abtrain" onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>Train</button>`)
       + `</div>`;
@@ -2079,7 +2079,7 @@ function render() {
         <div style="height:64px;display:flex;align-items:center">${uiIco('ui_arrow', '➡️')}</div>
         <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
           <div class="slot${prev ? ' r' + prev.r : ''}" ${prev ? 'data-it="upgprev"' : ''} style="width:64px;height:64px;display:flex;align-items:center;justify-content:center;cursor:default">
-            ${prev ? ico(prev) : rodMax ? '<span class="ic" style="font-size:28px;opacity:.4">🔒</span>' : uiIco('ui_question', '❔', 32, 'opacity:.4')}
+            ${prev ? ico(prev) : rodMax ? '' : uiIco('ui_question', '❔', 32, 'opacity:.4')}
           </div>
           <small style="color:var(--mut)">Upgraded</small>
         </div>
@@ -2263,8 +2263,8 @@ function render() {
     // złoty = wymaksowany, biały = częściowo kupiony, szary = nic nie kupione
     const rk = rankOf(n.id), mx = n.max || 1, bcol = rk >= mx ? '#f2c200' : rk ? '#ffffff' : '#a39880';
     const badge = n.k === 'b' && !n.ph ? `<div class="rkb" style="position:absolute;right:-9px;bottom:-9px;min-width:26px;padding:1px 4px;border-radius:7px;background:#120d08;border:1.5px solid ${bcol};color:${bcol};font-size:12px;font-weight:800;line-height:14px;text-align:center;box-shadow:0 0 4px #000;z-index:1">${rk}/${mx}</div>` : '';
-    return `<div class="upg-node${n.k == 's' ? ' small' : ''} ${st}" data-id="${n.id}" style="left:${X + n.x}px;top:${Y + n.y}px" data-tip="${tipOf(n)}"${st == 'avail' ? ` onclick="window.buyNode('${n.id}')"` : ''}><span class="ic">${n.ph ? '🔒' : n.ic}</span>${badge}</div>`;
-  }).join('') + corners.map(([x, y]) => `<div class="upg-node disabled" style="left:${X + x}px;top:${Y + y}px" data-tip="${lockTip}"><span class="ic">🔒</span></div>`).join('');
+    return `<div class="upg-node${n.k == 's' ? ' small' : ''} ${st}" data-id="${n.id}" style="left:${X + n.x}px;top:${Y + n.y}px" data-tip="${tipOf(n)}"${st == 'avail' ? ` onclick="window.buyNode('${n.id}')"` : ''}><span class="ic">${n.ph ? '' : n.ic}</span>${badge}</div>`;
+  }).join('') + corners.map(([x, y]) => `<div class="upg-node disabled" style="left:${X + x}px;top:${Y + y}px" data-tip="${lockTip}"><span class="ic"></span></div>`).join('');
   const centerState = isBought ? 'bought' : (me.sp < SKILL_COST || busy ? 'disabled' : 'avail');
   const centerTip = skTitle('Fortitude') + skRank(`Rank ${isBought ? 1 : 0}/1`) + skDesc('Maximum health +5%.') + (isBought ? '' : skCost);
 
@@ -2334,7 +2334,7 @@ function render() {
     ? (() => { const pl = ALL_LOCS[i - 1], pb = pl.mobs[pl.mobs.length - 1]; return `<div class="tile lock"><span class="ic">${l.e}</span><b>${l.n}</b><small>Defeat: ${pb.e} ${pb.n}</small></div>`; })()
     : `<button class="tile" data-a="eloc" data-i="${i}"${fishing.active ? ' disabled' : ''}><span class="ic">${l.e}</span><b>${l.n}</b></button>`; }).join('') + `</div>`;
   // placeholdery Aktu 2 i 3: 5 zablokowanych lokacji
-  const lockedLocs = `<div class="tiles">` + Array.from({ length: 5 }, () => `<div class="tile lock"><span class="ic">🔒</span><b>???</b><small>Coming soon</small></div>`).join('') + `</div>`;
+  const lockedLocs = `<div class="tiles">` + Array.from({ length: 5 }, () => `<div class="tile lock"><b>???</b><small>Coming soon</small></div>`).join('') + `</div>`;
   $('body-exp').innerHTML = eloc == null ? (
       ACTS[actI].locs ? locTiles : lockedLocs
     ) : back('eback', `${ALL_LOCS[eloc].e} ${ALL_LOCS[eloc].n}`) + `<div class="tiles">` + ALL_LOCS[eloc].mobs.map((m, i) => `<button class="tile${i == esel ? ' sel' : ''}${i == ALL_LOCS[eloc].mobs.length - 1 ? ' boss' : ''}${mobOpen(eloc, i) ? '' : ' mlock'}" data-a="esel" data-i="${i}"${busy || fishing.active || !mobOpen(eloc, i) ? ' disabled' : ''}>${lvlTag(m, i == ALL_LOCS[eloc].mobs.length - 1)}${winTag(m)}${mobIco(m, 64)}<b>${m.n}</b><small>+${xpOf(m)} XP</small></button>`).join('') + `</div>`;
@@ -3978,7 +3978,7 @@ function showClassPick() {
     + '</style>');
   const ov = document.createElement('div'); ov.id = 'clsov';
   ov.innerHTML = `<div id="clsbox"><h2>CHOOSE YOUR CLASS</h2><small>This choice shapes your abilities.</small><div class="clsrow">`
-    + CLASSES.map(c => `<div class="clsc${c.lock ? ' lock' : ''}" data-cls="${c.k}">${c.ico}<b>${c.n}</b><small>${c.d}</small>${c.lock ? '<span class="clk">🔒 Soon</span>' : ''}</div>`).join('')
+    + CLASSES.map(c => `<div class="clsc${c.lock ? ' lock' : ''}" data-cls="${c.k}">${c.ico}<b>${c.n}</b><small>${c.d}</small>${c.lock ? '<span class="clk">Soon</span>' : ''}</div>`).join('')
     + `</div><div class="clsname"><label for="clsnm">Character name</label><input id="clsnm" maxlength="16" autocomplete="off" spellcheck="false" placeholder="Enter a name"></div><button id="clsok" disabled>Accept</button></div>`;
   document.body.appendChild(ov);
   // NAZWA POSTACI: 2–16 znaków (litery, cyfry, spacja, - i _); Accept aktywny, gdy wybrana klasa i poprawna nazwa
