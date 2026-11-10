@@ -1308,6 +1308,7 @@ function refreshAb() {
     const a = abEff(id), ok = !fighting ? (!a.cost && !a.need) : !!(atkResolve && (fightIo.rage || 0) >= a.cost && !cd && (!a.need || (fightIo.ready && fightIo.ready[a.need])));
     s.classList.toggle('proc', fighting && ok && !!a.need);   // Decapitate: slot pulsuje, gdy się zapali
     s.classList.toggle('off', !ok);
+    { const b = s.querySelector('.abc'); if (b) b.classList.toggle('norage', !!a.cost && (fighting ? fightIo.rage || 0 : 0) < a.cost); }   // za mało Rage → plakietka kosztu bez koloru
     const c = s.querySelector('.abcd'); if (c) { c.textContent = cd === Infinity ? 'USED' : cd ? cd : ''; c.classList.toggle('used', cd === Infinity); }   // ult po użyciu: USED do końca walki
   });
 }
