@@ -1228,8 +1228,8 @@ const ABILS = {
   storm: { n: 'Bladestorm', ico: '🌪️', cost: 60, mul: 1.2, hits: 3, cd: 0, lvl: 20, ult: true, d: 'Three strikes in a row, each for 120% weapon damage with its own chance to crit. Once per fight.' },
   split: { n: 'Skullsplitter', ico: '🪓', cost: 60, mul: 3, rend: 0.5, rendT: 10, cd: 0, lvl: 20, ult: true, d: 'A crushing blow for 300% weapon damage. The wound bleeds for 50% of the damage dealt over 10 turns. Once per fight.' },
   quake: { n: 'Earthshaker', ico: '🔨', cost: 60, mul: 1.5, stunT: 4, cd: 0, lvl: 20, ult: true, d: 'Smash the ground for 150% weapon damage and stun the enemy for 4 turns. Once per fight.' },
-  // execP = próg HP wroga (%), poniżej którego można użyć; lvE = dodatek do progu na poziomie 1–5 (15% → 20% na 5 poziomie); obrażenia 200% → 220 / 240 / 280 / 350%
-  decap: { n: 'Decapitate', ico: '💀', img: 'ab_decap', cost: 40, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 15, lvB: [0, 10, 20, 25, 35, 45, 60, 80, 115, 150], lvAdd: true, lvE: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 15% health.',
+  // execP = próg HP wroga (%), poniżej którego można użyć; lvE = dodatek do progu na poziomie 1–5 (20% → 25% na 10 poziomie); obrażenia 200% → 220 / 240 / 280 / 350%
+  decap: { n: 'Decapitate', ico: '💀', img: 'ab_decap', cost: 40, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 20, lvB: [0, 10, 20, 25, 35, 45, 60, 80, 115, 150], lvAdd: true, lvE: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 20% health.',
     morph: {
       reach: { n: "Executioner's Reach", execP: 30, d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 30% health.' },
       verdict: { n: 'Final Verdict', mul: 4.5, d: 'A finishing blow for 450% weapon damage. Only when the enemy is below 20% health.' }
@@ -2990,7 +2990,7 @@ function* fightGen(mob, io) {
     say('You strike first.', 'miss');
     while (ph > 0 && mh > 0 && rounds++ < 200) {   // limit 200 rund (było 120) – długie walki z przeciwnikami Aktu 3
       if (turn == 0) { for (const k in abCd) if (abCd[k] > 0) abCd[k]--; if (UI) refreshAb(); }   // odnowienie: −1 na początku każdej Twojej tury
-      if (turn == 0) abReady.exec = mh < M.hp * ((abEff('decap').execP || 20) / 100);   // Decapitate: wróg poniżej progu (15% → 20% na 5 poziomie; Executioner's Reach 30%)
+      if (turn == 0) abReady.exec = mh < M.hp * ((abEff('decap').execP || 20) / 100);   // Decapitate: wróg poniżej progu (20% → 25% na 10 poziomie; Executioner's Reach 30%)
       if (io.manual && turn == 0) {
         // UMIEJĘTNOŚCI BEZ TURY (Battle Fury): użyta → efekt od razu, a walka dalej czeka na Twój ruch w tej samej turze
         let planFree = 0;   // Battle Plan: maks. 1 Battle Fury na turę
