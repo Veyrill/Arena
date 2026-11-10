@@ -1258,23 +1258,37 @@ const abDmg = a => { if (!a.mul) return ''; const d = der(); return `${Math.roun
 // Progi (takie same dla każdej umiejętności): lvl 2 po 10 użyciach, lvl 3 po kolejnych 40, lvl 4 po 150, lvl 5 po 400 – razem 600; maks. lvl 5.
 const AB_LVL_NEED = [5, 10, 20, 35, 50, 70, 100, 130, 180], AB_MAX_LVL = 10,   // 10 poziomów, razem nadal 600 użyć (dawniej 5 poziomów: 10/40/150/400)
   abNeed = l => AB_LVL_NEED[l - 1];   // użycia z poziomu l na l+1
+// RĘCZNE LEVELOWANIE: me.abLv = { id: poziom } – poziom rośnie dopiero po kliknięciu „+” (pasek pełny, poza walką).
+// me.abXp = łączna liczba użyć; użycia ponad pełny pasek się nie liczą. Stary zapis (bez me.abLv): poziom wyliczony z użyć, jak dawniej.
+const abCum = l => AB_LVL_NEED.slice(0, l - 1).reduce((s, v) => s + v, 0);   // użycia potrzebne, żeby dojść do poziomu l
 function abLvl(id) {
-  let u = (me.abXp && me.abXp[id]) || 0, l = 1;
-  while (l < AB_MAX_LVL && u >= abNeed(l)) { u -= abNeed(l); l++; }
-  return { l, cur: u, need: l < AB_MAX_LVL ? abNeed(l) : 0 };   // cur/need = postęp do następnego poziomu
+  const u = (me.abXp && me.abXp[id]) || 0;
+  me.abLv = me.abLv || {};
+  if (!me.abLv[id]) { let l = 1, r = u; while (l < AB_MAX_LVL && r >= abNeed(l)) { r -= abNeed(l); l++; } me.abLv[id] = l; }   // migracja starego zapisu
+  const l = Math.min(AB_MAX_LVL, me.abLv[id]), need = l < AB_MAX_LVL ? abNeed(l) : 0, cur = need ? Math.max(0, Math.min(need, u - abCum(l))) : 0;
+  return { l, cur, need, ready: !!need && cur >= need };   // cur/need = postęp do następnego poziomu; ready = pasek pełny → „+”
 }
+// „+” przy pasku po lewej: awans umiejętności (nie w trakcie walki)
+window.abLevelUp = id => {
+  if (fightOn || busy) return;
+  const v = abLvl(id); if (!v.ready) return;
+  me.abLv[id] = v.l + 1;
+  document.querySelectorAll('#skillbar .sk').forEach(s => delete s.dataset.built);   // pasek: nowy opis / koszt
+  say(`<b>${abEff(id).n}</b> reached <b>Lvl ${v.l + 1}</b>!`, 'crit');
+  saveGame(); render();
+};
 // wygląd (wariant E): romby pod nazwą = poziom (zapalone / wszystkie 5); na dole napis „Next level: x / y” i cienka linia postępu wzdłuż dolnej krawędzi dymka
 // ULTIMATE: bez poziomów – bez rombów, bez paska „Next level” i bez naliczania użyć
 const abPips = id => { if (ABILS[id] && ABILS[id].ult) return ''; return `<span class="ablvl">Lvl ${abLvl(id).l}</span>`; };   // poziom jako tekst „Lvl 3” (zamiast rombów)
-const abLvlBar = id => { if (ABILS[id] && ABILS[id].ult) return ''; const v = abLvl(id); return v.need ? `<div class="abnext">Next level: ${v.cur} / ${v.need}</div><div class="abedge"><i style="width:${v.cur / v.need * 100}%"></i></div>` : `<div class="abnext">Maxed</div>`; };   // poziom 5: sam napis Maxed (bez paska)
+const abLvlBar = id => { if (ABILS[id] && ABILS[id].ult) return ''; const v = abLvl(id); return v.need ? `<div class="abnext">${v.ready ? 'Ready to level up (+ on the left)' : `Next level: ${v.cur} / ${v.need}`}</div><div class="abedge"><i style="width:${v.cur / v.need * 100}%"></i></div>` : `<div class="abnext">Maxed</div>`; };   // poziom 5: sam napis Maxed (bez paska)
 // użycie w walce: +1; po awansie napis „LVL X!” nad slotem
 function abUse(id) {
   if (ABILS[id] && ABILS[id].ult) return;   // Ultimate się nie levelują
-  me.abXp = me.abXp || {}; const l0 = abLvl(id).l; me.abXp[id] = (me.abXp[id] || 0) + 1;
+  if (abLvl(id).ready || !abLvl(id).need) return;   // pasek pełny (czeka na „+”) albo maks. poziom – użycia się nie liczą
+  me.abXp = me.abXp || {}; me.abXp[id] = Math.max(me.abXp[id] || 0, abCum(abLvl(id).l)) + 1;
   renderXpSide();   // licznik postępu po lewej
-  const l1 = abLvl(id).l, s = [...document.querySelectorAll('#skillbar .sk.ab')].find(x => x.dataset.ab === id);
-  if (s) { s.dataset.tip = abTip(id); refreshTip();
-    if (l1 > l0) { const r = s.getBoundingClientRect(), e = document.createElement('div'); e.className = 'ablvup'; e.textContent = `LVL ${l1}!`; e.style.left = (r.left + r.width / 2) + 'px'; e.style.top = (r.top - 6) + 'px'; document.body.appendChild(e); setTimeout(() => e.remove(), 1400); } }
+  const s = [...document.querySelectorAll('#skillbar .sk.ab')].find(x => x.dataset.ab === id);
+  if (s) { s.dataset.tip = abTip(id); refreshTip(); }
 }
 // LICZNIK POSTĘPU UMIEJĘTNOŚCI (po lewej od gry): wytrenowane umiejętności Twojej klasy poniżej 5 poziomu (bez Ultimate i bez wymaxowanych);
 // ikona (bez klawisza i kosztu), „Lv N” i pasek postępu do następnego poziomu – bez liczb
@@ -1283,7 +1297,8 @@ function renderXpSide() {
   const ids = Object.keys(ABILS).filter(id => myAb(id) && !ABILS[id].ult && me.abils && me.abils[id] && abLvl(id).need).sort((x, y) => ABILS[x].lvl - ABILS[y].lvl);
   el.hidden = !ids.length; if (!ids.length) { el.innerHTML = ''; return; }
   el.innerHTML = ids.map(id => { const v = abLvl(id), a = abEff(id);
-    return `<div class="xpr" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${abIco(a, 'xpi')}<div class="xpt"><b>Lvl ${v.l}</b><div class="xpb"><i style="width:${v.cur / v.need * 100}%"></i></div></div></div>`; }).join('');
+    return `<div class="xpr${v.ready ? ' ready' : ''}" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${abIco(a, 'xpi')}<div class="xpt"><b>Lvl ${v.l}</b><div class="xpb"><i style="width:${v.cur / v.need * 100}%"></i></div></div>`
+      + (v.ready ? `<button class="xpup" onclick="window.abLevelUp('${id}')"${fightOn || busy ? ' disabled' : ''} data-tip="${fightOn || busy ? 'Not during a fight' : `Level up to Lvl ${v.l + 1}`}">+</button>` : '<span class="xpup0"></span>') + `</div>`; }).join('');
 }
 const abTip = (id, mk) => { const a = mk ? abEff(id, mk) : abEff(id), dm = abDmg(a), d0 = ABILS[id];
   // opis liczony na żywo: % obrażeń broni wg poziomu umiejętności (np. Overhead Blow 140% → 245% na 5 poziomie)
@@ -3940,7 +3955,7 @@ function spawnItem(id, r = 0, qty = 1) {
       const full = AB_LVL_NEED.reduce((s, v) => s + v, 0);   // 600 użyć = poziom 10
       for (const id of ids) {
         if (!me.abils[id]) { me.abils[id] = true; if (!Object.values(me.bar).includes(id)) { const k = BAR_KEYS.find(x => !me.bar[x]); if (k) me.bar[k] = id; } }
-        me.abXp[id] = Math.max(me.abXp[id] || 0, full);
+        me.abXp[id] = Math.max(me.abXp[id] || 0, full); me.abLv = me.abLv || {}; me.abLv[id] = AB_MAX_LVL;
       }
       document.querySelectorAll('#skillbar .sk').forEach(s => delete s.dataset.built);
       say(`DEV: ${ids.length} abilities maxed.`); saveGame(); render();
