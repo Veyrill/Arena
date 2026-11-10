@@ -3149,7 +3149,7 @@ function* fightGen(mob, io) {
           if (mh <= 0) break;
         }
         // Earthshaker: ogłuszony wróg nie atakuje (po krwawieniu / podpaleniu), tura wraca do Ciebie
-        if (stunT > 0) { stunT--; if (stunT) deb.stun = { st: stunT, tip: `Loses its turn<br>Turns left: ${stunT}` }; else delete deb.stun; renderDebuffs(deb); say(`${mob.n} is stunned and loses its turn.`, 'miss'); io.stunned = true; turn ^= 1; upd(); continue; }   // bez pauzy – od razu Twój kolejny ruch (kilka ataków z rzędu)
+        if (stunT > 0) { stunT--; if (stunT) deb.stun = { st: stunT, tip: `Loses its turn<br>Turns left: ${stunT}` }; else delete deb.stun; renderDebuffs(deb); say(`${mob.n} is stunned and loses its turn.`, 'miss'); turn ^= 1; upd(); continue; }   // bez pauzy – od razu Twój kolejny ruch (kilka ataków z rzędu)
         // Crippling Strike: wróg zadaje cripP% mniej obrażeń przez cripT swoich ataków
         const Mc = cripT > 0 ? Object.assign({}, M, { min: M.min * (1 - cripP / 100), max: M.max * (1 - cripP / 100) }) : M;
         if (cripT > 0) { cripT--; if (cripT) deb.crip = { st: cripT, tip: `Deals ${cripP}% less damage<br>Turns left: ${cripT}` }; else delete deb.crip; renderDebuffs(deb); }
@@ -3334,7 +3334,7 @@ $('go').onclick = async ev => {
     render();
     const io = { sim: false, manual: true }; fightIo = io;
     { const sb = $('skillbar'); if (sb) sb.classList.add('fighting'); }   // w trakcie walki slot ataku jest szary poza Twoją turą   // manual: atak gracza dopiero po kliknięciu slotu 1 / klawisza 1 (symulacja szans – bez czekania)
-    for (const ms of fightGen(mob, io)) { if (ms === 'wait') { if (!skipFight) await waitAttack(); else await slp(io.stunned ? 0 : 325 * FIGHT_SLOW * AUTO_SPEED); io.stunned = false; continue; } await slp(ms * FIGHT_SLOW * (skipFight ? AUTO_SPEED : 1)); }   // pauzy między ciosami; po Skip – gra sama „klika” (Battle Plan), pauzy ×0.7
+    for (const ms of fightGen(mob, io)) { if (ms === 'wait') { if (!skipFight) await waitAttack(); else await slp(325 * FIGHT_SLOW * AUTO_SPEED); continue; } await slp(ms * FIGHT_SLOW * (skipFight ? AUTO_SPEED : 1)); }   // pauzy między ciosami; po Skip – gra sama „klika” (Battle Plan), pauzy ×0.7
     const { ph } = io.res, upd = io.upd;
     fightOn = false;
     const loot = [];   // łup tej walki (pokazywany pod przyciskiem Collect na wyprawie)
