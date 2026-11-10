@@ -1203,21 +1203,21 @@ addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEX
 // gain = Rage za użycie; free = nie zabiera tury (po nim działasz dalej); buffT = tury buffa; need: 'exec' = wróg poniżej 20% HP (Revenge usunięty z gry – stary zapis: pusty slot, ignorowany w me.abils)
 const ABILS = {
   // lvB = % dodatkowych obrażeń umiejętności na poziomie 1–5 (mnoży obrażenia), lvC = zmiana kosztu w Rage na poziomie 1–5
-  overhead: { n: 'Overhead Blow', ico: '💥', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 10, 20, 50, 75], lvC: [0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
+  overhead: { n: 'Overhead Blow', ico: '💥', img: 'ab_overhead', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 10, 20, 50, 75], lvC: [0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
     // MORPH (po 5 poziomie, wybór na stałe): zastępuje umiejętność – nazwa, opis, mnożnik; heal = % zadanych obrażeń jako leczenie, critUp = % wyższa szansa i obrażenia krytyka
     morph: {
       siphon: { n: 'Siphoning Strike', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' },
       cruel: { n: 'Cruel Blow', mul: 2.5, critUp: 20, d: 'Strike for 250% weapon damage. Its critical hit chance and critical damage are 20% higher.' }
     } },
   // lvG = zmiana generowanego Rage na poziomie 1–5 (Pommel Strike: 25 → 30 na 5 poziomie); lvAdd = bonus lvB dodawany do % obrażeń broni (60% → 80 / 100 / 120 / 160%), bez lvAdd – mnożony
-  pommel: { n: 'Pommel Strike', ico: '🗡️', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 20, 40, 60, 100], lvAdd: true, lvG: [0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
+  pommel: { n: 'Pommel Strike', ico: '🗡️', img: 'ab_pommel', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 20, 40, 60, 100], lvAdd: true, lvG: [0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
     // markD = Mark of Death na wrogu (Twój następny cios +markD%), crip = wróg zadaje crip% mniej obrażeń przez cripT swoich tur
     morph: {
       mark: { n: 'Marking Strike', markD: 20, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Marks the enemy with Mark of Death: your next hit against it deals 20% more damage.' },
       cripple: { n: 'Crippling Strike', crip: 10, cripT: 3, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Cripples the enemy: it deals 10% less damage for 3 turns.' }
     } },
   // buffD = % obrażeń z buffa (Battle Fury: 10% → 15 / 25 / 40 / 60%), lvF = dodatek do buffD na poziomie 1–5, lvT = dodatkowe tury buffa (6 tur na 5 poziomie)
-  fury: { n: 'Battle Fury', ico: '📯', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 5, 15, 30, 50], lvT: [0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
+  fury: { n: 'Battle Fury', ico: '📯', img: 'ab_fury', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 5, 15, 30, 50], lvT: [0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
     // dexUp = % wyższa Dexterity na czas buffa (szansa na krytyk liczona od podniesionej Dexterity)
     morph: {
       cry: { n: 'Battlecry', dexUp: 20, d: 'Instant: does not end your turn. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' },
@@ -1229,7 +1229,7 @@ const ABILS = {
   split: { n: 'Skullsplitter', ico: '🪓', cost: 60, mul: 3, rend: 0.5, rendT: 10, cd: 0, lvl: 20, ult: true, d: 'A crushing blow for 300% weapon damage. The wound bleeds for 50% of the damage dealt over 10 turns. Once per fight.' },
   quake: { n: 'Earthshaker', ico: '🔨', cost: 60, mul: 1.5, stunT: 4, cd: 0, lvl: 20, ult: true, d: 'Smash the ground for 150% weapon damage and stun the enemy for 4 turns. Once per fight.' },
   // execP = próg HP wroga (%), poniżej którego można użyć; lvE = dodatek do progu na poziomie 1–5 (15% → 20% na 5 poziomie); obrażenia 200% → 220 / 240 / 280 / 350%
-  decap: { n: 'Decapitate', ico: '💀', cost: 40, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 15, lvB: [0, 20, 40, 80, 150], lvAdd: true, lvE: [0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 15% health.',
+  decap: { n: 'Decapitate', ico: '💀', img: 'ab_decap', cost: 40, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 15, lvB: [0, 20, 40, 80, 150], lvAdd: true, lvE: [0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 15% health.',
     morph: {
       reach: { n: "Executioner's Reach", execP: 30, d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 30% health.' },
       verdict: { n: 'Final Verdict', mul: 4.5, d: 'A finishing blow for 450% weapon damage. Only when the enemy is below 20% health.' }
@@ -1242,6 +1242,8 @@ const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = 
 // obrażenia umiejętności dla aktualnych statystyk: zakres obrażeń postaci × mnożnik (losowane w walce jak zwykły atak), np. "6–10"
 // POZIOM UMIEJĘTNOŚCI → efekt (na razie tylko Overhead Blow): kopia umiejętności z kosztem i mnożnikiem dla jej obecnego poziomu
 // mk = klucz morpha (domyślnie wybrany przez gracza: me.morph[id]); morph nadpisuje nazwę, opis i mnożnik (koszt zostaje z 5 poziomu)
+// IKONA UMIEJĘTNOŚCI: obrazek z assets/skills/abilities/<img>.png (brak pliku albo brak img → emoji ico); morph na razie dziedziczy ikonę bazową
+const abIco = (a, cls) => a.img ? `<span class="${cls} img"><img src="${ASSETS_DIR}/skills/abilities/${a.img}.png" alt="" onerror="this.parentNode.classList.remove('img');this.outerHTML='${a.ico}'"></span>` : `<span class="${cls}">${a.ico}</span>`;
 const abEff = (id, mk = me.morph && me.morph[id]) => {
   const a = ABILS[id]; if (!a || !(a.lvB || a.lvC || a.lvG || a.lvF || a.lvT || a.lvE)) return a; const l = abLvl(id).l - 1;
   const e = Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: !a.mul ? a.mul : a.lvAdd ? a.mul + ((a.lvB || [])[l] || 0) / 100 : a.mul * (1 + ((a.lvB || [])[l] || 0) / 100), gain: a.gain ? a.gain + ((a.lvG || [])[l] || 0) : a.gain,
@@ -1292,7 +1294,7 @@ function renderBarAbils() {
     s.dataset.ab = sig; s.dataset.built = 1;
     s.classList.toggle('ab', !!id); s.draggable = !!id;
     if (id) { s.dataset.tip = abTip(id); } else delete s.dataset.tip;
-    s.innerHTML = (id ? `<span class="ic">${abEff(id).ico}</span><span class="abc">${abEff(id).gain ? '+' + abEff(id).gain : abEff(id).cost}</span><span class="abcd"></span>` : '') + `<span class="kb">${k}</span>`;
+    s.innerHTML = (id ? `${abIco(abEff(id), 'ic')}<span class="abc">${abEff(id).gain ? '+' + abEff(id).gain : abEff(id).cost}</span><span class="abcd"></span>` : '') + `<span class="kb">${k}</span>`;
   });
   refreshAb();
 }
@@ -1347,7 +1349,7 @@ function renderAbilTab() {
     const a = me.abils && me.abils[id] ? abEff(id) : a0;   // po morphie: nowa nazwa / ikona
     const has = me.abils && me.abils[id], lvOk = me.lvl >= a.lvl, other = a.ult && ult && ult !== id;
     return `<div class="abcard${a.ult ? ' ult' : ''}${has ? ' has' : lvOk && !other ? '' : ' lock'}">`
-      + `<div class="abtile" data-tip="${abTip(id).replace(/"/g, '&quot;')}"><span class="abti">${a.ico}</span>${lvOk ? '' : `<span class="ablock">🔒 Lv ${a.lvl}</span>`}</div>`
+      + `<div class="abtile" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${abIco(a, 'abti')}${lvOk ? '' : `<span class="ablock">🔒 Lv ${a.lvl}</span>`}</div>`
       + `<b class="abnm">${a.n}</b>${has ? abPips(id) : ''}`
       + (has ? (canMorph(id) ? `<button class="abtrain abmorph" onclick="window.morphPick('${id}')"${busy ? ' disabled' : ''}>Morph</button>` : `<span class="abok">${me.morph && me.morph[id] ? 'Morphed' : 'Learned'}</span>`) : other ? `<span class="abnot">Not chosen</span>` : `<button class="abtrain" onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>Train</button>`)
       + `</div>`;
@@ -1357,7 +1359,7 @@ function renderAbilTab() {
   // zwykłe umiejętności, potem grupa ULTIMATE (złota ramka, „choose one”)
   // WYBÓR MORPHA (po kliknięciu Morph): dwa warianty obok siebie z „OR” między nimi; Choose = wybór na stałe, Cancel = zamknij
   const mp = abMorphPick && canMorph(abMorphPick) ? abMorphPick : null;
-  const mcard = k => { const m = abEff(mp, k); return `<div class="abcard has"><div class="abtile" data-tip="${abTip(mp, k).replace(/"/g, '&quot;')}"><span class="abti">${m.ico}</span></div>`
+  const mcard = k => { const m = abEff(mp, k); return `<div class="abcard has"><div class="abtile" data-tip="${abTip(mp, k).replace(/"/g, '&quot;')}">${abIco(m, 'abti')}</div>`
     + `<b class="abnm">${m.n}</b><button class="abtrain" onclick="window.morphAbil('${mp}','${k}')"${busy ? ' disabled' : ''}>Choose</button></div>`; };
   const morphBox = !mp ? '' : `<div class="abmorphg"><span class="abultl">MORPH · ${ABILS[mp].n} · choose one (permanent)</span>`
     + `<div class="abgrid">${Object.keys(ABILS[mp].morph).map(mcard).join('<span class="abor">OR</span>')}</div>`
@@ -1406,7 +1408,7 @@ const DPS_PAS = { 'Lightning Bolt': 'bolt', 'Fire Energy': 'fire', 'Burning': 'b
 function dpsIco(k) {
   const box = c => `<span class="dpi">${c}</span>`;
   if (k === 'Attack') return box(eq1.weapon ? sizeIco(eq1.weapon, 20) : '👊');
-  const ab = Object.keys(ABILS).map(id => abEff(id)).find(a => a.n === k); if (ab) return box(ab.ico);   // także nazwy po morphie (np. Siphoning Strike)
+  const ab = Object.keys(ABILS).map(id => abEff(id)).find(a => a.n === k); if (ab) return box(ab.img ? `<img src="${ASSETS_DIR}/skills/abilities/${ab.img}.png" alt="" onerror="this.outerHTML='${ab.ico}'">` : ab.ico);   // także nazwy po morphie (np. Siphoning Strike)
   const d = DEBUFFS[DPS_PAS[k]];
   return box(d ? `<img src="${ASSETS_DIR}/skills/curses/${d[0]}.png" alt="" onerror="this.outerHTML='${d[2] || '✦'}'">` : '✦');
 }
