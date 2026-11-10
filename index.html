@@ -185,6 +185,17 @@ button.drow:hover{border-color:var(--dc)}
 .abmorphg .abcard{width:120px}.abmorphg .abnm{color:#f3e6ff;min-height:2.6em;display:flex;align-items:center}
 .abor{font-size:16px;font-weight:800;color:#c9a8ff}
 .abmcancel{margin-top:10px;font-size:12px}
+/* PRZYCISKI AKCJI – wariant B (Pixel 3D): pomarańczowa twarz, jasna krawędź u góry, gruby ciemny cień u dołu, czarna obwódka; po kliknięciu wciśnięty.
+   Dotyczy: Train / Choose (Abilities), Fight! (lochy), Fight! / Skip / Collect (#go), Back (#fbackrow, .bkac), Accept (#clsok); MORPH – wersja fioletowa.
+   „body” w selektorze – wygrywa ze stylami wstawianymi przez ui.js */
+body :is(.abtrain:not(:disabled),#fbackrow button,#go,.dfbtn,.bkac,#clsok){background:#e8793a;color:#fff;border:2px solid #1a0e08;border-radius:3px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+  box-shadow:inset 0 2px 0 #ffb36b,inset 0 -4px 0 #a8461a;text-shadow:1px 1px 0 #6a2a0c;padding-bottom:7px}
+body :is(.abtrain:not(:disabled),#fbackrow button,#go,.dfbtn,.bkac,#clsok):hover:not(:disabled){background:#f08a4a;border-color:#1a0e08}
+body :is(.abtrain:not(:disabled),#fbackrow button,#go,.dfbtn,.bkac,#clsok):active:not(:disabled){box-shadow:inset 0 2px 0 #a8461a;padding-top:7px;padding-bottom:5px}
+body :is(.abtrain,#go,.dfbtn,#clsok):disabled{opacity:1;background:#8a8090;color:#d8d2dc;border:2px solid #1a0e08;border-radius:3px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;box-shadow:inset 0 2px 0 #aaa2b0,inset 0 -4px 0 #5e5664;text-shadow:none;padding-bottom:7px}
+body #v-abil .abtrain.abmorph:not(:disabled){background:#8c54d4;box-shadow:inset 0 2px 0 #c49cfa,inset 0 -4px 0 #4a2478;text-shadow:1px 1px 0 #30184c;letter-spacing:.08em}
+body #v-abil .abtrain.abmorph:hover:not(:disabled){background:#9a66e0}
+body #v-abil .abtrain.abmorph:active:not(:disabled){box-shadow:inset 0 2px 0 #4a2478}
 .sk .abcd.used{font-size:11px;letter-spacing:.06em;color:#ffd36b}
 /* ZAKŁADKA SETTINGS */
 .setrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg)}
