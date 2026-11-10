@@ -1201,7 +1201,8 @@ addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEX
 // ROTACJA WARRIORA: Pommel Strike (opener, +Rage) → Battle Fury (buff do odnawiania) → Overhead Blow (spam) → Revenge (po krytyku wroga) → Decapitate (execute); bez Rage – zwykły atak (slot 1)
 // gain = Rage za użycie; free = nie zabiera tury (po nim działasz dalej); buffT = tury buffa; need: 'crit' = tylko w turze po krytyku wroga, 'exec' = wróg poniżej 20% HP
 const ABILS = {
-  overhead: { n: 'Overhead Blow', ico: '💥', cost: 30, mul: 1.4, cd: 1, lvl: 3, d: 'Bring your weapon down with both hands for 140% weapon damage.' },
+  // lvB = % dodatkowych obrażeń umiejętności na poziomie 1–5 (mnoży obrażenia), lvC = zmiana kosztu w Rage na poziomie 1–5
+  overhead: { n: 'Overhead Blow', ico: '💥', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 10, 20, 50, 75], lvC: [0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.' },
   pommel: { n: 'Pommel Strike', ico: '🗡️', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.' },
   fury: { n: 'Battle Fury', ico: '📯', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, d: 'Instant: does not end your turn. For 5 turns you deal 20% more damage and attacks generate 2 more Rage.' },
   revenge: { n: 'Revenge', ico: '💢', cost: 0, gain: 10, mul: 1.2, cd: 0, lvl: 12, need: 'crit', d: 'Strike back for 120% weapon damage and gain 10 Rage. Only in the turn after you take a critical hit.' },
@@ -1216,6 +1217,8 @@ const abCls = a => a.cls || 'warrior';
 const myAb = id => !!ABILS[id] && abCls(ABILS[id]) === (me.cls || 'warrior');
 const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = zwykły atak (stały)
 // obrażenia umiejętności dla aktualnych statystyk: zakres obrażeń postaci × mnożnik (losowane w walce jak zwykły atak), np. "6–10"
+// POZIOM UMIEJĘTNOŚCI → efekt (na razie tylko Overhead Blow): kopia umiejętności z kosztem i mnożnikiem dla jej obecnego poziomu
+const abEff = id => { const a = ABILS[id]; if (!a || !(a.lvB || a.lvC)) return a; const l = abLvl(id).l - 1; return Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: a.mul * (1 + ((a.lvB || [])[l] || 0) / 100) }); };
 const abDmg = a => { if (!a.mul) return ''; const d = der(); return `${Math.round(d.min * a.mul)}–${Math.round(d.max * a.mul)}`; };
 // POZIOMY UMIEJĘTNOŚCI (na razie bez efektu): rosną od używania w walce. me.abXp = { id: liczba użyć }.
 // Progi (takie same dla każdej umiejętności): lvl 2 po 10 użyciach, lvl 3 po kolejnych 40, lvl 4 po 150, lvl 5 po 400 – razem 600; maks. lvl 5.
@@ -1227,7 +1230,7 @@ function abLvl(id) {
 }
 // wygląd (wariant E): romby pod nazwą = poziom (zapalone / wszystkie 5); na dole napis „Next level: x / y” i cienka linia postępu wzdłuż dolnej krawędzi dymka
 const abPips = id => { const l = abLvl(id).l; return `<span class="abpips">${Array.from({ length: AB_MAX_LVL }, (_, i) => `<i${i < l ? ' class="on"' : ''}></i>`).join('')}</span>`; };
-const abLvlBar = id => { const v = abLvl(id); return `<div class="abnext">${v.need ? `Next level: ${v.cur} / ${v.need}` : 'Max level'}</div><div class="abedge${v.need ? '' : ' max'}"><i style="width:${v.need ? v.cur / v.need * 100 : 100}%"></i></div>`; };
+const abLvlBar = id => { const v = abLvl(id); return v.need ? `<div class="abnext">Next level: ${v.cur} / ${v.need}</div><div class="abedge"><i style="width:${v.cur / v.need * 100}%"></i></div>` : `<div class="abnext">Maxed</div>`; };   // poziom 5: sam napis Maxed (bez paska)
 // użycie w walce: +1; po awansie napis „LVL X!” nad slotem
 function abUse(id) {
   me.abXp = me.abXp || {}; const l0 = abLvl(id).l; me.abXp[id] = (me.abXp[id] || 0) + 1;
@@ -1235,7 +1238,7 @@ function abUse(id) {
   if (s) { s.dataset.tip = abTip(id); refreshTip();
     if (l1 > l0) { const r = s.getBoundingClientRect(), e = document.createElement('div'); e.className = 'ablvup'; e.textContent = `LVL ${l1}!`; e.style.left = (r.left + r.width / 2) + 'px'; e.style.top = (r.top - 6) + 'px'; document.body.appendChild(e); setTimeout(() => e.remove(), 1400); } }
 }
-const abTip = id => { const a = ABILS[id], dm = abDmg(a); return `<b>${a.n}</b>${abPips(id)}${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.ult ? 'once per fight' : a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${a.d}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage${a.hits ? ` × ${a.hits}` : ''}.` : ''}${a.ult ? '<br><span style="color:#ffd36b">Ultimate: you can train only one.</span>' : ''}${abLvlBar(id)}`; };
+const abTip = id => { const a = abEff(id), dm = abDmg(a), lv = abLvl(id).l, lb = (a.lvB || [])[lv - 1] || 0, lc = (a.lvC || [])[lv - 1] || 0; return `<b>${a.n}</b>${abPips(id)}${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.ult ? 'once per fight' : a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${a.d}${lb || lc ? `<br><span style="color:#4fae4f;font-weight:700">Level ${lv}: ${[lb ? `+${lb}% damage` : '', lc ? `${lc} Rage cost` : ''].filter(Boolean).join(', ')}</span>` : ''}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage${a.hits ? ` × ${a.hits}` : ''}.` : ''}${a.ult ? '<br><span style="color:#ffd36b">Ultimate: you can train only one.</span>' : ''}${abLvlBar(id)}`; };
 let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
 // pasek: ikony umiejętności w slotach 2–Tab (przebudowa tylko, gdy zmieni się rozmieszczenie – nie miga)
 function renderBarAbils() {
@@ -1244,11 +1247,11 @@ function renderBarAbils() {
     const s = document.querySelector(`#skillbar .sk[data-key="${k}"]`); if (!s) return;
     const id = me.abils && me.abils[me.bar[k]] && myAb(me.bar[k]) ? me.bar[k] : null, sig = id || '';   // tylko umiejętności Twojej klasy   // usunięta umiejętność (np. stary Revenge w zapisie) = pusty slot
     if (id) s.dataset.tip = abTip(id);   // dymek zawsze aktualny (obrażenia zależą od statystyk)
-    if (s.dataset.ab === sig && s.dataset.built) return;
+    if (s.dataset.ab === sig && s.dataset.built) { const c = id && !ABILS[id].gain && s.querySelector('.abc'); if (c) c.textContent = abEff(id).cost; return; }   // koszt zależy od poziomu umiejętności
     s.dataset.ab = sig; s.dataset.built = 1;
     s.classList.toggle('ab', !!id); s.draggable = !!id;
     if (id) { s.dataset.tip = abTip(id); } else delete s.dataset.tip;
-    s.innerHTML = (id ? `<span class="ic">${ABILS[id].ico}</span><span class="abc">${ABILS[id].gain ? '+' + ABILS[id].gain : ABILS[id].cost}</span><span class="abcd"></span>` : '') + `<span class="kb">${k}</span>`;
+    s.innerHTML = (id ? `<span class="ic">${ABILS[id].ico}</span><span class="abc">${ABILS[id].gain ? '+' + ABILS[id].gain : abEff(id).cost}</span><span class="abcd"></span>` : '') + `<span class="kb">${k}</span>`;
   });
   refreshAb();
 }
@@ -1259,7 +1262,7 @@ function refreshAb() {
     const s = document.querySelector(`#skillbar .sk[data-key="${k}"]`); if (!s) return;
     const id = s.dataset.ab; if (!id) { s.classList.remove('off'); return; }
     const cd = fighting && fightIo.cd ? fightIo.cd[id] || 0 : 0;
-    const a = ABILS[id], ok = !fighting ? (!a.cost && !a.need) : !!(atkResolve && (fightIo.rage || 0) >= a.cost && !cd && (!a.need || (fightIo.ready && fightIo.ready[a.need])));
+    const a = abEff(id), ok = !fighting ? (!a.cost && !a.need) : !!(atkResolve && (fightIo.rage || 0) >= a.cost && !cd && (!a.need || (fightIo.ready && fightIo.ready[a.need])));
     s.classList.toggle('proc', fighting && ok && !!a.need);   // Revenge / Decapitate: slot pulsuje, gdy się zapali
     s.classList.toggle('off', !ok);
     const c = s.querySelector('.abcd'); if (c) { c.textContent = cd === Infinity ? 'USED' : cd ? cd : ''; c.classList.toggle('used', cd === Infinity); }   // ult po użyciu: USED do końca walki
@@ -1267,7 +1270,7 @@ function refreshAb() {
 }
 // użycie umiejętności (klik w slot / klawisz): w Twojej turze – zamiast zwykłego ataku; przed walką – startuje walkę (Rage = 0, więc bez ruchu)
 function useAbility(id) {
-  const a = ABILS[id]; if (!a) return;
+  const a = abEff(id); if (!a) return;   // koszt wg poziomu umiejętności
   if (atkResolve && fightIo) { if ((fightIo.rage || 0) < a.cost || (fightIo.cd && fightIo.cd[id]) || (a.need && !(fightIo.ready && fightIo.ready[a.need]))) return; fightIo.act = id; doAttack(); return; }
   const go = $('go'); if (!fightOn && !busy && go && !go.disabled && go.textContent.trim() === 'Fight!' && curMob()) { if (!a.cost && !a.need) atkQueued = id; go.onclick(); }   // darmowa (np. Pommel Strike) – walka startuje i od razu jej używa
 }
@@ -2732,7 +2735,7 @@ function* fightGen(mob, io) {
     const dr = (src, v) => { const real = Math.max(0, Math.min(v, mh)); dmgBy[src] = (dmgBy[src] || 0) + real; if (UI) setDps(dmgBy, pTurns); return v; };
     if (UI) setDps({}, 0);
     const abReady = {}; io.ready = abReady; let furyT = 0, stunT = 0, rendT = 0, rendD = 0;   // stunT: Earthshaker (tury wroga do pominięcia); rendT/rendD: Skullsplitter (tury krwawienia, obrażenia na turę)   // abReady.crit = Revenge (tura po krytyku wroga), abReady.exec = Decapitate (wróg < 20% HP); furyT = tury Battle Fury
-    const abOk = id => { const a = ABILS[id]; return !!a && rageBar >= a.cost && !abCd[id] && (!a.need || !!abReady[a.need]); };
+    const abOk = id => { const a = abEff(id); return !!a && rageBar >= a.cost && !abCd[id] && (!a.need || !!abReady[a.need]); };
     const furyTip = () => `Damage +20%<br>Attacks generate +2 Rage<br>Turns left: ${furyT}`;
     upd(); say(`Fight against: ${mob.e} ${mob.n}!`);
     // KLĄTWY (Curses): stan na czas tej jednej walki
@@ -2818,7 +2821,7 @@ function* fightGen(mob, io) {
           yield 'wait';
           const fa = io.act; if (!(fa && ABILS[fa] && ABILS[fa].free)) break;
           io.act = 'atk';
-          if (abOk(fa)) { const a = ABILS[fa]; if (UI) abUse(fa); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; pbuf.fury = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b> (−${a.cost} Rage)`, 'crit'); yield 200; }
+          if (abOk(fa)) { const a = abEff(fa); if (UI) abUse(fa); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; pbuf.fury = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b> (−${a.cost} Rage)`, 'crit'); yield 200; }
         }
       } else yield 325;   // WALKA RĘCZNA: w Twojej turze walka czeka na atak (slot 1 albo klawisz 1)
       if (turn == 0) {
@@ -2853,7 +2856,7 @@ function* fightGen(mob, io) {
         }
         // ABILITY wybrana w tej turze (klik / klawisz): zamiast zwykłego ataku; koszt w Rage, odnowienie, obrażenia = mnożnik × średnie obrażenia broni
         const act = io.act || 'atk'; io.act = 'atk';
-        const ab = act !== 'atk' && !(ABILS[act] || {}).free && abOk(act) ? ABILS[act] : null;
+        const ab = act !== 'atk' && !(ABILS[act] || {}).free && abOk(act) ? abEff(act) : null;   // koszt i obrażenia wg poziomu umiejętności
         if (furyT > 0 && !A.force) A = Object.assign({}, A, { min: A.min * 1.2, max: A.max * 1.2 });   // Battle Fury: +20% obrażeń (także umiejętności)
         if (ab && ab.need) delete abReady[ab.need];
         if (ab && UI) abUse(act);   // poziom umiejętności: +1 użycie
