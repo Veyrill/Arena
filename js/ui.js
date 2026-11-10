@@ -1110,7 +1110,7 @@ const isBoss = m => ALL_LOCS.some(l => l.mobs[l.mobs.length - 1] === m);
 // IKONY DEBUFFÓW w prawym górnym rogu okna walki (zamiast wpisów w logu). Curse of Frailty nie ma ikony.
 // st = stosy (liczba w prawym dolnym rogu, tylko dla debuffów, które się kumulują), tip = opis w dymku
 const DEBUFFS = {
-  fury: ['skill_battle_fury', 'Battle Fury', '📯'], cry: ['skill_battle_fury', 'Battlecry', '📯'],
+  fury: ['skill_battle_fury', 'Battle Fury', '📯'], cry: ['skill_battle_fury', 'Battlecry', '📯'], rfury: ['skill_battle_fury', 'Relentless Fury', '📯'],
   // mdeath / crip: morphy Pommel Strike (Marking Strike / Crippling Strike)
   stun: ['debuff_stun', 'Stunned', '💫'], mdeath: ['debuff_mark_of_death', 'Mark of Death', '🎯'], crip: ['debuff_crippled', 'Crippled', '🩼'], rend: ['debuff_deep_wound', 'Deep Wound', '🩸'],   // Earthshaker / Skullsplitter (brak pliku → emoji)   // buff gracza (brak pliku → 📯)
   sunder: ['curse_sunder', 'Curse of Frailty'], exhaust: ['curse_cripple', 'Curse of Withering'], expose: ['curse_exposed', 'Exposed Weakness'], mark: ['curse_shadow_mark', 'Curse of the Void'], agony: ['curse_agony', 'Torment'], warcry: ['skill_war_cry', 'War Cry', '📯'], rage: ['skill_rage_within', 'Rage Within', '😤'], fervor: ['skill_battle_fervor', 'Battle Fervor', '🔥'],
@@ -1130,7 +1130,7 @@ function renderAuras(id, list) {
   const bc = id === 'pbuffs' ? '#3fbf4f' : '#e53935';
   // ikony to pixel art 32×32 (plik 128 px = ×4) → wyświetlane dokładnie 32×32 (skala całkowita) bez wygładzania, żeby piksele były równe
   // STAŁA KOLEJNOŚĆ ikon (buffy i debuffy): ikona pojawiająca się / znikająca nie przestawia pozostałych
-  const ORD = ['stun', 'mdeath', 'crip', 'rend', 'fury', 'cry', 'warcry', 'rage', 'fervor', 'reap', 'bolt', 'fire', 'water', 'tide', 'sunder', 'exhaust', 'expose', 'mark', 'burn', 'bleed', 'doom', 'agony'];
+  const ORD = ['stun', 'mdeath', 'crip', 'rend', 'fury', 'cry', 'rfury', 'warcry', 'rage', 'fervor', 'reap', 'bolt', 'fire', 'water', 'tide', 'sunder', 'exhaust', 'expose', 'mark', 'burn', 'bleed', 'doom', 'agony'];
   const pos = k => { const i = ORD.indexOf(k); return i < 0 ? 99 : i; };
   el.innerHTML = Object.entries(list || {}).sort((a, b) => pos(a[0]) - pos(b[0])).map(([k, v]) => `<div data-tip="<b>${DEBUFFS[k][1]}</b>${v.tip}" style="position:relative;box-sizing:content-box;width:32px;height:32px;border:2px solid ${bc};border-radius:4px;overflow:hidden;box-shadow:0 0 4px #0008">`
     + `<img src="${ASSETS_DIR}/skills/curses/${DEBUFFS[k][0]}.png" alt="" style="display:block;width:32px;height:32px;image-rendering:pixelated" onerror="this.outerHTML='<span style=&quot;display:flex;align-items:center;justify-content:center;height:100%;font-size:18px&quot;>${DEBUFFS[k][2] || '✨'}</span>'">`
@@ -1218,9 +1218,11 @@ const ABILS = {
     } },
   // buffD = % obrażeń z buffa (Battle Fury: 10% → 15 / 25 / 40 / 60%), lvF = dodatek do buffD na poziomie 1–5, lvT = dodatkowe tury buffa (6 tur na 5 poziomie)
   fury: { n: 'Battle Fury', ico: '📯', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 5, 15, 30, 50], lvT: [0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
-    // dexUp = % wyższa Dexterity na czas buffa (szansa na krytyk liczona od podniesionej Dexterity); Battlecry: odnowienie 6 tur = czas buffa (bez kosztu nie da się go odpalać co turę)
+    // dexUp = % wyższa Dexterity na czas buffa (szansa na krytyk liczona od podniesionej Dexterity)
     morph: {
-      cry: { n: 'Battlecry', cost: 0, cd: 6, dexUp: 20, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' }
+      cry: { n: 'Battlecry', dexUp: 20, d: 'Instant: does not end your turn. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' },
+      // Relentless Fury: bez kosztu Rage, za to odnowienie 6 tur (= czas buffa), żeby nie dało się go odpalać co turę za darmo
+      free: { n: 'Relentless Fury', cost: 0, cd: 6, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage and attacks generate 2 more Rage.' }
     } },
   revenge: { n: 'Revenge', ico: '💢', cost: 0, gain: 10, mul: 1.2, cd: 0, lvl: 12, need: 'crit', d: 'Strike back for 120% weapon damage and gain 10 Rage. Only in the turn after you take a critical hit.' },
   // ULTIMATE (build): raz na walkę, gracz wybiera tylko jeden z trzech (me.abils – pierwszy wytrenowany blokuje pozostałe). hits = liczba ciosów, rend = krwawienie (% zadanych obrażeń przez rendT tur), stunT = ogłuszenie na N tur wroga
@@ -2786,7 +2788,7 @@ function* fightGen(mob, io) {
     const abOk = id => { const a = abEff(id); return !!a && rageBar >= a.cost && !abCd[id] && (!a.need || !!abReady[a.need]); };
     // BATTLE FURY: furyP = % obrażeń (wg poziomu), furyDex = % wyższej Dexterity (Battlecry) – szansa na krytyk przeliczona od podniesionej Dexterity
     let furyP = 0, furyDex = 0; const critRaw0 = p.critRaw;
-    const furyK = () => furyDex ? 'cry' : 'fury';   // ikona buffa: Battlecry ma własną nazwę w dymku
+    let furyKey = 'fury'; const furyK = () => furyKey;   // ikona buffa: morphy Battle Fury mają własną nazwę w dymku (Battlecry / Relentless Fury)
     const furyTip = () => `Damage +${furyP}%${furyDex ? `<br>Dexterity +${furyDex}%` : ''}<br>Attacks generate +2 Rage<br>Turns left: ${furyT}`;
     // crit z Dexterity: r = 100·D / (D + X) → przy D × f: r' = 100·f / (f + 100/r − 1)
     const furyCrit = on => { p.critRaw = on && furyDex && critRaw0 > 0 ? 100 * (1 + furyDex / 100) / (1 + furyDex / 100 + 100 / critRaw0 - 1) : critRaw0; updCrit(); };
@@ -2874,7 +2876,7 @@ function* fightGen(mob, io) {
           yield 'wait';
           const fa = io.act; if (!(fa && ABILS[fa] && ABILS[fa].free)) break;
           io.act = 'atk';
-          if (abOk(fa)) { const a = abEff(fa); if (UI) abUse(fa); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; furyP = a.buffD || 0; furyDex = a.dexUp || 0; furyCrit(true); pbuf[furyK()] = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b>${a.cost ? ` (−${a.cost} Rage)` : ''}`, 'crit'); yield 200; }
+          if (abOk(fa)) { const a = abEff(fa); if (UI) abUse(fa); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; furyP = a.buffD || 0; furyDex = a.dexUp || 0; furyKey = { 'Battlecry': 'cry', 'Relentless Fury': 'rfury' }[a.n] || 'fury'; furyCrit(true); pbuf[furyK()] = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b>${a.cost ? ` (−${a.cost} Rage)` : ''}`, 'crit'); yield 200; }
         }
       } else yield 325;   // WALKA RĘCZNA: w Twojej turze walka czeka na atak (slot 1 albo klawisz 1)
       if (turn == 0) {
