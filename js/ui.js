@@ -1218,9 +1218,9 @@ const ABILS = {
     } },
   // buffD = % obrażeń z buffa (Battle Fury: 10% → 15 / 25 / 40 / 60%), lvF = dodatek do buffD na poziomie 1–5, lvT = dodatkowe tury buffa (6 tur na 5 poziomie)
   fury: { n: 'Battle Fury', ico: '📯', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 5, 15, 30, 50], lvT: [0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
-    // dexUp = % wyższa Dexterity na czas buffa (szansa na krytyk liczona od podniesionej Dexterity)
+    // dexUp = % wyższa Dexterity na czas buffa (szansa na krytyk liczona od podniesionej Dexterity); Battlecry: odnowienie 6 tur = czas buffa (bez kosztu nie da się go odpalać co turę)
     morph: {
-      cry: { n: 'Battlecry', cost: 0, dexUp: 20, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' }
+      cry: { n: 'Battlecry', cost: 0, cd: 6, dexUp: 20, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' }
     } },
   revenge: { n: 'Revenge', ico: '💢', cost: 0, gain: 10, mul: 1.2, cd: 0, lvl: 12, need: 'crit', d: 'Strike back for 120% weapon damage and gain 10 Rage. Only in the turn after you take a critical hit.' },
   // ULTIMATE (build): raz na walkę, gracz wybiera tylko jeden z trzech (me.abils – pierwszy wytrenowany blokuje pozostałe). hits = liczba ciosów, rend = krwawienie (% zadanych obrażeń przez rendT tur), stunT = ogłuszenie na N tur wroga
