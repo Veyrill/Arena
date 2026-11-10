@@ -1209,12 +1209,12 @@ const ABILS = {
       siphon: { n: 'Siphoning Strike', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' },
       cruel: { n: 'Cruel Blow', mul: 2.5, critUp: 20, d: 'Strike for 250% weapon damage. Its critical hit chance and critical damage are 20% higher.' }
     } },
-  // lvG = zmiana generowanego Rage na poziomie 1–5 (Pommel Strike: 25 → 30 na 5 poziomie)
-  pommel: { n: 'Pommel Strike', ico: '🗡️', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 20, 40, 60, 100], lvG: [0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
+  // lvG = zmiana generowanego Rage na poziomie 1–5 (Pommel Strike: 25 → 30 na 5 poziomie); lvAdd = bonus lvB dodawany do % obrażeń broni (60% → 80 / 100 / 120 / 160%), bez lvAdd – mnożony
+  pommel: { n: 'Pommel Strike', ico: '🗡️', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 20, 40, 60, 100], lvAdd: true, lvG: [0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
     // markD = Mark of Death na wrogu (Twój następny cios +markD%), crip = wróg zadaje crip% mniej obrażeń przez cripT swoich tur
     morph: {
-      mark: { n: 'Marking Strike', markD: 20, d: 'Slam the hilt into your foe for 120% weapon damage and gain 30 Rage. Marks the enemy with Mark of Death: your next hit against it deals 20% more damage.' },
-      cripple: { n: 'Crippling Strike', crip: 10, cripT: 3, d: 'Slam the hilt into your foe for 120% weapon damage and gain 30 Rage. Cripples the enemy: it deals 10% less damage for 3 turns.' }
+      mark: { n: 'Marking Strike', markD: 20, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Marks the enemy with Mark of Death: your next hit against it deals 20% more damage.' },
+      cripple: { n: 'Crippling Strike', crip: 10, cripT: 3, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Cripples the enemy: it deals 10% less damage for 3 turns.' }
     } },
   fury: { n: 'Battle Fury', ico: '📯', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, d: 'Instant: does not end your turn. For 5 turns you deal 20% more damage and attacks generate 2 more Rage.' },
   revenge: { n: 'Revenge', ico: '💢', cost: 0, gain: 10, mul: 1.2, cd: 0, lvl: 12, need: 'crit', d: 'Strike back for 120% weapon damage and gain 10 Rage. Only in the turn after you take a critical hit.' },
@@ -1233,7 +1233,7 @@ const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = 
 // mk = klucz morpha (domyślnie wybrany przez gracza: me.morph[id]); morph nadpisuje nazwę, opis i mnożnik (koszt zostaje z 5 poziomu)
 const abEff = (id, mk = me.morph && me.morph[id]) => {
   const a = ABILS[id]; if (!a || !(a.lvB || a.lvC || a.lvG)) return a; const l = abLvl(id).l - 1;
-  const e = Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: a.mul * (1 + ((a.lvB || [])[l] || 0) / 100), gain: a.gain ? a.gain + ((a.lvG || [])[l] || 0) : a.gain });
+  const e = Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: a.lvAdd ? a.mul + ((a.lvB || [])[l] || 0) / 100 : a.mul * (1 + ((a.lvB || [])[l] || 0) / 100), gain: a.gain ? a.gain + ((a.lvG || [])[l] || 0) : a.gain });
   const m = mk && a.morph && a.morph[mk]; return m ? Object.assign(e, m, { cost: a.cost + ((a.lvC || [])[4] || 0) }) : e;
 };
 // MORPH: dostępny po 5 poziomie wytrenowanej umiejętności, która ma warianty i jeszcze nie ma wybranego
@@ -1259,8 +1259,8 @@ function abUse(id) {
 }
 const abTip = (id, mk) => { const a = mk ? abEff(id, mk) : abEff(id), dm = abDmg(a), d0 = ABILS[id];
   // opis liczony na żywo: % obrażeń broni wg poziomu umiejętności (np. Overhead Blow 140% → 245% na 5 poziomie)
-  let desc = a.mul && a.mul !== d0.mul ? a.d.replace(`${Math.round(d0.mul * 100)}%`, `${Math.round(a.mul * 100)}%`) : a.d;
-  if (a.gain && a.gain !== d0.gain) desc = desc.replace(`gain ${d0.gain} Rage`, `gain ${a.gain} Rage`);   // generowany Rage wg poziomu (Pommel Strike 25 → 30)
+  let desc = a.d === d0.d && a.mul && a.mul !== d0.mul ? a.d.replace(`${Math.round(d0.mul * 100)}%`, `${Math.round(a.mul * 100)}%`) : a.d;
+  if (a.d === d0.d && a.gain && a.gain !== d0.gain) desc = desc.replace(`gain ${d0.gain} Rage`, `gain ${a.gain} Rage`);   // generowany Rage wg poziomu (Pommel Strike 25 → 30)
   return `<b>${a.n}</b>${abPips(id)}${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.ult ? 'once per fight' : a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${desc}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage${a.hits ? ` × ${a.hits}` : ''}.` : ''}${a.ult ? '<br><span style="color:#ffd36b">Ultimate: you can train only one.</span>' : ''}${abLvlBar(id)}`; };
 let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
 // pasek: ikony umiejętności w slotach 2–Tab (przebudowa tylko, gdy zmieni się rozmieszczenie – nie miga)
