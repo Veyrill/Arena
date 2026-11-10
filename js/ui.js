@@ -1358,7 +1358,6 @@ function setDps(by, turns) {
   // PANEL DPS (zamiast dymka nad kafelkiem): szczegóły w karcie po prawej, widocznej w trakcie walki
   { const ps = $('body-dps-side'); if (ps) ps.innerHTML = `<div class="dpst">${rows || '<small>No damage yet</small>'}`
     + `<div class="dptot">Total: ${turns ? fmtN(tot / turns) : 0} / t (${fmtN(tot)}) · ${turns || 0} turn${turns === 1 ? '' : 's'}</div></div>`; }
-  placeDpsSide();
 }
 // RAGE (pasek pod zdrowiem bohatera): 0–100, na start walki 0; każdy zwykły atak gracza +RAGE_HIT (na razie nic nie zużywa rage)
 const RAGE_MAX = 100, RAGE_HIT = 8;
@@ -1814,10 +1813,9 @@ function renderFishSide() {
 
 // boczne menu wyboru aktu (na prawo, jak wybór ryby) – tylko w Wyprawie i dopiero po pokonaniu Fire Lorda
 const dpsSideOn = () => (view === 'exp' || view === 'dun') && !!curMob() && (fightOn || (view === 'exp' && !!expRes) || (view === 'dun' && dfight && !!dunRes));
-// Questy: pod wyborem aktu (jeśli widoczny); panel DPS: pod Questami (jeśli widoczne), inaczej na górze
+// Questy: pod wyborem aktu (jeśli widoczny); panel DPS stoi w prawym dolnym rogu ekranu (CSS, position: fixed)
 const sideBelow = (side, up) => { side.style.top = up && !up.hidden && getComputedStyle(up).position === 'absolute' ? (up.offsetTop + up.offsetHeight + 10) + 'px' : '10px'; };
 function placeQuestSide() { const side = $('quest-side'); if (side && !side.hidden) sideBelow(side, $('act-side')); }
-function placeDpsSide() { const side = $('dps-side'); if (side && !side.hidden) sideBelow(side, $('quest-side')); }
 function renderActSide() {
   const side = $('act-side');
   if (!side) return;
@@ -2111,7 +2109,6 @@ function render() {
   renderFishSide();
   renderActSide();
   renderQuestSide();   // questy (tylko w Expedition, po prawej)
-  placeDpsSide();   // PANEL DPS: pod Questami
   renderTut();   // samouczek ulepszania wędki (dymek)
   renderAtkSlot();   // slot 1: ikona obecnej broni
   renderBarAbils(); if (view === 'abil') renderAbilTab();   // ABILITIES: pasek + zakładka
