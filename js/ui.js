@@ -1111,7 +1111,8 @@ const isBoss = m => ALL_LOCS.some(l => l.mobs[l.mobs.length - 1] === m);
 // st = stosy (liczba w prawym dolnym rogu, tylko dla debuffów, które się kumulują), tip = opis w dymku
 const DEBUFFS = {
   fury: ['skill_battle_fury', 'Battle Fury', '📯'],
-  stun: ['debuff_stun', 'Stunned', '💫'], rend: ['debuff_deep_wound', 'Deep Wound', '🩸'],   // Earthshaker / Skullsplitter (brak pliku → emoji)   // buff gracza (brak pliku → 📯)
+  // mdeath / crip: morphy Pommel Strike (Marking Strike / Crippling Strike)
+  stun: ['debuff_stun', 'Stunned', '💫'], mdeath: ['debuff_mark_of_death', 'Mark of Death', '🎯'], crip: ['debuff_crippled', 'Crippled', '🩼'], rend: ['debuff_deep_wound', 'Deep Wound', '🩸'],   // Earthshaker / Skullsplitter (brak pliku → emoji)   // buff gracza (brak pliku → 📯)
   sunder: ['curse_sunder', 'Curse of Frailty'], exhaust: ['curse_cripple', 'Curse of Withering'], expose: ['curse_exposed', 'Exposed Weakness'], mark: ['curse_shadow_mark', 'Curse of the Void'], agony: ['curse_agony', 'Torment'], warcry: ['skill_war_cry', 'War Cry', '📯'], rage: ['skill_rage_within', 'Rage Within', '😤'], fervor: ['skill_battle_fervor', 'Battle Fervor', '🔥'],
   reap: ['curse_terror', 'Terror'], fire: ['skill_combustion', 'Fire Energy', '🔥'], water: ['skill_tidal_renewal', 'Water Energy', '💧'], tide: ['skill_soothing_tide', 'Soothing Tide', '🌊'], burn: ['skill_lingering_flames', 'Burning', '♨️'], bolt: ['skill_lightning_bolt', 'Lightning Energy', '⚡'], bleed: ['curse_lacerate', 'Bleeding'], doom: ['curse_death', 'Death Sentence']
 };
@@ -1129,7 +1130,7 @@ function renderAuras(id, list) {
   const bc = id === 'pbuffs' ? '#3fbf4f' : '#e53935';
   // ikony to pixel art 32×32 (plik 128 px = ×4) → wyświetlane dokładnie 32×32 (skala całkowita) bez wygładzania, żeby piksele były równe
   // STAŁA KOLEJNOŚĆ ikon (buffy i debuffy): ikona pojawiająca się / znikająca nie przestawia pozostałych
-  const ORD = ['stun', 'rend', 'fury', 'warcry', 'rage', 'fervor', 'reap', 'bolt', 'fire', 'water', 'tide', 'sunder', 'exhaust', 'expose', 'mark', 'burn', 'bleed', 'doom', 'agony'];
+  const ORD = ['stun', 'mdeath', 'crip', 'rend', 'fury', 'warcry', 'rage', 'fervor', 'reap', 'bolt', 'fire', 'water', 'tide', 'sunder', 'exhaust', 'expose', 'mark', 'burn', 'bleed', 'doom', 'agony'];
   const pos = k => { const i = ORD.indexOf(k); return i < 0 ? 99 : i; };
   el.innerHTML = Object.entries(list || {}).sort((a, b) => pos(a[0]) - pos(b[0])).map(([k, v]) => `<div data-tip="<b>${DEBUFFS[k][1]}</b>${v.tip}" style="position:relative;box-sizing:content-box;width:32px;height:32px;border:2px solid ${bc};border-radius:4px;overflow:hidden;box-shadow:0 0 4px #0008">`
     + `<img src="${ASSETS_DIR}/skills/curses/${DEBUFFS[k][0]}.png" alt="" style="display:block;width:32px;height:32px;image-rendering:pixelated" onerror="this.outerHTML='<span style=&quot;display:flex;align-items:center;justify-content:center;height:100%;font-size:18px&quot;>${DEBUFFS[k][2] || '✨'}</span>'">`
@@ -1208,7 +1209,13 @@ const ABILS = {
       siphon: { n: 'Siphoning Strike', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' },
       cruel: { n: 'Cruel Blow', mul: 2.5, critUp: 20, d: 'Strike for 250% weapon damage. Its critical hit chance and critical damage are 20% higher.' }
     } },
-  pommel: { n: 'Pommel Strike', ico: '🗡️', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.' },
+  // lvG = zmiana generowanego Rage na poziomie 1–5 (Pommel Strike: 25 → 30 na 5 poziomie)
+  pommel: { n: 'Pommel Strike', ico: '🗡️', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 20, 40, 60, 100], lvG: [0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
+    // markD = Mark of Death na wrogu (Twój następny cios +markD%), crip = wróg zadaje crip% mniej obrażeń przez cripT swoich tur
+    morph: {
+      mark: { n: 'Marking Strike', markD: 20, d: 'Slam the hilt into your foe for 120% weapon damage and gain 30 Rage. Marks the enemy with Mark of Death: your next hit against it deals 20% more damage.' },
+      cripple: { n: 'Crippling Strike', crip: 10, cripT: 3, d: 'Slam the hilt into your foe for 120% weapon damage and gain 30 Rage. Cripples the enemy: it deals 10% less damage for 3 turns.' }
+    } },
   fury: { n: 'Battle Fury', ico: '📯', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, d: 'Instant: does not end your turn. For 5 turns you deal 20% more damage and attacks generate 2 more Rage.' },
   revenge: { n: 'Revenge', ico: '💢', cost: 0, gain: 10, mul: 1.2, cd: 0, lvl: 12, need: 'crit', d: 'Strike back for 120% weapon damage and gain 10 Rage. Only in the turn after you take a critical hit.' },
   // ULTIMATE (build): raz na walkę, gracz wybiera tylko jeden z trzech (me.abils – pierwszy wytrenowany blokuje pozostałe). hits = liczba ciosów, rend = krwawienie (% zadanych obrażeń przez rendT tur), stunT = ogłuszenie na N tur wroga
@@ -1225,8 +1232,8 @@ const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = 
 // POZIOM UMIEJĘTNOŚCI → efekt (na razie tylko Overhead Blow): kopia umiejętności z kosztem i mnożnikiem dla jej obecnego poziomu
 // mk = klucz morpha (domyślnie wybrany przez gracza: me.morph[id]); morph nadpisuje nazwę, opis i mnożnik (koszt zostaje z 5 poziomu)
 const abEff = (id, mk = me.morph && me.morph[id]) => {
-  const a = ABILS[id]; if (!a || !(a.lvB || a.lvC)) return a; const l = abLvl(id).l - 1;
-  const e = Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: a.mul * (1 + ((a.lvB || [])[l] || 0) / 100) });
+  const a = ABILS[id]; if (!a || !(a.lvB || a.lvC || a.lvG)) return a; const l = abLvl(id).l - 1;
+  const e = Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: a.mul * (1 + ((a.lvB || [])[l] || 0) / 100), gain: a.gain ? a.gain + ((a.lvG || [])[l] || 0) : a.gain });
   const m = mk && a.morph && a.morph[mk]; return m ? Object.assign(e, m, { cost: a.cost + ((a.lvC || [])[4] || 0) }) : e;
 };
 // MORPH: dostępny po 5 poziomie wytrenowanej umiejętności, która ma warianty i jeszcze nie ma wybranego
@@ -1252,7 +1259,9 @@ function abUse(id) {
 }
 const abTip = (id, mk) => { const a = mk ? abEff(id, mk) : abEff(id), dm = abDmg(a), d0 = ABILS[id];
   // opis liczony na żywo: % obrażeń broni wg poziomu umiejętności (np. Overhead Blow 140% → 245% na 5 poziomie)
-  const desc = a.mul && a.mul !== d0.mul ? a.d.replace(`${Math.round(d0.mul * 100)}%`, `${Math.round(a.mul * 100)}%`) : a.d; return `<b>${a.n}</b>${abPips(id)}${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.ult ? 'once per fight' : a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${desc}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage${a.hits ? ` × ${a.hits}` : ''}.` : ''}${a.ult ? '<br><span style="color:#ffd36b">Ultimate: you can train only one.</span>' : ''}${abLvlBar(id)}`; };
+  let desc = a.mul && a.mul !== d0.mul ? a.d.replace(`${Math.round(d0.mul * 100)}%`, `${Math.round(a.mul * 100)}%`) : a.d;
+  if (a.gain && a.gain !== d0.gain) desc = desc.replace(`gain ${d0.gain} Rage`, `gain ${a.gain} Rage`);   // generowany Rage wg poziomu (Pommel Strike 25 → 30)
+  return `<b>${a.n}</b>${abPips(id)}${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.ult ? 'once per fight' : a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${desc}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage${a.hits ? ` × ${a.hits}` : ''}.` : ''}${a.ult ? '<br><span style="color:#ffd36b">Ultimate: you can train only one.</span>' : ''}${abLvlBar(id)}`; };
 let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
 // pasek: ikony umiejętności w slotach 2–Tab (przebudowa tylko, gdy zmieni się rozmieszczenie – nie miga)
 function renderBarAbils() {
@@ -1261,11 +1270,11 @@ function renderBarAbils() {
     const s = document.querySelector(`#skillbar .sk[data-key="${k}"]`); if (!s) return;
     const id = me.abils && me.abils[me.bar[k]] && myAb(me.bar[k]) ? me.bar[k] : null, sig = id || '';   // tylko umiejętności Twojej klasy   // usunięta umiejętność (np. stary Revenge w zapisie) = pusty slot
     if (id) s.dataset.tip = abTip(id);   // dymek zawsze aktualny (obrażenia zależą od statystyk)
-    if (s.dataset.ab === sig && s.dataset.built) { const c = id && !ABILS[id].gain && s.querySelector('.abc'); if (c) c.textContent = abEff(id).cost; return; }   // koszt zależy od poziomu umiejętności
+    if (s.dataset.ab === sig && s.dataset.built) { const c = id && s.querySelector('.abc'); if (c) { const e = abEff(id); c.textContent = e.gain ? '+' + e.gain : e.cost; } return; }   // koszt zależy od poziomu umiejętności
     s.dataset.ab = sig; s.dataset.built = 1;
     s.classList.toggle('ab', !!id); s.draggable = !!id;
     if (id) { s.dataset.tip = abTip(id); } else delete s.dataset.tip;
-    s.innerHTML = (id ? `<span class="ic">${abEff(id).ico}</span><span class="abc">${ABILS[id].gain ? '+' + ABILS[id].gain : abEff(id).cost}</span><span class="abcd"></span>` : '') + `<span class="kb">${k}</span>`;
+    s.innerHTML = (id ? `<span class="ic">${abEff(id).ico}</span><span class="abc">${abEff(id).gain ? '+' + abEff(id).gain : abEff(id).cost}</span><span class="abcd"></span>` : '') + `<span class="kb">${k}</span>`;
   });
   refreshAb();
 }
@@ -2765,7 +2774,7 @@ function* fightGen(mob, io) {
     const dmgBy = {}; let pTurns = 0;
     const dr = (src, v) => { const real = Math.max(0, Math.min(v, mh)); dmgBy[src] = (dmgBy[src] || 0) + real; if (UI) setDps(dmgBy, pTurns); return v; };
     if (UI) setDps({}, 0);
-    const abReady = {}; io.ready = abReady; let furyT = 0, stunT = 0, rendT = 0, rendD = 0;   // stunT: Earthshaker (tury wroga do pominięcia); rendT/rendD: Skullsplitter (tury krwawienia, obrażenia na turę)   // abReady.crit = Revenge (tura po krytyku wroga), abReady.exec = Decapitate (wróg < 20% HP); furyT = tury Battle Fury
+    const abReady = {}; io.ready = abReady; let furyT = 0, stunT = 0, rendT = 0, rendD = 0, markD = 0, cripT = 0, cripP = 0;   // markD: Mark of Death (% do następnego ciosu), cripT/cripP: Crippling Strike (tury wroga, % mniej obrażeń)   // stunT: Earthshaker (tury wroga do pominięcia); rendT/rendD: Skullsplitter (tury krwawienia, obrażenia na turę)   // abReady.crit = Revenge (tura po krytyku wroga), abReady.exec = Decapitate (wróg < 20% HP); furyT = tury Battle Fury
     const abOk = id => { const a = abEff(id); return !!a && rageBar >= a.cost && !abCd[id] && (!a.need || !!abReady[a.need]); };
     const furyTip = () => `Damage +20%<br>Attacks generate +2 Rage<br>Turns left: ${furyT}`;
     upd(); say(`Fight against: ${mob.e} ${mob.n}!`);
@@ -2885,6 +2894,8 @@ function* fightGen(mob, io) {
           else if (!on && deb.expose) { delete deb.expose; curses(); }
           if (on) { const f = 1 + U.expose / 100; A = Object.assign({}, A, { min: A.min * f, max: A.max * f }); }
         }
+        // Mark of Death (Marking Strike): ten cios +markD% obrażeń, znak znika
+        if (markD && !A.force) { const f = 1 + markD / 100; A = Object.assign({}, A, { min: A.min * f, max: A.max * f }); markD = 0; delete deb.mdeath; renderDebuffs(deb); }
         // ABILITY wybrana w tej turze (klik / klawisz): zamiast zwykłego ataku; koszt w Rage, odnowienie, obrażenia = mnożnik × średnie obrażenia broni
         const act = io.act || 'atk'; io.act = 'atk';
         const ab = act !== 'atk' && !(ABILS[act] || {}).free && abOk(act) ? abEff(act) : null;   // koszt i obrażenia wg poziomu umiejętności
@@ -2923,6 +2934,8 @@ function* fightGen(mob, io) {
             say(`<b>${ab.n}</b> heals you for <b>${hv}</b> health.`, 'crit'); upd();
           }
         }
+        if (ab && ab.markD && mh > 0) { markD = ab.markD; deb.mdeath = { tip: `Your next hit against it deals ${markD}% more damage` }; renderDebuffs(deb); }   // Marking Strike
+        if (ab && ab.crip && mh > 0) { cripT = ab.cripT; cripP = ab.crip; deb.crip = { st: cripT, tip: `Deals ${cripP}% less damage<br>Turns left: ${cripT}` }; renderDebuffs(deb); }   // Crippling Strike
         if (ab && ab.stunT && mh > 0) { stunT = ab.stunT; deb.stun = { st: stunT, tip: `Loses its turn<br>Turns left: ${stunT}` }; renderDebuffs(deb); }   // Earthshaker: ogłuszenie
         // Lightning Bolt: +1 stos po ataku; przy 5 stosach piorun (15% / 30% / 45% średnich obrażeń, bez redukcji pancerza), potem 1 stos
         if (bolt && mh > 0) {
@@ -2999,7 +3012,10 @@ function* fightGen(mob, io) {
         }
         // Earthshaker: ogłuszony wróg nie atakuje (po krwawieniu / podpaleniu), tura wraca do Ciebie
         if (stunT > 0) { stunT--; if (stunT) deb.stun = { st: stunT, tip: `Loses its turn<br>Turns left: ${stunT}` }; else delete deb.stun; renderDebuffs(deb); say(`${mob.n} is stunned and loses its turn.`, 'miss'); yield 300; turn ^= 1; upd(); continue; }
-        { const dm = hit(mob.n, 'You', M, p, fm, (t, c) => say(t, c));
+        // Crippling Strike: wróg zadaje cripP% mniej obrażeń przez cripT swoich ataków
+        const Mc = cripT > 0 ? Object.assign({}, M, { min: M.min * (1 - cripP / 100), max: M.max * (1 - cripP / 100) }) : M;
+        if (cripT > 0) { cripT--; if (cripT) deb.crip = { st: cripT, tip: `Deals ${cripP}% less damage<br>Turns left: ${cripT}` }; else delete deb.crip; renderDebuffs(deb); }
+        { const dm = hit(mob.n, 'You', Mc, p, fm, (t, c) => say(t, c));
           // Elemental Barrier: tarcza pochłania obrażenia (najpierw tarcza, potem zdrowie)
           const ab = Math.min(sh, dm); if (ab > 0) { sh -= ab; say(`Elemental Barrier absorbs <b>${ab}</b>${sh ? ` (${sh} left)` : ' – the shield breaks!'}`, 'miss'); }
           ph -= dm - ab;
