@@ -1199,8 +1199,8 @@ addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEX
 // ABILITIES (aktywne umiejętności): kupowane w zakładce Abilities, używane z paska umiejętności (sloty 2–Tab).
 // me.abils = { id: true } – wykupione; me.bar = { klawisz slotu: id } – rozmieszczenie na pasku (przeciąganie myszką między slotami).
 // cost = koszt w Rage, mul = mnożnik średnich obrażeń broni, cd = odnowienie w turach (1 = w kolejnej Twojej turze znowu gotowe), lvl = wymagany poziom.
-// ROTACJA WARRIORA: Pommel Strike (opener, +Rage) → Battle Fury (buff do odnawiania) → Overhead Blow (spam) → Revenge (po krytyku wroga) → Decapitate (execute); bez Rage – zwykły atak (slot 1)
-// gain = Rage za użycie; free = nie zabiera tury (po nim działasz dalej); buffT = tury buffa; need: 'crit' = tylko w turze po krytyku wroga, 'exec' = wróg poniżej 20% HP
+// ROTACJA WARRIORA: Pommel Strike (opener, +Rage) → Battle Fury (buff do odnawiania) → Overhead Blow (spam) → Decapitate (execute); bez Rage – zwykły atak (slot 1)
+// gain = Rage za użycie; free = nie zabiera tury (po nim działasz dalej); buffT = tury buffa; need: 'exec' = wróg poniżej 20% HP (Revenge usunięty z gry – stary zapis: pusty slot, ignorowany w me.abils)
 const ABILS = {
   // lvB = % dodatkowych obrażeń umiejętności na poziomie 1–5 (mnoży obrażenia), lvC = zmiana kosztu w Rage na poziomie 1–5
   overhead: { n: 'Overhead Blow', ico: '💥', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 10, 20, 50, 75], lvC: [0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
@@ -1224,7 +1224,6 @@ const ABILS = {
       // Relentless Fury: bez kosztu Rage, za to odnowienie 6 tur (= czas buffa), żeby nie dało się go odpalać co turę za darmo
       free: { n: 'Relentless Fury', cost: 0, cd: 6, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage and attacks generate 2 more Rage.' }
     } },
-  revenge: { n: 'Revenge', ico: '💢', cost: 0, gain: 10, mul: 1.2, cd: 0, lvl: 12, need: 'crit', d: 'Strike back for 120% weapon damage and gain 10 Rage. Only in the turn after you take a critical hit.' },
   // ULTIMATE (build): raz na walkę, gracz wybiera tylko jeden z trzech (me.abils – pierwszy wytrenowany blokuje pozostałe). hits = liczba ciosów, rend = krwawienie (% zadanych obrażeń przez rendT tur), stunT = ogłuszenie na N tur wroga
   storm: { n: 'Bladestorm', ico: '🌪️', cost: 60, mul: 1.2, hits: 3, cd: 0, lvl: 20, ult: true, d: 'Three strikes in a row, each for 120% weapon damage with its own chance to crit. Once per fight.' },
   split: { n: 'Skullsplitter', ico: '🪓', cost: 60, mul: 3, rend: 0.5, rendT: 10, cd: 0, lvl: 20, ult: true, d: 'A crushing blow for 300% weapon damage. The wound bleeds for 50% of the damage dealt over 10 turns. Once per fight.' },
@@ -1296,7 +1295,7 @@ function refreshAb() {
     const id = s.dataset.ab; if (!id) { s.classList.remove('off'); return; }
     const cd = fighting && fightIo.cd ? fightIo.cd[id] || 0 : 0;
     const a = abEff(id), ok = !fighting ? (!a.cost && !a.need) : !!(atkResolve && (fightIo.rage || 0) >= a.cost && !cd && (!a.need || (fightIo.ready && fightIo.ready[a.need])));
-    s.classList.toggle('proc', fighting && ok && !!a.need);   // Revenge / Decapitate: slot pulsuje, gdy się zapali
+    s.classList.toggle('proc', fighting && ok && !!a.need);   // Decapitate: slot pulsuje, gdy się zapali
     s.classList.toggle('off', !ok);
     const c = s.querySelector('.abcd'); if (c) { c.textContent = cd === Infinity ? 'USED' : cd ? cd : ''; c.classList.toggle('used', cd === Infinity); }   // ult po użyciu: USED do końca walki
   });
@@ -2936,7 +2935,7 @@ function* fightGen(mob, io) {
           }
         }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
         if (!ab) { rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT + (furyT > 0 ? 2 : 0)); if (UI) setRage(rageBar); }   // RAGE: +8 za zwykły atak (+2 z Battle Fury), maks. 100
-        if (ab && ab.gain) { rageBar = Math.min(RAGE_MAX, rageBar + ab.gain); if (UI) setRage(rageBar); }   // Pommel Strike +25, Revenge +10
+        if (ab && ab.gain) { rageBar = Math.min(RAGE_MAX, rageBar + ab.gain); if (UI) setRage(rageBar); }   // Pommel Strike +25 (+30 na 5 poziomie)
         if (ab && ab.ult) { abCd[act] = Infinity; if (UI) refreshAb(); }   // ULTIMATE: raz na walkę
         if (ab && ab.rend && mh > 0) { rendT = ab.rendT; rendD = Math.max(1, Math.round(abDealt * ab.rend / ab.rendT)); deb.rend = { st: rendT, tip: `Loses ${rendD} health per turn<br>Turns left: ${rendT}` }; renderDebuffs(deb); }   // Skullsplitter: krwawienie
         // Siphoning Strike: leczenie za ab.heal% zadanych obrażeń (nie ponad maks. HP), pasek wypełnia się stopniowo jak przy Water Energy
@@ -2997,9 +2996,8 @@ function* fightGen(mob, io) {
         // Lacerate: krytyk = krwawienie (z Festering Wounds stosy się sumują)
         if (U.lacerate && hit.crit && mh > 0) { bleed = Math.min(bleedMax, bleed + 1); bleedT = bleedDur; deb.bleed = bleedInfo(); renderDebuffs(deb); }
 
-        // KONIEC TWOJEJ TURY: Battle Fury −1 tura; okno Revenge (tura po krytyku wroga) wygasa
+        // KONIEC TWOJEJ TURY: Battle Fury −1 tura
         if (furyT > 0) { furyT--; if (furyT) pbuf[furyK()] = { st: furyT, tip: furyTip() }; else { delete pbuf[furyK()]; furyCrit(false); } renderPBuffs(pbuf); }   // koniec buffa: Dexterity (crit) wraca
-        if (abReady.crit) { delete abReady.crit; if (UI) refreshAb(); }
       } else {
         // krwawienie zadaje obrażenia na początku tury wroga: 3% maks. HP za każdy stos
         // Burning (Lingering Flames): 1% maks. HP wroga na początku jego tury, 5 tur
@@ -3034,7 +3032,6 @@ function* fightGen(mob, io) {
           // Elemental Barrier: tarcza pochłania obrażenia (najpierw tarcza, potem zdrowie)
           const ab = Math.min(sh, dm); if (ab > 0) { sh -= ab; say(`Elemental Barrier absorbs <b>${ab}</b>${sh ? ` (${sh} left)` : ' – the shield breaks!'}`, 'miss'); }
           ph -= dm - ab;
-          if (hit.crit && dm > 0) abReady.crit = true;   // krytyk wroga → Revenge gotowe w Twojej następnej turze
           if (UI) { if (ab) dmgPop(fp, ab, false, 'shield'); if (!ab || dm > ab) dmgPop(fp, dm - ab, hit.crit, 'in'); } }   // pochłonięte – niebieska liczba   // fm = wróg wyskakuje do ataku; liczba obrażeń nad Tobą
         // Endure: pierwszy raz, gdy HP spadnie do zera – powrót z 30% maks. HP (raz na walkę)
         if (ph <= 0 && U.endure && !endured) {
