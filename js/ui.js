@@ -1202,7 +1202,12 @@ addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEX
 // gain = Rage za użycie; free = nie zabiera tury (po nim działasz dalej); buffT = tury buffa; need: 'crit' = tylko w turze po krytyku wroga, 'exec' = wróg poniżej 20% HP
 const ABILS = {
   // lvB = % dodatkowych obrażeń umiejętności na poziomie 1–5 (mnoży obrażenia), lvC = zmiana kosztu w Rage na poziomie 1–5
-  overhead: { n: 'Overhead Blow', ico: '💥', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 10, 20, 50, 75], lvC: [0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.' },
+  overhead: { n: 'Overhead Blow', ico: '💥', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 10, 20, 50, 75], lvC: [0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
+    // MORPH (po 5 poziomie, wybór na stałe): zastępuje umiejętność – nazwa, opis, mnożnik; heal = % zadanych obrażeń jako leczenie, critUp = % wyższa szansa i obrażenia krytyka
+    morph: {
+      siphon: { n: 'Siphoning Strike', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' },
+      cruel: { n: 'Cruel Blow', mul: 2.5, critUp: 20, d: 'Strike for 250% weapon damage. Its critical hit chance and critical damage are 20% higher.' }
+    } },
   pommel: { n: 'Pommel Strike', ico: '🗡️', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.' },
   fury: { n: 'Battle Fury', ico: '📯', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, d: 'Instant: does not end your turn. For 5 turns you deal 20% more damage and attacks generate 2 more Rage.' },
   revenge: { n: 'Revenge', ico: '💢', cost: 0, gain: 10, mul: 1.2, cd: 0, lvl: 12, need: 'crit', d: 'Strike back for 120% weapon damage and gain 10 Rage. Only in the turn after you take a critical hit.' },
@@ -1218,7 +1223,14 @@ const myAb = id => !!ABILS[id] && abCls(ABILS[id]) === (me.cls || 'warrior');
 const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = zwykły atak (stały)
 // obrażenia umiejętności dla aktualnych statystyk: zakres obrażeń postaci × mnożnik (losowane w walce jak zwykły atak), np. "6–10"
 // POZIOM UMIEJĘTNOŚCI → efekt (na razie tylko Overhead Blow): kopia umiejętności z kosztem i mnożnikiem dla jej obecnego poziomu
-const abEff = id => { const a = ABILS[id]; if (!a || !(a.lvB || a.lvC)) return a; const l = abLvl(id).l - 1; return Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: a.mul * (1 + ((a.lvB || [])[l] || 0) / 100) }); };
+// mk = klucz morpha (domyślnie wybrany przez gracza: me.morph[id]); morph nadpisuje nazwę, opis i mnożnik (koszt zostaje z 5 poziomu)
+const abEff = (id, mk = me.morph && me.morph[id]) => {
+  const a = ABILS[id]; if (!a || !(a.lvB || a.lvC)) return a; const l = abLvl(id).l - 1;
+  const e = Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: a.mul * (1 + ((a.lvB || [])[l] || 0) / 100) });
+  const m = mk && a.morph && a.morph[mk]; return m ? Object.assign(e, m, { cost: a.cost + ((a.lvC || [])[4] || 0) }) : e;
+};
+// MORPH: dostępny po 5 poziomie wytrenowanej umiejętności, która ma warianty i jeszcze nie ma wybranego
+const canMorph = id => { const a = ABILS[id]; return !!(a && a.morph && me.abils && me.abils[id] && abLvl(id).l >= AB_MAX_LVL && !(me.morph && me.morph[id])); };
 const abDmg = a => { if (!a.mul) return ''; const d = der(); return `${Math.round(d.min * a.mul)}–${Math.round(d.max * a.mul)}`; };
 // POZIOMY UMIEJĘTNOŚCI (na razie bez efektu): rosną od używania w walce. me.abXp = { id: liczba użyć }.
 // Progi (takie same dla każdej umiejętności): lvl 2 po 10 użyciach, lvl 3 po kolejnych 40, lvl 4 po 150, lvl 5 po 400 – razem 600; maks. lvl 5.
@@ -1238,7 +1250,7 @@ function abUse(id) {
   if (s) { s.dataset.tip = abTip(id); refreshTip();
     if (l1 > l0) { const r = s.getBoundingClientRect(), e = document.createElement('div'); e.className = 'ablvup'; e.textContent = `LVL ${l1}!`; e.style.left = (r.left + r.width / 2) + 'px'; e.style.top = (r.top - 6) + 'px'; document.body.appendChild(e); setTimeout(() => e.remove(), 1400); } }
 }
-const abTip = id => { const a = abEff(id), dm = abDmg(a), d0 = ABILS[id];
+const abTip = (id, mk) => { const a = mk ? abEff(id, mk) : abEff(id), dm = abDmg(a), d0 = ABILS[id];
   // opis liczony na żywo: % obrażeń broni wg poziomu umiejętności (np. Overhead Blow 140% → 245% na 5 poziomie)
   const desc = a.mul && a.mul !== d0.mul ? a.d.replace(`${Math.round(d0.mul * 100)}%`, `${Math.round(a.mul * 100)}%`) : a.d; return `<b>${a.n}</b>${abPips(id)}${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.ult ? 'once per fight' : a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${desc}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage${a.hits ? ` × ${a.hits}` : ''}.` : ''}${a.ult ? '<br><span style="color:#ffd36b">Ultimate: you can train only one.</span>' : ''}${abLvlBar(id)}`; };
 let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
@@ -1253,7 +1265,7 @@ function renderBarAbils() {
     s.dataset.ab = sig; s.dataset.built = 1;
     s.classList.toggle('ab', !!id); s.draggable = !!id;
     if (id) { s.dataset.tip = abTip(id); } else delete s.dataset.tip;
-    s.innerHTML = (id ? `<span class="ic">${ABILS[id].ico}</span><span class="abc">${ABILS[id].gain ? '+' + ABILS[id].gain : abEff(id).cost}</span><span class="abcd"></span>` : '') + `<span class="kb">${k}</span>`;
+    s.innerHTML = (id ? `<span class="ic">${abEff(id).ico}</span><span class="abc">${ABILS[id].gain ? '+' + ABILS[id].gain : abEff(id).cost}</span><span class="abcd"></span>` : '') + `<span class="kb">${k}</span>`;
   });
   refreshAb();
 }
@@ -1304,23 +1316,40 @@ let abDragKey = null;
 function renderAbilTab() {
   const el = $('body-abil'); if (!el) return;
   const ult = ultOf();
-  const card = ([id, a]) => {
+  const card = ([id, a0]) => {
+    const a = me.abils && me.abils[id] ? abEff(id) : a0;   // po morphie: nowa nazwa / ikona
     const has = me.abils && me.abils[id], lvOk = me.lvl >= a.lvl, other = a.ult && ult && ult !== id;
     return `<div class="abcard${a.ult ? ' ult' : ''}${has ? ' has' : lvOk && !other ? '' : ' lock'}">`
       + `<div class="abtile" data-tip="${abTip(id).replace(/"/g, '&quot;')}"><span class="abti">${a.ico}</span>${lvOk ? '' : `<span class="ablock">🔒 Lv ${a.lvl}</span>`}</div>`
       + `<b class="abnm">${a.n}</b>${has ? abPips(id) : ''}`
-      + (has ? `<span class="abok">Learned</span>` : other ? `<span class="abnot">Not chosen</span>` : `<button class="abtrain" onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>Train</button>`)
+      + (has ? (canMorph(id) ? `<button class="abtrain abmorph" onclick="window.morphPick('${id}')"${busy ? ' disabled' : ''}>Morph</button>` : `<span class="abok">${me.morph && me.morph[id] ? 'Morphed' : 'Learned'}</span>`) : other ? `<span class="abnot">Not chosen</span>` : `<button class="abtrain" onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>Train</button>`)
       + `</div>`;
   };
   const all = Object.entries(ABILS).filter(e => myAb(e[0])).sort((x, y) => x[1].lvl - y[1].lvl);   // tylko umiejętności Twojej klasy
   if (!all.length) { el.innerHTML = `<small style="color:var(--mut)">No abilities for the ${(me.cls || 'warrior')[0].toUpperCase() + (me.cls || 'warrior').slice(1)} class yet.</small>`; return; }
   // zwykłe umiejętności, potem grupa ULTIMATE (złota ramka, „choose one”)
-  el.innerHTML = `<div class="abgrid abmain">${all.filter(e => !e[1].ult).map(card).join('')}</div>`
+  // WYBÓR MORPHA (po kliknięciu Morph): dwa warianty obok siebie z „OR” między nimi; Choose = wybór na stałe, Cancel = zamknij
+  const mp = abMorphPick && canMorph(abMorphPick) ? abMorphPick : null;
+  const mcard = k => { const m = abEff(mp, k); return `<div class="abcard has"><div class="abtile" data-tip="${abTip(mp, k).replace(/"/g, '&quot;')}"><span class="abti">${m.ico}</span></div>`
+    + `<b class="abnm">${m.n}</b><button class="abtrain" onclick="window.morphAbil('${mp}','${k}')"${busy ? ' disabled' : ''}>Choose</button></div>`; };
+  const morphBox = !mp ? '' : `<div class="abmorphg"><span class="abultl">MORPH · ${ABILS[mp].n} · choose one (permanent)</span>`
+    + `<div class="abgrid">${Object.keys(ABILS[mp].morph).map(mcard).join('<span class="abor">OR</span>')}</div>`
+    + `<button class="abmcancel" onclick="window.morphPick(null)">Cancel</button></div>`;
+  el.innerHTML = `<div class="abgrid abmain">${all.filter(e => !e[1].ult).map(card).join('')}</div>` + morphBox
     + (!all.some(e => e[1].ult) ? '' : `<div class="abultg"><span class="abultl">ULTIMATE · ${ult ? 'your build: ' + ABILS[ult].n : 'choose one'}</span><div class="abgrid">${all.filter(e => e[1].ult).map(card).join('')}</div></div>`);   // sekcja ULTIMATE tylko, gdy klasa ma ulty
 }
 // czy jest jakaś umiejętność Twojej klasy do wytrenowania: wymagany poziom osiągnięty, jeszcze nie wytrenowana; ultimate – tylko dopóki nie wybrano buildu
 const abTrainable = () => Object.keys(ABILS).some(id => myAb(id) && me.lvl >= ABILS[id].lvl && !(me.abils && me.abils[id]) && !(ABILS[id].ult && ultOf()));
 const ultOf = () => Object.keys(ABILS).find(k => ABILS[k].ult && myAb(k) && me.abils && me.abils[k]);   // wybrany ultimate (build) albo undefined
+let abMorphPick = null;   // id umiejętności, dla której otwarty jest wybór morpha
+window.morphPick = id => { abMorphPick = id; render(); };
+window.morphAbil = (id, k) => {
+  if (busy || !canMorph(id) || !ABILS[id].morph[k]) return;
+  me.morph = me.morph || {}; me.morph[id] = k; abMorphPick = null;
+  document.querySelectorAll('#skillbar .sk').forEach(s => delete s.dataset.built);   // pasek: nowa ikona po morphie
+  say(`<b>${ABILS[id].n}</b> morphed into <b>${ABILS[id].morph[k].n}</b>!`, 'crit');
+  saveGame(); render();
+};
 window.learnAbil = id => {
   const a = ABILS[id]; if (!a || !myAb(id) || busy || me.lvl < a.lvl || (me.abils && me.abils[id])) return;
   if (a.ult && ultOf()) return;   // ultimate: tylko jeden build
@@ -1350,7 +1379,7 @@ const DPS_PAS = { 'Lightning Bolt': 'bolt', 'Fire Energy': 'fire', 'Burning': 'b
 function dpsIco(k) {
   const box = c => `<span class="dpi">${c}</span>`;
   if (k === 'Attack') return box(eq1.weapon ? sizeIco(eq1.weapon, 20) : '👊');
-  const ab = Object.values(ABILS).find(a => a.n === k); if (ab) return box(ab.ico);
+  const ab = Object.keys(ABILS).map(id => abEff(id)).find(a => a.n === k); if (ab) return box(ab.ico);   // także nazwy po morphie (np. Siphoning Strike)
   const d = DEBUFFS[DPS_PAS[k]];
   return box(d ? `<img src="${ASSETS_DIR}/skills/curses/${d[0]}.png" alt="" onerror="this.outerHTML='${d[2] || '✦'}'">` : '✦');
 }
@@ -2863,6 +2892,7 @@ function* fightGen(mob, io) {
         if (ab && ab.need) delete abReady[ab.need];
         if (ab && UI) abUse(act);   // poziom umiejętności: +1 użycie
         if (ab) { A = Object.assign({}, A, { min: A.min * ab.mul, max: A.max * ab.mul });   // umiejętność: losowo z zakresu obrażeń × mnożnik
+           if (ab.critUp) { const f = 1 + ab.critUp / 100; A = Object.assign({}, A, { crit: A.crit * f, critMul: (A.critMul || 1.8) * f }); }   // Cruel Blow: szansa i obrażenia krytyka ×1.2
            rageBar -= ab.cost; abCd[act] = ab.cd; if (UI) setRage(rageBar); say(`<b>${ab.n}!</b> (${ab.gain ? '+' + ab.gain : '−' + ab.cost} Rage)`, 'crit'); }
         firstHit = false;
         pTurns++;   // DPS METER: Twoja tura
@@ -2883,6 +2913,16 @@ function* fightGen(mob, io) {
         if (ab && ab.gain) { rageBar = Math.min(RAGE_MAX, rageBar + ab.gain); if (UI) setRage(rageBar); }   // Pommel Strike +25, Revenge +10
         if (ab && ab.ult) { abCd[act] = Infinity; if (UI) refreshAb(); }   // ULTIMATE: raz na walkę
         if (ab && ab.rend && mh > 0) { rendT = ab.rendT; rendD = Math.max(1, Math.round(abDealt * ab.rend / ab.rendT)); deb.rend = { st: rendT, tip: `Loses ${rendD} health per turn<br>Turns left: ${rendT}` }; renderDebuffs(deb); }   // Skullsplitter: krwawienie
+        // Siphoning Strike: leczenie za ab.heal% zadanych obrażeń (nie ponad maks. HP), pasek wypełnia się stopniowo jak przy Water Energy
+        if (ab && ab.heal && ph > 0 && abDealt > 0) {
+          const hv = Math.max(0, Math.min(p.hp - ph, Math.round(abDealt * ab.heal / 100)));
+          if (hv > 0) {
+            yield 200;
+            if (UI) { healFx(fp); dmgPop(fp, hv, false, 'heal'); }
+            { const h0 = ph; if (UI) for (let i = 1; i <= 8; i++) { ph = Math.round(h0 + hv * i / 8); upd(); yield 35; } ph = h0 + hv; }
+            say(`<b>${ab.n}</b> heals you for <b>${hv}</b> health.`, 'crit'); upd();
+          }
+        }
         if (ab && ab.stunT && mh > 0) { stunT = ab.stunT; deb.stun = { st: stunT, tip: `Loses its turn<br>Turns left: ${stunT}` }; renderDebuffs(deb); }   // Earthshaker: ogłuszenie
         // Lightning Bolt: +1 stos po ataku; przy 5 stosach piorun (15% / 30% / 45% średnich obrażeń, bez redukcji pancerza), potem 1 stos
         if (bolt && mh > 0) {
