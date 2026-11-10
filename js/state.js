@@ -181,7 +181,7 @@ export function ub() {
   // mark = ranga Curse of the Void, rend = Soul Sunder (1/1), dexPct = % Dexterity z Unholy Grace, agony = Torment (1/1)
   // firstDmg = % dodatkowych obrażeń pierwszego ataku w walce (Determination, 10% za rangę)
   // strEff = dodatkowe obrażenia za punkt Strength (Brutal Force), warcry = War Cry (1/1), critBonus = % obrażeń krytyka (Bloodlust), endure = Endure (1/1)
-  // critEff = dodatkowy % krytyka za punkt Dexterity (Cruelty), rage = % obrażeń broni za każdy krytyk w walce (Rage Within, 1% za rangę), fervor = ranga Battle Fervor
+  // critEff = dodatkowy % krytyka za punkt Dexterity (Cruelty), rage = ranga Rage Within (0.2% obrażeń za każdy stracony 1% zdrowia na rangę), fervor = ranga Battle Fervor
   // vitEff = dodatkowe HP za punkt Vitality (Headstrong), armPct = % pancerza z przedmiotów (Thick Skin); hpPct sumuje Shadow Prayers i Iron Will
   // barrier = % maks. HP jako tarcza na start walki (Elemental Barrier, 1.67% za rangę – 5% przy 3/3)
   // bolt = % średnich obrażeń pioruna przy 5 stosach Lightning Energy (Lightning Bolt, 15% za rangę)

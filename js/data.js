@@ -373,8 +373,8 @@ export const UPG = [
   ...[315, 375, 435].map((x, i) => plus1('d0_' + i, i ? 'd0_' + (i - 1) : 'dt', x, 105, 'dex', 'dt')),
   big('d0_3', 'd0_2', 520, 105, CUR('skill_cruelty', '🗡️'), 'Cruelty', r => `Dexterity counts ${v(r * 25 / 3)}% more toward critical hit chance`, { critEff: 1 / 30 }, 'dt'),   // 0.5% przy 3/3
   ...[605, 665, 725].map((x, i) => plus1('d0_' + (i + 4), 'd0_' + (i + 3), x, 105, 'dex', 'dt')),
-  // RAGE WITHIN (3 rangi): każdy Twój krytyk +1% / 2% / 3% obrażeń broni do końca walki, maks. +30% (30 / 15 / 10 stosów); dawniej: +3% limitu krytyka (1/1)
-  { ...big('d0_7', 'd0_6', 810, 105, CUR('skill_rage_within', '😤'), 'Rage Within', r => `Every critical hit increases your average weapon damage by ${r}% for the rest of the combat (max 30%)`, { rage: 1 }, 'dt'), buff: 1 },
+  // RAGE WITHIN (3 rangi): za każdy stracony 1% zdrowia +0.2% / 0.4% / 0.6% obrażeń (przy 50% straconego HP: +10% / 20% / 30%); dawniej: +1/2/3% obrażeń broni za każdy krytyk (maks. 30%)
+  { ...big('d0_7', 'd0_6', 810, 105, CUR('skill_rage_within', '😤'), 'Rage Within', r => `For every 1% of health lost, deal ${+(0.2 * r).toFixed(1)}% more damage`, { rage: 1 }, 'dt'), buff: 1 },
   big('d0_8', 'd0_7', 925, 105, CUR('skill_bloodlust', '🩸'), 'Bloodlust', r => `Your critical hits deal ${10 * r}% more damage`, { critBonus: 10 }, 'dt'),   // +10% za rangę (przeniesione ze ścieżki d1)
   // środkowa ścieżka d1 (y = 225, małe nody: Strength): Brutal Force → War Cry → Battle Fervor
   ...[315, 375, 435].map((x, i) => plus1('d1_' + i, i ? 'd1_' + (i - 1) : 'dt', x, 225, 'str', 'dt')),

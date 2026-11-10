@@ -2782,8 +2782,10 @@ function* fightGen(mob, io) {
     p.critPen = U.rend ? 0.5 : 0;   // Soul Sunder: krytyk ignoruje 50% pancerza
     // MARK OF SHADOWS: każdy Twój cios +U.mark% szansy na krytyk (maks. 5 stosów), może przekroczyć limit 50%
     // szansa na krytyk w walce = min(limit 50%, wzór z Dexterity i poziomu) + Curse of the Void
-    // RAGE WITHIN: rage = liczba Twoich krytyków w tej walce; każdy daje +U.rage% obrażeń broni (1% / 2% / 3% za rangę)
-    let mark = 0, critCap = CRIT_CAP, rage = 0, fervor = 0;
+    // RAGE WITHIN: za każdy stracony 1% zdrowia (pełne procenty od maks. HP) +0.2% / 0.4% / 0.6% obrażeń – liczone od nowa przy każdym Twoim ataku
+    let mark = 0, critCap = CRIT_CAP, fervor = 0;
+    const rageLost = () => Math.max(0, Math.min(100, Math.floor((1 - Math.max(0, ph) / p.hp) * 100)));   // % straconego zdrowia (0–100)
+    const rageBonus = () => U.rage ? Math.round(0.2 * U.rage * rageLost() * 10) / 10 : 0;   // % dodatkowych obrażeń
     const updCrit = () => { p.crit = Math.min(critCap, p.critRaw) + (p.critSet || 0) + (U.mark || 0) * mark; };   // + bonus setowy (ponad limit)
     // aktywne debuffy na wrogu (ikony w rogu okna walki)
     const deb = {};
@@ -2831,7 +2833,13 @@ function* fightGen(mob, io) {
         }
         if (firstHit && U.firstDmg) { const f = 1 + U.firstDmg / 100; A = Object.assign({}, A, { min: A.min * f, max: A.max * f }); }
         // Battle Fervor: +U.fervor% obrażeń za każdy wcześniejszy cios w walce (maks. 5 stosów)
-        if (rage && U.rage) { const f = 1 + U.rage * rage / 100; A = Object.assign({}, A, { min: A.min * f, max: A.max * f }); }   // Rage Within
+        // Rage Within: bonus wg aktualnie straconego zdrowia; ikona na pasku buffów tylko gdy bonus > 0
+        if (U.rage) {
+          const rb = rageBonus();
+          if (rb > 0) { const f = 1 + rb / 100; A = Object.assign({}, A, { min: A.min * f, max: A.max * f }); pbuf.rage = { tip: `Damage +${rb}%<br>Health lost: ${rageLost()}%` }; }
+          else delete pbuf.rage;
+          renderPBuffs(pbuf);
+        }
         if (fervor) { const f = 1 + U.fervor * fervor / 100; A = Object.assign({}, A, { min: A.min * f, max: A.max * f }); }
         // Exposed Weakness: min. 2 klątwy na wrogu (Burning się nie liczy) → +U.expose% obrażeń; ikona na wrogu, gdy aktywne
         if (U.expose) {
@@ -2855,10 +2863,9 @@ function* fightGen(mob, io) {
           if (h) yield 230;
           const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); abDealt += Math.min(dm, Math.max(0, mh)); mh -= dr(ab ? ab.n : execute ? 'Death Sentence' : 'Attack', dm); if (UI) dmgPop(fm, dm, hit.crit, ab ? 'ab' : 'out');   // umiejętność: żółta liczba (krytyk – żółta w formacie krytyka)
           // BLADESTORM: każdy cios oprócz ostatniego liczy się osobno dla pasywek „za cios / za krytyk” (ostatni obsługuje kod niżej, jak przy zwykłym ataku);
-          // nowe stosy Rage Within / Battle Fervor działają już od następnego ciosu tej samej serii
+          // nowe stosy Battle Fervor działają już od następnego ciosu tej samej serii
           if (h < nh - 1 && mh > 0) {
             const boost = (f0, f1) => { A = Object.assign({}, A, { min: A.min * f1 / f0, max: A.max * f1 / f0 }); };
-            if (U.rage && hit.crit && U.rage * (rage + 1) <= 30) { boost(1 + U.rage * rage / 100, 1 + U.rage * (rage + 1) / 100); rage++; pbuf.rage = { st: rage, tip: `Weapon damage +${U.rage * rage}% (max 30%)` }; renderPBuffs(pbuf); }
             if (U.fervor && fervor < 5) { boost(1 + U.fervor * fervor / 100, 1 + U.fervor * (fervor + 1) / 100); fervor++; pbuf.fervor = { st: fervor, tip: `Damage +${U.fervor * fervor}% (${fervor}/5)` }; renderPBuffs(pbuf); }
             if (U.mark && mark < 5) { mark++; updCrit(); deb.mark = { st: mark, tip: `Your critical hit chance against the enemy: +${U.mark * mark}% (${mark}/5)` }; curses(); }
             if (U.lacerate && hit.crit) { bleed = Math.min(bleedMax, bleed + 1); bleedT = bleedDur; deb.bleed = bleedInfo(); renderDebuffs(deb); }
@@ -2869,8 +2876,6 @@ function* fightGen(mob, io) {
         if (ab && ab.ult) { abCd[act] = Infinity; if (UI) refreshAb(); }   // ULTIMATE: raz na walkę
         if (ab && ab.rend && mh > 0) { rendT = ab.rendT; rendD = Math.max(1, Math.round(abDealt * ab.rend / ab.rendT)); deb.rend = { st: rendT, tip: `Loses ${rendD} health per turn<br>Turns left: ${rendT}` }; renderDebuffs(deb); }   // Skullsplitter: krwawienie
         if (ab && ab.stunT && mh > 0) { stunT = ab.stunT; deb.stun = { st: stunT, tip: `Loses its turn<br>Turns left: ${stunT}` }; renderDebuffs(deb); }   // Earthshaker: ogłuszenie
-        // Rage Within: każdy Twój krytyk +U.rage% obrażeń broni do końca walki (działa od następnego ciosu)
-        if (U.rage && hit.crit && U.rage * (rage + 1) <= 30) { rage++; pbuf.rage = { st: rage, tip: `Weapon damage +${U.rage * rage}% (max 30%)` }; renderPBuffs(pbuf); }   // limit +30%
         // Lightning Bolt: +1 stos po ataku; przy 5 stosach piorun (15% / 30% / 45% średnich obrażeń, bez redukcji pancerza), potem 1 stos
         if (bolt && mh > 0) {
           bolt++;
