@@ -3241,11 +3241,11 @@ document.head.insertAdjacentHTML('beforeend', '<style>'
 // LECZENIE (Water Energy): zielono-niebieska poświata na postaci gracza
 document.head.insertAdjacentHTML('beforeend', '<style>.fig.healfx{filter:drop-shadow(0 0 10px #3fdc6f) drop-shadow(0 0 4px #5aa9ff) brightness(1.25);transition:filter .1s}</style>');
 function healFx(fig) {
-  if (!fig || !fig.offsetParent || skipFight) return;
+  if (!fig || !fig.offsetParent) return;
   fig.classList.add('healfx'); setTimeout(() => fig.classList.remove('healfx'), 380);
 }
 function fireFx(fig) {
-  if (!fig || !fig.offsetParent || skipFight) return;
+  if (!fig || !fig.offsetParent) return;
   const r = (fig.querySelector('img, .ic') || fig).getBoundingClientRect(), e = document.createElement('div'), fs = Math.max(r.width, r.height) * 1.5;   // rozmiar od sprite'a, nie od całej kolumny
   e.className = 'firefx'; e.style.width = e.style.height = fs + 'px';
   e.style.left = (r.left + r.width / 2 - fs / 2) + 'px'; e.style.top = (r.top + r.height / 2 - fs / 2) + 'px';
@@ -3253,7 +3253,7 @@ function fireFx(fig) {
   fig.classList.add('burnfx'); setTimeout(() => fig.classList.remove('burnfx'), 180);
 }
 function boltFx(fig) {
-  if (!fig || !fig.offsetParent || skipFight) return;
+  if (!fig || !fig.offsetParent) return;
   const r = fig.getBoundingClientRect(), box = $('fightbox').getBoundingClientRect();
   const x = r.left + r.width / 2, yEnd = r.top + r.height * 0.45, yTop = Math.max(box.top + 4, r.top - 120), H = yEnd - yTop, W = 90;
   // zygzak: 7 odcinków z losowym wychyleniem w bok, ostatni punkt dokładnie w przeciwniku; 1 krótka odnoga
@@ -3279,7 +3279,7 @@ const popStack = new Map();   // postać → [czas ostatniej liczby, ile liczb w
 // TEMPO WALKI: wszystkie pauzy między ruchami ×FIGHT_SLOW (1.3 = o 30% wolniej); wyskok postaci, liczby obrażeń i błysk też wolniejsze o 30%
 const FIGHT_SLOW = 1.3;
 function dmgPop(fig, v, crit, kind) {
-  if (!fig || !fig.offsetParent || skipFight) return;
+  if (!fig || !fig.offsetParent) return;
   // BŁYSK: przeciwnik na ułamek sekundy mocno się rozjaśnia (nie całkiem biały), gdy dostaje obrażenia (cios, krwawienie, podpalenie)
   if (fig.id === 'fm' && kind !== 'heal' && kind !== 'shield' && v > 0) fig.animate([{ filter: 'brightness(2.4) saturate(.55)' }, { filter: 'none' }], { duration: 130, easing: 'ease-out' });   // rozjaśnienie (kolor zostaje), 0.1 s
   const r = fig.getBoundingClientRect(), e = document.createElement('div');
@@ -3305,7 +3305,8 @@ const mobIco = (m, px) => MOB_MISS.has(mobImg(m))
 
 // SKIP: w trakcie walki przycisk „Fight!” zamienia się w „Skip ⏭” – reszta walki liczy się natychmiast (bez pauz i bez wpisów ciosów w logu),
 // paski HP pokazują wynik końcowy (przegrany 0 HP, zwycięzca – pozostałe HP), potem normalnie nagrody / porażka
-let fightOn = false, skipFight = false;
+let fightOn = false, skipFight = false;   // skipFight = tryb auto po kliknięciu Skip
+const AUTO_SPEED = 0.7;   // SKIP: walka toczy się sama o 30% szybciej (pauzy ×0.7)
 // WYPRAWA – wynik ostatniej walki: { win, loot: [przedmioty], had }. Póki jest ustawiony, nad przyciskiem widać łup,
 // a przycisk to „Collect” (wygrana) / „Back” (przegrana): kliknięcie odznacza przeciwnika → wraca wybór przeciwnika.
 // Łup trafia do plecaka dopiero po Collect (albo przy każdym innym wyjściu z ekranu wyniku: Back, inny przeciwnik, inna zakładka).
@@ -3320,7 +3321,7 @@ function endExp() {   // zamyka ekran wyniku i oddaje niezebrany łup do plecaka
   delete me.pendLoot; expRes = null;
 }
 $('go').onclick = async () => {
-  if (fightOn) { if (!skipFight) { skipFight = true; sayMute = true; $('go').disabled = true; doAttack(); } return; }   // Skip: reszta walki sama (także czekający atak)
+  if (fightOn) { if (!skipFight) { skipFight = true; $('go').disabled = true; doAttack(); } return; }   // Skip: gra dalej sama (ruchy wg Battle Plan), z animacjami, o 30% szybciej
   if (expRes && view == 'exp') { endExp(); setEsel(-1); setLastMob(null); render(); return; }   // Collect (łup → plecak) / Back; lastMob = null → przy następnym wyborze pełne HP i tarcza
   const mob = curMob(); if (!mob || busy || fishing.active || Date.now() < cdEnd) return;
   if (view == 'dun' && dunCd(curDun().mobs.indexOf(mob)) > 0) return;   // loch: przerwa 1 h po wygranej
@@ -3331,9 +3332,8 @@ $('go').onclick = async () => {
     render();
     const io = { sim: false, manual: true }; fightIo = io;
     { const sb = $('skillbar'); if (sb) sb.classList.add('fighting'); }   // w trakcie walki slot ataku jest szary poza Twoją turą   // manual: atak gracza dopiero po kliknięciu slotu 1 / klawisza 1 (symulacja szans – bez czekania)
-    for (const ms of fightGen(mob, io)) { if (ms === 'wait') { if (!skipFight) await waitAttack(); continue; } if (!skipFight) await slp(ms * FIGHT_SLOW); }   // pauzy między ciosami; po Skip – bez pauz i bez czekania na atak
+    for (const ms of fightGen(mob, io)) { if (ms === 'wait') { if (!skipFight) await waitAttack(); else await slp(325 * FIGHT_SLOW * AUTO_SPEED); continue; } await slp(ms * FIGHT_SLOW * (skipFight ? AUTO_SPEED : 1)); }   // pauzy między ciosami; po Skip – gra sama „klika” (Battle Plan), pauzy ×0.7
     const { ph } = io.res, upd = io.upd;
-    if (skipFight) { sayMute = false; say('<i>Fight skipped.</i>', 'miss'); upd(); }   // koniec pominiętej walki: log znowu działa
     fightOn = false;
     const loot = [];   // łup tej walki (pokazywany pod przyciskiem Collect na wyprawie)
     let rwXp = 0, rwGold = 0, qDone = null;   // nagroda tej walki (napis pod łupem); qDone = nagroda z ukończonego questa
@@ -3396,7 +3396,7 @@ $('go').onclick = async () => {
   } finally {
     fightIo = null; refreshAb();   // ABILITIES: po walce sloty znów normalne
     { const sb = $('skillbar'); if (sb) sb.classList.remove('fighting'); } atkQueued = false;
-    if (skipFight) sayMute = false; fightOn = false; skipFight = false;
+    fightOn = false; skipFight = false;
     setBusy(false); setCdEnd(Date.now() + 1000); render();
   }
 };
