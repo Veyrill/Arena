@@ -1203,21 +1203,21 @@ addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEX
 // gain = Rage za użycie; free = nie zabiera tury (po nim działasz dalej); buffT = tury buffa; need: 'exec' = wróg poniżej 20% HP (Revenge usunięty z gry – stary zapis: pusty slot, ignorowany w me.abils)
 const ABILS = {
   // lvB = % dodatkowych obrażeń umiejętności na poziomie 1–5 (mnoży obrażenia), lvC = zmiana kosztu w Rage na poziomie 1–5
-  overhead: { n: 'Overhead Blow', ico: '💥', img: 'ab_overhead', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 10, 20, 50, 75], lvAdd: true, lvC: [0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
+  overhead: { n: 'Overhead Blow', ico: '💥', img: 'ab_overhead', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 5, 10, 15, 20, 25, 40, 55, 65, 75], lvAdd: true, lvC: [0, 0, 0, 0, 0, 0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
     // MORPH (po 5 poziomie, wybór na stałe): zastępuje umiejętność – nazwa, opis, mnożnik; heal = % zadanych obrażeń jako leczenie, critUp = % wyższa szansa i obrażenia krytyka
     morph: {
       siphon: { n: 'Siphoning Strike', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' },
       cruel: { n: 'Cruel Blow', mul: 2.5, critUp: 20, d: 'Strike for 250% weapon damage. Its critical hit chance and critical damage are 20% higher.' }
     } },
   // lvG = zmiana generowanego Rage na poziomie 1–5 (Pommel Strike: 25 → 30 na 5 poziomie); lvAdd = bonus lvB dodawany do % obrażeń broni (60% → 80 / 100 / 120 / 160%), bez lvAdd – mnożony
-  pommel: { n: 'Pommel Strike', ico: '🗡️', img: 'ab_pommel', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 20, 40, 60, 100], lvAdd: true, lvG: [0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
+  pommel: { n: 'Pommel Strike', ico: '🗡️', img: 'ab_pommel', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 10, 20, 25, 35, 45, 55, 65, 80, 100], lvAdd: true, lvG: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
     // markD = Mark of Death na wrogu (Twój następny cios +markD%), crip = wróg zadaje crip% mniej obrażeń przez cripT swoich tur
     morph: {
       mark: { n: 'Marking Strike', markD: 20, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Marks the enemy with Mark of Death: your next hit against it deals 20% more damage.' },
       cripple: { n: 'Crippling Strike', crip: 10, cripT: 3, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Cripples the enemy: it deals 10% less damage for 3 turns.' }
     } },
   // buffD = % obrażeń z buffa (Battle Fury: 10% → 15 / 25 / 40 / 60%), lvF = dodatek do buffD na poziomie 1–5, lvT = dodatkowe tury buffa (6 tur na 5 poziomie)
-  fury: { n: 'Battle Fury', ico: '📯', img: 'ab_fury', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 5, 15, 30, 50], lvT: [0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
+  fury: { n: 'Battle Fury', ico: '📯', img: 'ab_fury', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 2, 4, 8, 13, 19, 27, 32, 41, 50], lvT: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
     // dexUp = % wyższa Dexterity na czas buffa (szansa na krytyk liczona od podniesionej Dexterity)
     morph: {
       cry: { n: 'Battlecry', dexUp: 20, d: 'Instant: does not end your turn. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' },
@@ -1229,7 +1229,7 @@ const ABILS = {
   split: { n: 'Skullsplitter', ico: '🪓', cost: 60, mul: 3, rend: 0.5, rendT: 10, cd: 0, lvl: 20, ult: true, d: 'A crushing blow for 300% weapon damage. The wound bleeds for 50% of the damage dealt over 10 turns. Once per fight.' },
   quake: { n: 'Earthshaker', ico: '🔨', cost: 60, mul: 1.5, stunT: 4, cd: 0, lvl: 20, ult: true, d: 'Smash the ground for 150% weapon damage and stun the enemy for 4 turns. Once per fight.' },
   // execP = próg HP wroga (%), poniżej którego można użyć; lvE = dodatek do progu na poziomie 1–5 (15% → 20% na 5 poziomie); obrażenia 200% → 220 / 240 / 280 / 350%
-  decap: { n: 'Decapitate', ico: '💀', img: 'ab_decap', cost: 40, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 15, lvB: [0, 20, 40, 80, 150], lvAdd: true, lvE: [0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 15% health.',
+  decap: { n: 'Decapitate', ico: '💀', img: 'ab_decap', cost: 40, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 15, lvB: [0, 10, 20, 25, 35, 45, 60, 80, 115, 150], lvAdd: true, lvE: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 15% health.',
     morph: {
       reach: { n: "Executioner's Reach", execP: 30, d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 30% health.' },
       verdict: { n: 'Final Verdict', mul: 4.5, d: 'A finishing blow for 450% weapon damage. Only when the enemy is below 20% health.' }
@@ -1249,14 +1249,15 @@ const abEff = (id, mk = me.morph && me.morph[id]) => {
   const e = Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: !a.mul ? a.mul : a.lvAdd ? a.mul + ((a.lvB || [])[l] || 0) / 100 : a.mul * (1 + ((a.lvB || [])[l] || 0) / 100), gain: a.gain ? a.gain + ((a.lvG || [])[l] || 0) : a.gain,
     buffD: a.buffD ? a.buffD + ((a.lvF || [])[l] || 0) : a.buffD, buffT: a.buffT ? a.buffT + ((a.lvT || [])[l] || 0) : a.buffT,
     execP: a.execP ? a.execP + ((a.lvE || [])[l] || 0) : a.execP });
-  const m = mk && a.morph && a.morph[mk]; return m ? Object.assign(e, m, { cost: 'cost' in m ? m.cost : a.cost + ((a.lvC || [])[4] || 0) }) : e;   // Battlecry: koszt 0
+  const m = mk && a.morph && a.morph[mk]; return m ? Object.assign(e, m, { cost: 'cost' in m ? m.cost : a.cost + ((a.lvC || [])[AB_MAX_LVL - 1] || 0) }) : e;   // Battlecry: koszt 0
 };
 // MORPH: dostępny po 5 poziomie wytrenowanej umiejętności, która ma warianty i jeszcze nie ma wybranego
 const canMorph = id => { const a = ABILS[id]; return !!(a && a.morph && me.abils && me.abils[id] && abLvl(id).l >= AB_MAX_LVL && !(me.morph && me.morph[id])); };
 const abDmg = a => { if (!a.mul) return ''; const d = der(); return `${Math.round(d.min * a.mul)}–${Math.round(d.max * a.mul)}`; };
 // POZIOMY UMIEJĘTNOŚCI (na razie bez efektu): rosną od używania w walce. me.abXp = { id: liczba użyć }.
 // Progi (takie same dla każdej umiejętności): lvl 2 po 10 użyciach, lvl 3 po kolejnych 40, lvl 4 po 150, lvl 5 po 400 – razem 600; maks. lvl 5.
-const AB_LVL_NEED = [10, 40, 150, 400], AB_MAX_LVL = 5, abNeed = l => AB_LVL_NEED[l - 1];   // użycia z poziomu l na l+1
+const AB_LVL_NEED = [5, 10, 20, 35, 50, 70, 100, 130, 180], AB_MAX_LVL = 10,   // 10 poziomów, razem nadal 600 użyć (dawniej 5 poziomów: 10/40/150/400)
+  abNeed = l => AB_LVL_NEED[l - 1];   // użycia z poziomu l na l+1
 function abLvl(id) {
   let u = (me.abXp && me.abXp[id]) || 0, l = 1;
   while (l < AB_MAX_LVL && u >= abNeed(l)) { u -= abNeed(l); l++; }
@@ -1264,7 +1265,7 @@ function abLvl(id) {
 }
 // wygląd (wariant E): romby pod nazwą = poziom (zapalone / wszystkie 5); na dole napis „Next level: x / y” i cienka linia postępu wzdłuż dolnej krawędzi dymka
 // ULTIMATE: bez poziomów – bez rombów, bez paska „Next level” i bez naliczania użyć
-const abPips = id => { if (ABILS[id] && ABILS[id].ult) return ''; const l = abLvl(id).l; return `<span class="abpips">${Array.from({ length: AB_MAX_LVL }, (_, i) => `<i${i < l ? ' class="on"' : ''}></i>`).join('')}</span>`; };
+const abPips = id => { if (ABILS[id] && ABILS[id].ult) return ''; return `<span class="ablvl">Lvl ${abLvl(id).l}</span>`; };   // poziom jako tekst „Lvl 3” (zamiast rombów)
 const abLvlBar = id => { if (ABILS[id] && ABILS[id].ult) return ''; const v = abLvl(id); return v.need ? `<div class="abnext">Next level: ${v.cur} / ${v.need}</div><div class="abedge"><i style="width:${v.cur / v.need * 100}%"></i></div>` : `<div class="abnext">Maxed</div>`; };   // poziom 5: sam napis Maxed (bez paska)
 // użycie w walce: +1; po awansie napis „LVL X!” nad slotem
 function abUse(id) {
@@ -1282,7 +1283,7 @@ function renderXpSide() {
   const ids = Object.keys(ABILS).filter(id => myAb(id) && !ABILS[id].ult && me.abils && me.abils[id] && abLvl(id).need).sort((x, y) => ABILS[x].lvl - ABILS[y].lvl);
   el.hidden = !ids.length; if (!ids.length) { el.innerHTML = ''; return; }
   el.innerHTML = ids.map(id => { const v = abLvl(id), a = abEff(id);
-    return `<div class="xpr" data-tip="<b>${a.n}</b>Level ${v.l}">${abIco(a, 'xpi')}<div class="xpt"><b>Lv ${v.l}</b><div class="xpb"><i style="width:${v.cur / v.need * 100}%"></i></div></div></div>`; }).join('');
+    return `<div class="xpr" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${abIco(a, 'xpi')}<div class="xpt"><b>Lvl ${v.l}</b><div class="xpb"><i style="width:${v.cur / v.need * 100}%"></i></div></div></div>`; }).join('');
 }
 const abTip = (id, mk) => { const a = mk ? abEff(id, mk) : abEff(id), dm = abDmg(a), d0 = ABILS[id];
   // opis liczony na żywo: % obrażeń broni wg poziomu umiejętności (np. Overhead Blow 140% → 245% na 5 poziomie)
@@ -3821,7 +3822,7 @@ function spawnItem(id, r = 0, qty = 1) {
       if (busy) return;
       const ids = Object.keys(ABILS).filter(id => myAb(id) && (!ABILS[id].ult || (me.abils && me.abils[id])));
       me.abils = me.abils || {}; me.bar = me.bar || {}; me.abXp = me.abXp || {};
-      const full = AB_LVL_NEED.reduce((s, v) => s + v, 0);   // 600 użyć = poziom 5
+      const full = AB_LVL_NEED.reduce((s, v) => s + v, 0);   // 600 użyć = poziom 10
       for (const id of ids) {
         if (!me.abils[id]) { me.abils[id] = true; if (!Object.values(me.bar).includes(id)) { const k = BAR_KEYS.find(x => !me.bar[x]); if (k) me.bar[k] = id; } }
         me.abXp[id] = Math.max(me.abXp[id] || 0, full);
