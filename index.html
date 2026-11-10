@@ -128,6 +128,16 @@ button.drow:hover{border-color:var(--dc)}
 .sk .abcd{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;z-index:3;pointer-events:none;text-shadow:2px 2px 0 #000}
 .sk.abover{outline:3px solid #f07b16;outline-offset:1px}
 .sk.ab.proc{animation:abproc .7s ease-in-out infinite alternate}   /* Revenge / Decapitate gotowe – pulsuje */
+/* PASEK – wygląd (1+2): ikona wypełnia cały slot; klawisz na plakietce pod slotem; koszt Rage na plakietce w lewym górnym rogu
+   (pomarańczowa = koszt, zielona = generuje Rage); niedostępne – przygaszone, ale kolorowe; odnowienie – ciemna nakładka z liczbą tur */
+#skillbar{padding-bottom:20px}
+#skillbar .sk{border:2px solid #000;background:#14161b}
+#skillbar .sk.ab .ic.img{inset:0;border-radius:6px}
+#skillbar .sk .kb{right:auto;left:50%;bottom:-11px;transform:translateX(-50%);background:#15131a;border:1px solid #4a4452;border-radius:4px;padding:2px 5px;font-size:10px;color:#d8cbb4;text-shadow:none}
+#skillbar .sk .abc{left:-4px;top:-5px;background:#15131a;border:1px solid #f07b16;border-radius:4px;padding:2px 4px;font-size:10px;color:#ffb347;text-shadow:none}
+#skillbar .sk .abc.gen{border-color:#3fbf4f;color:#7fe08a}
+#skillbar .sk.ab.off .ic{filter:grayscale(.75) brightness(.7);opacity:1}
+#skillbar .sk .abcd:not(:empty){background:rgba(0,0,0,.55);border-radius:6px;font-size:24px}
 @keyframes abproc{from{box-shadow:0 0 0 2px #f07b16,0 0 6px #f07b16}to{box-shadow:0 0 0 3px #ffc06a,0 0 18px #f07b16}}
 /* POZIOM UMIEJĘTNOŚCI: „lvl X” przy nazwie, pasek postępu użyć do następnego poziomu, napis LVL X! przy awansie */
 .abpips{display:flex;gap:6px;margin:4px 0 8px 2px}

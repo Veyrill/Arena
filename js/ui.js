@@ -1290,11 +1290,11 @@ function renderBarAbils() {
     const s = document.querySelector(`#skillbar .sk[data-key="${k}"]`); if (!s) return;
     const id = me.abils && me.abils[me.bar[k]] && myAb(me.bar[k]) ? me.bar[k] : null, sig = id || '';   // tylko umiejętności Twojej klasy   // usunięta umiejętność (np. stary Revenge w zapisie) = pusty slot
     if (id) s.dataset.tip = abTip(id);   // dymek zawsze aktualny (obrażenia zależą od statystyk)
-    if (s.dataset.ab === sig && s.dataset.built) { const c = id && s.querySelector('.abc'); if (c) { const e = abEff(id); c.textContent = e.gain ? '+' + e.gain : e.cost; } return; }   // koszt zależy od poziomu umiejętności
+    if (s.dataset.ab === sig && s.dataset.built) { const c = id && s.querySelector('.abc'); if (c) { const e = abEff(id); c.textContent = e.gain ? '+' + e.gain : e.cost; c.classList.toggle('gen', !!e.gain); } return; }   // koszt zależy od poziomu umiejętności
     s.dataset.ab = sig; s.dataset.built = 1;
     s.classList.toggle('ab', !!id); s.draggable = !!id;
     if (id) { s.dataset.tip = abTip(id); } else delete s.dataset.tip;
-    s.innerHTML = (id ? `${abIco(abEff(id), 'ic')}<span class="abc">${abEff(id).gain ? '+' + abEff(id).gain : abEff(id).cost}</span><span class="abcd"></span>` : '') + `<span class="kb">${k}</span>`;
+    s.innerHTML = (id ? `${abIco(abEff(id), 'ic')}<span class="abc${abEff(id).gain ? ' gen' : ''}">${abEff(id).gain ? '+' + abEff(id).gain : abEff(id).cost}</span><span class="abcd"></span>` : '') + `<span class="kb">${k}</span>`;
   });
   refreshAb();
 }
