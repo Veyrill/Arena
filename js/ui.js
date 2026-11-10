@@ -1352,7 +1352,7 @@ function setDps(by, turns) {
   const el = $('dpsm'); if (!el) return;
   const ent = Object.entries(by || {}).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
   const tot = ent.reduce((a, e) => a + e[1], 0), top = ent.length ? ent[0][1] : 1;
-  { const v = $('dpsv'); if (v) v.textContent = turns ? fmtN(tot / turns) : '–'; }
+  { const v = $('dpsv'); if (v) v.textContent = turns ? fmtN(tot / turns).replace(/,/g, '') : '–'; }   // kafelek: liczba bez przecinka (1284, nie 1,284)
   const rows = ent.map(([k, v]) => `<div class="dprow">${dpsIco(k)}<div class="dpbar"><i style="width:${v / top * 100}%"></i><span class="dpn">${k}</span>`
     + `<span class="dpv">${fmtN(v / turns)} (${fmtN(v)}) ${Math.round(v / tot * 100)}%</span></div></div>`).join('');
   el.dataset.tip = `<b>Damage per turn</b><div class="dpst">${rows || '<small>No damage yet</small>'}`
