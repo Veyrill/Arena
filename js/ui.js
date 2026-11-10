@@ -1182,7 +1182,7 @@ const atkSlot = () => document.querySelector('#skillbar .sk[data-key="1"]');
 // atkQueued = id umiejętności → użyta od razu po starcie walki
 function waitAttack() { if (atkQueued) { if (typeof atkQueued === 'string' && fightIo) fightIo.act = atkQueued; atkQueued = false; return Promise.resolve(); } const s = atkSlot(); if (s) s.classList.add('ready'); const pr = new Promise(r => { atkResolve = r; }); refreshAb(); return pr; }
 // SKILL PRZED WALKĄ: klik w skill (albo jego klawisz), gdy walka jeszcze nie trwa, a przycisk pokazuje Fight! → startuje walkę i od razu używa tego ruchu
-function useSkillOrStart() { if (atkResolve) return doAttack(); const go = $('go'); if (!fightOn && !busy && go && !go.disabled && go.textContent.trim() === 'Fight!' && curMob()) { atkQueued = true; go.onclick(); if (!fightOn) atkQueued = false; } }   // walka nie ruszyła (np. przerwa po walce) – nie zostawiaj ataku w kolejce
+function useSkillOrStart() { if (atkResolve) return doAttack(); const go = $('go'); if (!fightOn && !busy && go && !go.disabled && go.dataset.st === 'start' && curMob()) { atkQueued = true; go.onclick(); if (!fightOn) atkQueued = false; } }   // walka nie ruszyła (np. przerwa po walce) – nie zostawiaj ataku w kolejce
 function doAttack() { if (!atkResolve) return; const f = atkResolve; atkResolve = null; const s = atkSlot(); if (s) s.classList.remove('ready'); f(); refreshAb(); }
 function renderAtkSlot() {
   const s = atkSlot(); if (!s) return;
@@ -1327,7 +1327,7 @@ function refreshAb() {
 function useAbility(id) {
   const a = abEff(id); if (!a) return;   // koszt wg poziomu umiejętności
   if (atkResolve && fightIo) { if ((fightIo.rage || 0) < a.cost || (fightIo.cd && fightIo.cd[id]) || (a.need && !(fightIo.ready && fightIo.ready[a.need]))) return; fightIo.act = id; doAttack(); return; }
-  const go = $('go'); if (!fightOn && !busy && go && !go.disabled && go.textContent.trim() === 'Fight!' && curMob()) { if (!a.cost && !a.need) atkQueued = id; go.onclick(); }   // darmowa (np. Pommel Strike) – walka startuje i od razu jej używa
+  const go = $('go'); if (!fightOn && !busy && go && !go.disabled && go.dataset.st === 'start' && curMob()) { if (!a.cost && !a.need) atkQueued = id; go.onclick(); }   // darmowa (np. Pommel Strike) – walka startuje i od razu jej używa
 }
 document.addEventListener('click', e => {
   const s = e.target.closest && e.target.closest('#skillbar .sk.ab'); if (s && s.dataset.ab) useAbility(s.dataset.ab);
@@ -1393,7 +1393,7 @@ window.morphAbil = (id, k) => {
   say(`<b>${ABILS[id].n}</b> morphed into <b>${ABILS[id].morph[k].n}</b>!`, 'crit');
   saveGame(); render();
 };
-// BATTLE PLAN (zakładka w Abilities): kolejność i warunki umiejętności używanych automatycznie po kliknięciu Skip.
+// BATTLE PLAN (zakładka w Abilities): kolejność i warunki umiejętności używanych automatycznie po kliknięciu Auto.
 // me.plan = [{ id, c: { warunek: { on, v } }, save (ult: oszczędzaj Rage), off (nie używaj) }] – sprawdzane od lewej, pierwsza gotowa spełniająca warunki = użyta; nic → Attack
 const PLAN_CONDS = {
   eAbove: { t: 'Enemy HP ≥', u: '%', v: 50 }, eBelow: { t: 'Enemy HP ≤', u: '%', v: 30 }, myBelow: { t: 'My HP ≤', u: '%', v: 50 },
@@ -1436,7 +1436,7 @@ window.planSet = (i, k, f, v) => {
 window.planReset = () => { me.plan = null; abPlanSel = null; planGet(); saveGame(); render(); };
 function renderPlanTab() {
   const pl = planGet();
-  if (!pl.length) return `<small style="color:var(--mut)">Train an ability first – then set the order in which Skip uses it.</small>`;
+  if (!pl.length) return `<small style="color:var(--mut)">Train an ability first – then set the order in which Auto uses it.</small>`;
   const card = (s, i) => { const a = abEff(s.id);
     return `<div class="bpc${abPlanSel === i ? ' sel' : ''}${s.off ? ' off' : ''}" draggable="true" data-pi="${i}" onclick="window.planOpen(${i})">`
       + `<span class="bpn">${i + 1}</span><span data-tip="${abTip(s.id).replace(/"/g, '&quot;')}">${abIco(a, 'bpi')}</span><b>${a.n}</b><span class="bpch">${planChip(s)}</span></div><span class="bpa">›</span>`; };
@@ -1451,7 +1451,7 @@ function renderPlanTab() {
     pop = `<div class="bpop"><div class="bph">${abIco(a, 'bphi')}<span><b>${a.n}</b><small>${a.ult ? 'Ultimate · once per fight · ' : ''}use only when:</small></span></div>`
       + `<div class="bplist">${Object.keys(PLAN_CONDS).map(opt).join('')}</div>`
       + (a.ult ? `<label class="bpo bpsave${s.save ? ' on' : ''}"><input type="checkbox"${s.save ? ' checked' : ''} onchange="window.planSet(${i},'save','',this.checked)"><span class="bpl"><b>Save Rage for Ultimate</b><i>Other abilities keep ${a.cost} Rage until it is used</i></span></label>` : '')
-      + `<div class="bpf"><label class="bpo${s.off ? ' on' : ''}"><input type="checkbox"${s.off ? ' checked' : ''} onchange="window.planSet(${i},'off','',this.checked)"><span class="bpl">Don't use on Skip</span></label>`
+      + `<div class="bpf"><label class="bpo${s.off ? ' on' : ''}"><input type="checkbox"${s.off ? ' checked' : ''} onchange="window.planSet(${i},'off','',this.checked)"><span class="bpl">Don't use on Auto</span></label>`
       + `<span class="bpmv"><button onclick="window.planMove(${i},-1)"${i ? '' : ' disabled'} title="Move left">◀</button><button onclick="window.planMove(${i},1)"${i < pl.length - 1 ? '' : ' disabled'} title="Move right">▶</button></span></div></div>`;
   }
   return `<div class="bpflow">${pl.map(card).join('')}${atk}</div>${pop}<button class="bpreset" onclick="window.planReset()">Reset plan</button>`;
@@ -2506,9 +2506,10 @@ function render() {
   { const dcd = view == 'dun' && m && dsel >= 0 ? dunCd(dsel) : 0;   // loch: przerwa po wygranej → przycisk z licznikiem
     const done = expRes && !fightOn;   // wyprawa po walce: Collect (wygrana) / Back (przegrana)
     $('go').disabled = done ? busy : fightOn ? skipFight : (busy || fishing.active || dcd > 0);
-    $('go').textContent = done ? (expRes.win ? 'Collect' : 'Back') : fightOn ? 'Skip ⏭' : dcd > 0 ? `Next fight in ${fmtCd(dcd)}` : 'Fight!';
-    $('go').style.visibility = $('go').textContent === 'Fight!' ? 'hidden' : '';   // bez przycisku Fight! – walkę zaczyna atak (slot 1) albo umiejętność; miejsce zostaje (układ się nie przesuwa)
-  }   // w trakcie walki: Skip
+    $('go').textContent = done ? (expRes.win ? 'Collect' : 'Back') : fightOn ? 'Auto ▶▶' : dcd > 0 ? `Next fight in ${fmtCd(dcd)}` : 'Auto ▶▶';
+    $('go').dataset.st = !done && !fightOn && !(dcd > 0) ? 'start' : '';   // start = przed walką (atak / umiejętność zaczyna walkę ręcznie, Auto – automatycznie)
+    $('go').style.visibility = !done && !fightOn && !m ? 'hidden' : '';   // bez wybranego przeciwnika – brak przycisku (miejsce zostaje)
+  }   // AUTO: przed walką i w jej trakcie – gra walczy sama wg Battle Plan
   refreshTip();
   checkSetFx();   // efekt po osiągnięciu progu bonusu setowego (2/4, 4/4)
 }
@@ -3303,7 +3304,7 @@ const mobIco = (m, px) => MOB_MISS.has(mobImg(m))
   ? `<span class="ic">${m.e}</span>`
   : `<img src="${ASSETS_DIR}/${mobImg(m)}" alt="" draggable="false" style="display:block;margin:0 auto;width:${px}px;height:${px}px;object-fit:contain;image-rendering:pixelated" onerror="MOB_MISS.add('${mobImg(m)}');this.outerHTML='<span class=\\'ic\\'>${m.e}</span>'">`;
 
-// SKIP: w trakcie walki przycisk „Fight!” zamienia się w „Skip ⏭” – reszta walki liczy się natychmiast (bez pauz i bez wpisów ciosów w logu),
+// AUTO ▶▶ (przycisk #go): przed walką albo w jej trakcie – gra sama wybiera ruchy (Battle Plan), z animacjami i logiem, o 30% szybciej
 // paski HP pokazują wynik końcowy (przegrany 0 HP, zwycięzca – pozostałe HP), potem normalnie nagrody / porażka
 let fightOn = false, skipFight = false;   // skipFight = tryb auto po kliknięciu Skip
 const AUTO_SPEED = 0.7;   // SKIP: walka toczy się sama o 30% szybciej (pauzy ×0.7)
@@ -3320,13 +3321,14 @@ function endExp() {   // zamyka ekran wyniku i oddaje niezebrany łup do plecaka
   if (expRes) deliverLoot(expRes.loot);
   delete me.pendLoot; expRes = null;
 }
-$('go').onclick = async () => {
-  if (fightOn) { if (!skipFight) { skipFight = true; $('go').disabled = true; doAttack(); } return; }   // Skip: gra dalej sama (ruchy wg Battle Plan), z animacjami, o 30% szybciej
+$('go').onclick = async ev => {
+  if (fightOn) { if (!skipFight) { skipFight = true; $('go').disabled = true; doAttack(); } return; }   // AUTO w trakcie walki: gra dalej sama (ruchy wg Battle Plan), z animacjami, o 30% szybciej
   if (expRes && view == 'exp') { endExp(); setEsel(-1); setLastMob(null); render(); return; }   // Collect (łup → plecak) / Back; lastMob = null → przy następnym wyborze pełne HP i tarcza
   const mob = curMob(); if (!mob || busy || fishing.active || Date.now() < cdEnd) return;
   if (view == 'dun' && dunCd(curDun().mobs.indexOf(mob)) > 0) return;   // loch: przerwa 1 h po wygranej
   dunRes = null;   // nowa walka – stary napis VICTORY / DEFEAT znika
-  setBusy(true); fightOn = true; skipFight = false; $('log').innerHTML = ''; live = null;   // nowa walka – panel ℹ️ startuje od wartości bazowych
+  setBusy(true); fightOn = true; skipFight = !!ev; $('log').innerHTML = '';   // kliknięcie Auto przed walką (ev) → walka od razu w trybie auto; start z ataku / umiejętności (bez ev) → ręcznie
+  live = null;   // nowa walka – panel ℹ️ startuje od wartości bazowych
   // try/finally: nawet jeśli w trakcie walki pojawi się błąd, gra zawsze odblokuje klikanie (busy = false)
   try {
     render();
