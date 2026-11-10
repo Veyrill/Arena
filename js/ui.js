@@ -4070,9 +4070,9 @@ render();
 // Klik w kartę = zaznaczenie, Accept = zapis klasy (me.cls) i zamknięcie okna. Do czasu Accept okno wraca po odświeżeniu strony.
 const clsIco = f => `<img src="${ASSETS_DIR}/hero/${f}.png" alt="" draggable="false" style="display:block;width:128px;height:128px;image-rendering:pixelated">`;   // sprite klasy 32×32 → 128 px
 const CLASSES = [
-  { k: 'warlock', n: 'Warlock', ico: clsIco('hero_warlock'), d: 'Curses and shadow magic. Weakens enemies over time.' },
-  { k: 'mage', n: 'Mage', ico: clsIco('hero_mage'), d: 'Elemental spells: fire, frost and lightning.' },
-  { k: 'warrior', n: 'Warrior', ico: clsIco('hero_warrior'), d: 'Steel and fury. Strong attacks fueled by Rage.' }
+  { k: 'warlock', n: 'Warlock', ico: clsIco('hero_warlock'), d: 'Curses and shadow magic. Weakens enemies over time.', lock: true },   // lock: klasa jeszcze niedostępna (Coming soon) – gra skupia się na Warriorze
+  { k: 'warrior', n: 'Warrior', ico: clsIco('hero_warrior'), d: 'Steel and fury. Strong attacks fueled by Rage.' },   // w środku, zaznaczony od razu
+  { k: 'mage', n: 'Mage', ico: clsIco('hero_mage'), d: 'Elemental spells: fire, frost and lightning.', lock: true }
 ];
 function showClassPick() {
   document.head.insertAdjacentHTML('beforeend', '<style>'
@@ -4084,15 +4084,15 @@ function showClassPick() {
     + '.clsc:not(.lock):hover{transform:translateY(-3px)}'
     + '.clsc.on{border-color:var(--ac);box-shadow:0 0 0 3px var(--ac),0 0 18px var(--ac)}'
     + '.clsc b{font-size:18px}.clsc small{color:var(--mut);font-size:12px;line-height:1.35}'
-    + '.clsc.lock{cursor:not-allowed}.clsc.lock>*{opacity:.45}.clsc.lock>img{opacity:.75}'   // zablokowana klasa: postać w kolorach (podgląd), lekko przygaszona; tekst wyblakły
-    + '.clsc .clk{position:absolute;top:8px;right:8px;font-size:11px;font-weight:700;color:var(--mut);filter:none;opacity:1}'
+    + '.clsc.lock{cursor:not-allowed;transform:scale(.92)}.clsc.lock>*{opacity:.45}.clsc.lock>img{opacity:.6;filter:grayscale(1)}'   // zablokowana klasa: szara, mniejsza, przygaszona
+    + '.clsc .clk{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-8deg);white-space:nowrap;padding:4px 10px;font-size:12px;font-weight:800;letter-spacing:.1em;color:#fff;background:#2a2430;border:2px solid #111;border-radius:3px;box-shadow:0 2px 0 rgba(0,0,0,.4);opacity:1}'   // pieczątka COMING SOON na środku karty
     + '.clsname{display:flex;flex-direction:column;align-items:center;gap:6px;margin:0 0 18px}.clsname label{font-size:12px;font-weight:700;letter-spacing:.08em;color:var(--mut);text-transform:uppercase}'
     + '#clsnm{width:260px;padding:8px 12px;font:700 18px inherit;font-family:inherit;text-align:center;color:var(--tx);background:var(--bg);border:3px solid #111;border-radius:8px;outline:none}#clsnm:focus{border-color:#111;box-shadow:none}'
     + '#clsok{font-size:16px;font-weight:700;padding:6px 26px;background:var(--ac);color:var(--on-ac);border-color:var(--ac)}#clsok:disabled{opacity:.4;cursor:default}'
     + '</style>');
   const ov = document.createElement('div'); ov.id = 'clsov';
   ov.innerHTML = `<div id="clsbox"><h2>CHOOSE YOUR CLASS</h2><small>This choice shapes your abilities.</small><div class="clsrow">`
-    + CLASSES.map(c => `<div class="clsc${c.lock ? ' lock' : ''}" data-cls="${c.k}">${c.ico}<b>${c.n}</b><small>${c.d}</small>${c.lock ? '<span class="clk">Soon</span>' : ''}</div>`).join('')
+    + CLASSES.map(c => `<div class="clsc${c.lock ? ' lock' : ''}" data-cls="${c.k}">${c.ico}<b>${c.n}</b><small>${c.d}</small>${c.lock ? '<span class="clk">COMING SOON</span>' : ''}</div>`).join('')
     + `</div><div class="clsname"><label for="clsnm">Character name</label><input id="clsnm" maxlength="16" autocomplete="off" spellcheck="false" placeholder="Enter a name"></div><button id="clsok" disabled>Accept</button></div>`;
   document.body.appendChild(ov);
   // NAZWA POSTACI: 2–16 znaków (litery, cyfry, spacja, - i _); Accept aktywny, gdy wybrana klasa i poprawna nazwa
@@ -4103,6 +4103,7 @@ function showClassPick() {
   ov.querySelectorAll('.clsc:not(.lock)').forEach(el => el.onclick = () => {
     pick = el.dataset.cls; ov.querySelectorAll('.clsc').forEach(x => x.classList.toggle('on', x === el)); upd(); nm.focus();
   });
+  { const only = CLASSES.filter(c => !c.lock); if (only.length === 1) { pick = only[0].k; ov.querySelector(`.clsc[data-cls="${pick}"]`).classList.add('on'); } }   // jedyna dostępna klasa – zaznaczona od razu, wystarczy wpisać imię
   nm.oninput = () => { const c = clean(nm.value); if (c !== nm.value) nm.value = c; upd(); };
   nm.onkeydown = e => { e.stopPropagation(); if (e.key === 'Enter' && !$('clsok').disabled) $('clsok').click(); };   // klawisze nie trafiają do skrótów gry
   $('clsok').onclick = () => { if (!pick || !okName()) return; me.cls = pick; me.name = nm.value.trim(); delete me.clsPick; saveGame(); ov.remove(); render(); };
