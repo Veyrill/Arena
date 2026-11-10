@@ -1313,6 +1313,8 @@ function renderAbilTab() {
   el.innerHTML = `<div class="abgrid abmain">${all.filter(e => !e[1].ult).map(card).join('')}</div>`
     + (!all.some(e => e[1].ult) ? '' : `<div class="abultg"><span class="abultl">ULTIMATE · ${ult ? 'your build: ' + ABILS[ult].n : 'choose one'}</span><div class="abgrid">${all.filter(e => e[1].ult).map(card).join('')}</div></div>`);   // sekcja ULTIMATE tylko, gdy klasa ma ulty
 }
+// czy jest jakaś umiejętność Twojej klasy do wytrenowania: wymagany poziom osiągnięty, jeszcze nie wytrenowana; ultimate – tylko dopóki nie wybrano buildu
+const abTrainable = () => Object.keys(ABILS).some(id => myAb(id) && me.lvl >= ABILS[id].lvl && !(me.abils && me.abils[id]) && !(ABILS[id].ult && ultOf()));
 const ultOf = () => Object.keys(ABILS).find(k => ABILS[k].ult && myAb(k) && me.abils && me.abils[k]);   // wybrany ultimate (build) albo undefined
 window.learnAbil = id => {
   const a = ABILS[id]; if (!a || !myAb(id) || busy || me.lvl < a.lvl || (me.abils && me.abils[id])) return;
@@ -1357,7 +1359,7 @@ function setDps(by, turns) {
     + `<span class="dpv">${fmtN(v / turns)} (${fmtN(v)}) ${Math.round(v / tot * 100)}%</span></div></div>`).join('');
   // PANEL DPS (zamiast dymka nad kafelkiem): szczegóły w karcie po prawej, widocznej w trakcie walki
   { const ps = $('body-dps-side'); if (ps) ps.innerHTML = `<div class="dpst">${rows || '<small>No damage yet</small>'}`
-    + `<div class="dptot">Total: ${turns ? fmtN(tot / turns) : 0} / t (${fmtN(tot)}) · ${turns || 0} turn${turns === 1 ? '' : 's'}</div></div>`; }
+    + `</div>`; }   // bez podpisu Total
 }
 // RAGE (pasek pod zdrowiem bohatera): 0–100, na start walki 0; każdy zwykły atak gracza +RAGE_HIT (na razie nic nie zużywa rage)
 const RAGE_MAX = 100, RAGE_HIT = 8;
@@ -1879,6 +1881,7 @@ function render() {
     const inRaid = view === 'dun' && dloc != null && curDun().raid;   // otwarty raid = podświetlona zakładka Raids
     btn.classList.toggle('on', inRaid ? btn.dataset.v === 'raid' : btn.dataset.v === view);
     if (btn.dataset.v === 'upg') btn.classList.toggle('new', spDot && me.sp > 0);
+    if (btn.dataset.v === 'abil') btn.classList.toggle('new', abTrainable());   // ABILITIES: czerwona kropka, gdy jest umiejętność do wytrenowania (znika po Train)
     if (btn.dataset.v === 'fish') btn.classList.toggle('new', fishSpDot());   // Fishing Skill Points do wydania
     btn.disabled = busy || (fishing.active && btn.dataset.v === 'exp');
   });
