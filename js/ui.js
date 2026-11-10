@@ -1437,8 +1437,8 @@ window.planReset = () => { me.plan = null; abPlanSel = null; planGet(); saveGame
 function renderPlanTab() {
   const pl = planGet();
   if (!pl.length) return `<small style="color:var(--mut)">Train an ability first – then set the order in which Skip uses it.</small>`;
-  const card = (s, i) => { const a = abEff(s.id), u = a.ult;
-    return `<div class="bpc${u ? ' u' : ''}${abPlanSel === i ? ' sel' : ''}${s.off ? ' off' : ''}" draggable="true" data-pi="${i}" onclick="window.planOpen(${i})">`
+  const card = (s, i) => { const a = abEff(s.id);
+    return `<div class="bpc${abPlanSel === i ? ' sel' : ''}${s.off ? ' off' : ''}" draggable="true" data-pi="${i}" onclick="window.planOpen(${i})">`
       + `<span class="bpn">${i + 1}</span><span data-tip="${abTip(s.id).replace(/"/g, '&quot;')}">${abIco(a, 'bpi')}</span><b>${a.n}</b><span class="bpch">${planChip(s)}</span></div><span class="bpa">›</span>`; };
   const atk = `<div class="bpc atk"><span class="bpn">∞</span><span class="bpi img"><img src="${ASSETS_DIR}/weapon/weapon_sword.png" alt=""></span><b>Attack</b><span class="bpch">Otherwise</span></div>`;
   let pop = '';
@@ -1448,14 +1448,13 @@ function renderPlanTab() {
     const opt = k => { if (!planCondOk(s.id, k)) return ''; const d = PLAN_CONDS[k], o = c[k] || {}, val = o.v !== undefined ? o.v : d.v;
       return `<label class="bpo"><input type="checkbox"${o.on ? ' checked' : ''} onchange="window.planSet(${i},'${k}','on',this.checked)">${s.id === 'fury' && k === 'buffOff' ? 'Buff not active' : d.t}`
         + (d.u !== undefined ? ` <input type="number" class="bpv" min="0" max="${k === 'rage' ? RAGE_MAX : 100}" step="5" value="${val}" onclick="event.stopPropagation()" onchange="window.planSet(${i},'${k}','v',this.value)">${d.u}` : '') + `</label>`; };
-    pop = `<div class="bpop${a.ult ? ' u' : ''}"><div class="bph">${a.n}${a.ult ? ' (Ultimate, once per fight)' : ''} – use only when:</div>`
+    pop = `<div class="bpop"><div class="bph">${a.n}${a.ult ? ' (Ultimate, once per fight)' : ''} – use only when:</div>`
       + Object.keys(PLAN_CONDS).map(opt).join('')
       + (a.ult ? `<label class="bpo bpsave"><input type="checkbox"${s.save ? ' checked' : ''} onchange="window.planSet(${i},'save','',this.checked)"><span><b>Save Rage for Ultimate</b> <i>– other abilities keep ${a.cost} Rage until it is used</i></span></label>` : '')
       + `<div class="bpf"><label class="bpo"><input type="checkbox"${s.off ? ' checked' : ''} onchange="window.planSet(${i},'off','',this.checked)">Don't use on Skip</label>`
       + `<span class="bpmv"><button onclick="window.planMove(${i},-1)"${i ? '' : ' disabled'}>◀</button><button onclick="window.planMove(${i},1)"${i < pl.length - 1 ? '' : ' disabled'}>▶</button></span></div></div>`;
   }
-  return `<div class="bphint">Used when you press <b>Skip</b>. Each turn the cards are checked from left to right – the first ability that is ready and meets its conditions is used. Click a card to set conditions, drag to change the order.</div>`
-    + `<div class="bpflow">${pl.map(card).join('')}${atk}</div>${pop}<button class="bpreset" onclick="window.planReset()">Reset plan</button>`;
+  return `<div class="bpflow">${pl.map(card).join('')}${atk}</div>${pop}<button class="bpreset" onclick="window.planReset()">Reset plan</button>`;
 }
 // przeciąganie kart planu (zmiana kolejności)
 function planDnD(el) {
