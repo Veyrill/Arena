@@ -1446,13 +1446,13 @@ function renderPlanTab() {
   if (s) {
     const a = abEff(s.id), c = s.c || {}, i = abPlanSel;
     const opt = k => { if (!planCondOk(s.id, k)) return ''; const d = PLAN_CONDS[k], o = c[k] || {}, val = o.v !== undefined ? o.v : d.v;
-      return `<label class="bpo"><input type="checkbox"${o.on ? ' checked' : ''} onchange="window.planSet(${i},'${k}','on',this.checked)">${s.id === 'fury' && k === 'buffOff' ? 'Buff not active' : d.t}`
-        + (d.u !== undefined ? ` <input type="number" class="bpv" min="0" max="${k === 'rage' ? RAGE_MAX : 100}" step="5" value="${val}" onclick="event.stopPropagation()" onchange="window.planSet(${i},'${k}','v',this.value)">${d.u}` : '') + `</label>`; };
-    pop = `<div class="bpop"><div class="bph">${a.n}${a.ult ? ' (Ultimate, once per fight)' : ''} – use only when:</div>`
-      + Object.keys(PLAN_CONDS).map(opt).join('')
-      + (a.ult ? `<label class="bpo bpsave"><input type="checkbox"${s.save ? ' checked' : ''} onchange="window.planSet(${i},'save','',this.checked)"><span><b>Save Rage for Ultimate</b> <i>– other abilities keep ${a.cost} Rage until it is used</i></span></label>` : '')
-      + `<div class="bpf"><label class="bpo"><input type="checkbox"${s.off ? ' checked' : ''} onchange="window.planSet(${i},'off','',this.checked)">Don't use on Skip</label>`
-      + `<span class="bpmv"><button onclick="window.planMove(${i},-1)"${i ? '' : ' disabled'}>◀</button><button onclick="window.planMove(${i},1)"${i < pl.length - 1 ? '' : ' disabled'}>▶</button></span></div></div>`;
+      return `<label class="bpo${o.on ? ' on' : ''}"><input type="checkbox"${o.on ? ' checked' : ''} onchange="window.planSet(${i},'${k}','on',this.checked)"><span class="bpl">${s.id === 'fury' && k === 'buffOff' ? 'Buff not active' : d.t}</span>`
+        + (d.u !== undefined ? `<span class="bpvw"><input type="number" class="bpv" min="0" max="${k === 'rage' ? RAGE_MAX : 100}" step="5" value="${val}" onclick="event.stopPropagation()" onchange="window.planSet(${i},'${k}','v',this.value)">${d.u}</span>` : '') + `</label>`; };
+    pop = `<div class="bpop"><div class="bph">${abIco(a, 'bphi')}<span><b>${a.n}</b><small>${a.ult ? 'Ultimate · once per fight · ' : ''}use only when:</small></span></div>`
+      + `<div class="bplist">${Object.keys(PLAN_CONDS).map(opt).join('')}</div>`
+      + (a.ult ? `<label class="bpo bpsave${s.save ? ' on' : ''}"><input type="checkbox"${s.save ? ' checked' : ''} onchange="window.planSet(${i},'save','',this.checked)"><span class="bpl"><b>Save Rage for Ultimate</b><i>Other abilities keep ${a.cost} Rage until it is used</i></span></label>` : '')
+      + `<div class="bpf"><label class="bpo${s.off ? ' on' : ''}"><input type="checkbox"${s.off ? ' checked' : ''} onchange="window.planSet(${i},'off','',this.checked)"><span class="bpl">Don't use on Skip</span></label>`
+      + `<span class="bpmv"><button onclick="window.planMove(${i},-1)"${i ? '' : ' disabled'} title="Move left">◀</button><button onclick="window.planMove(${i},1)"${i < pl.length - 1 ? '' : ' disabled'} title="Move right">▶</button></span></div></div>`;
   }
   return `<div class="bpflow">${pl.map(card).join('')}${atk}</div>${pop}<button class="bpreset" onclick="window.planReset()">Reset plan</button>`;
 }
