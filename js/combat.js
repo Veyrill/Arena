@@ -24,7 +24,7 @@ export function hit(att, def, A, D, fig, sayCallback) {
 
   if (fig) {
     fig.classList.add(fig.id === 'fp' ? 'hit' : 'hit2');
-    setTimeout(() => fig.classList.remove('hit', 'hit2'), 234);   // wyskok do ataku o 30% wolniej (było 180 ms)
+    setTimeout(() => fig.classList.remove('hit', 'hit2'), 234 * (window.FIGHT_TEMPO || 1));   // Auto: szybciej (tempo z ui.js)   // wyskok do ataku o 30% wolniej (było 180 ms)
   }
   // "You deal" / "Wolf deals" – poprawna forma czasownika po angielsku
   const tag = A.forceTag ? ` – ${A.forceTag}` : c ? ' – CRITICAL HIT!' : '';

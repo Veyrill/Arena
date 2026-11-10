@@ -93,7 +93,7 @@ button.drow:hover{border-color:var(--dc)}
 .tile.lock{border:1px dashed var(--bd);opacity:.45;background:transparent}
 .row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .arena{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;text-align:center}
-.fig{font-size:40px;line-height:1.1;transition:transform .2s;margin-bottom:5px}.fig.hit{transform:translateX(14px)}.fig.hit2{transform:translateX(-14px)}
+.fig{font-size:40px;line-height:1.1;transition:transform calc(.2s * var(--ftempo, 1));margin-bottom:5px}.fig.hit{transform:translateX(14px)}.fig.hit2{transform:translateX(-14px)}
 .bar{height:10px;background:var(--bd);border-radius:5px;overflow:hidden;margin-top:3px}.bar i{display:block;height:100%;background:var(--hp);transition:width .3s}
 .info{display:flex;flex-wrap:wrap;gap:2px 12px;font-size:12px;color:var(--mut);margin:8px 0}.info b{color:var(--tx)}.info>div{flex:1 1 calc(50% - 6px)}.info>div>span{display:flex;justify-content:space-between;border-bottom:1px solid var(--bd)}
 /* łup z wyprawy nad przyciskiem Collect (po wygranej) */

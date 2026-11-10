@@ -3000,10 +3000,11 @@ function* fightGen(mob, io) {
           if (skipFight) { io.act = planPick(planFree > 0); if (ABILS[io.act] && ABILS[io.act].free) planFree++; }   // SKIP: ruch wybiera Battle Plan
           const fa = io.act; if (!(fa && ABILS[fa] && ABILS[fa].free)) break;
           io.act = 'atk';
-          if (abOk(fa)) { const a = abEff(fa); if (UI) abUse(fa); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; furyP = a.buffD || 0; furyDex = a.dexUp || 0; furyKey = { 'Battlecry': 'cry', 'Relentless Fury': 'rfury' }[a.n] || 'fury'; furyCrit(true); pbuf[furyK()] = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b>${a.cost ? ` (−${a.cost} Rage)` : ''}`, 'crit'); yield 200; }
+          if (abOk(fa)) { yield { beat: 0.5 }; const a = abEff(fa); if (UI) abUse(fa); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; furyP = a.buffD || 0; furyDex = a.dexUp || 0; furyKey = { 'Battlecry': 'cry', 'Relentless Fury': 'rfury' }[a.n] || 'fury'; furyCrit(true); pbuf[furyK()] = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b>${a.cost ? ` (−${a.cost} Rage)` : ''}`, 'crit'); }
         }
-      } else yield 325;   // WALKA RĘCZNA: w Twojej turze walka czeka na atak (slot 1 albo klawisz 1)
+      } else yield 'beat';   // TAKT: tura wroga zaczyna się równy takt po Twoim ruchu (WALKA RĘCZNA: w Twojej turze walka czeka na atak – slot 1 / klawisz 1)
       if (turn == 0) {
+        yield 'beat';   // TAKT: Twój ruch – równy odstęp od poprzedniego (także gdy klikasz szybko)
         // Death Sentence: wróg poniżej 20% HP – każdy Twój cios ma szansę go zabić (6.67% za rangę, 20% przy 3/3)
         const doom = U.doom && mh < M.hp * 0.2;
         if (doom && !doomSaid) { doomSaid = true; deb.doom = { tip: `${+U.doom.toFixed(2)}% chance to kill on hit` }; curses(); }
@@ -3082,7 +3083,7 @@ function* fightGen(mob, io) {
           if (bolt >= EN) {
             // KOLEJNOŚĆ: najpierw zwykły cios (liczba + pasek HP wroga), lekka pauza, dopiero potem piorun
             upd(); pbuf.bolt = { st: EN, tip: boltTip() }; renderPBuffs(pbuf);
-            yield 450;   // gracz widzi skutek zwykłego ataku i pełne stosy, zanim uderzy piorun
+            yield { beat: 0.8 };   // TAKT (krótszy): piorun jako osobne zdarzenie po zwykłym ciosie
             // Overcharge: każdy kolejny piorun o U.boltGrow% mocniejszy od POPRZEDNIEGO (mnoży się: przy 1/3 – ×1, ×1.2, ×1.44 …)
             const bd = Math.max(1, Math.round((p.min + p.max) / 2 * U.bolt / 100 * (1 + (U.boltGrow || 0) / 100) ** boltN)); boltN++;
             if (UI) { boltFx(fm); yield 55; }   // animacja pioruna (2× szybsza) – obrażenia w chwili trafienia
@@ -3099,7 +3100,7 @@ function* fightGen(mob, io) {
           if (fire >= EN) {
             // KOLEJNOŚĆ: zwykły cios (krytyk) → lekka pauza → wybuch Fire Energy (po piorunie, jeśli oba w tej samej turze)
             upd(); pbuf.fire = { st: EN, tip: fireTip() }; renderPBuffs(pbuf);
-            yield 450;
+            yield { beat: 0.8 };   // TAKT (krótszy): wybuch Fire Energy jako osobne zdarzenie
             const fd = Math.max(1, Math.round(M.hp * U.fire / 100));
             mh -= dr('Fire Energy', fd); if (UI) { fireFx(fm); dmgPop(fm, fd, false, 'fire'); }
             say(`<b>Fire Energy detonates</b> on ${mob.n} for <b>${fd}</b> damage!`, 'crit');
@@ -3124,6 +3125,7 @@ function* fightGen(mob, io) {
         // KONIEC TWOJEJ TURY: Battle Fury −1 tura
         if (furyT > 0) { furyT--; if (furyT) pbuf[furyK()] = { st: furyT, tip: furyTip() }; else { delete pbuf[furyK()]; furyCrit(false); } renderPBuffs(pbuf); }   // koniec buffa: Dexterity (crit) wraca
       } else {
+        let dot = false;   // TAKT: było krwawienie / podpalenie → cios wroga w osobnym (krótszym) takcie
         // krwawienie zadaje obrażenia na początku tury wroga: 3% maks. HP za każdy stos
         // Burning (Lingering Flames): 1% maks. HP wroga na początku jego tury, 5 tur
         if (burnT > 0) {
@@ -3132,22 +3134,23 @@ function* fightGen(mob, io) {
           if (burnT) deb.burn = { st: burnT, tip: `Loses 1% of max health per turn<br>Turns left: ${burnT}` }; else delete deb.burn;
           curses(); upd();
           if (mh <= 0) break;
-          if (!(stunT > 0)) yield 280;   // liczba Burning widoczna, zanim wróg zaatakuje (ogłuszony nie atakuje – bez pauzy)
+          dot = true;
         }
         if (bleedT > 0) {
           const bd = Math.max(1, Math.round(M.hp * 0.03 * bleed));
-          mh -= dr('Bleed', bd); bleedT--; if (!bleedT) bleed = 0; if (UI) dmgPop(fm, bd, false, 'bleed');
+          dot = true; mh -= dr('Bleed', bd); bleedT--; if (!bleedT) bleed = 0; if (UI) dmgPop(fm, bd, false, 'bleed');
           if (bleed) deb.bleed = bleedInfo(); else delete deb.bleed;   // krwawienie minęło – ikona znika
           renderDebuffs(deb); upd();
           if (mh <= 0) break;
         }
         // Skullsplitter: krwawienie (stała kwota co turę wroga)
         if (rendT > 0) {
-          mh -= dr('Deep Wound', rendD); rendT--; if (UI) dmgPop(fm, rendD, false, 'bleed');
+          dot = true; mh -= dr('Deep Wound', rendD); rendT--; if (UI) dmgPop(fm, rendD, false, 'bleed');
           if (rendT) deb.rend = { st: rendT, tip: `Loses ${rendD} health per turn<br>Turns left: ${rendT}` }; else delete deb.rend;
           renderDebuffs(deb); upd();
           if (mh <= 0) break;
         }
+        if (dot && !(stunT > 0)) yield { beat: 0.6 };   // TAKT: najpierw obrażenia z efektów, potem cios wroga
         // Earthshaker: ogłuszony wróg nie atakuje (po krwawieniu / podpaleniu), tura wraca do Ciebie
         if (stunT > 0) { stunT--; if (stunT) deb.stun = { st: stunT, tip: `Loses its turn<br>Turns left: ${stunT}` }; else delete deb.stun; renderDebuffs(deb); say(`${mob.n} is stunned and loses its turn.`, 'miss'); turn ^= 1; upd(); continue; }   // bez pauzy – od razu Twój kolejny ruch (kilka ataków z rzędu)
         // Crippling Strike: wróg zadaje cripP% mniej obrażeń przez cripT swoich ataków
@@ -3174,7 +3177,7 @@ function* fightGen(mob, io) {
           if (water >= EN) {
             // KOLEJNOŚĆ: atak wroga (liczba + pasek HP) → lekka pauza → leczenie
             upd(); pbuf.water = { st: EN, tip: waterTip() }; renderPBuffs(pbuf);
-            yield 450;
+            yield { beat: 0.8 };   // TAKT (krótszy): leczenie Water Energy jako osobne zdarzenie
             const hv = Math.max(0, Math.min(p.hp - ph, Math.max(1, Math.round(p.hp * U.water / 100))));
             if (UI) { healFx(fp); dmgPop(fp, hv, false, 'heal'); }
             // pasek HP i liczba wypełniają się stopniowo (8 kroków, ~0.3 s) – jak przy Endure; symulacja od razu
@@ -3307,7 +3310,11 @@ const mobIco = (m, px) => MOB_MISS.has(mobImg(m))
 // AUTO ▶▶ (przycisk #go): przed walką albo w jej trakcie – gra sama wybiera ruchy (Battle Plan), z animacjami i logiem, o 30% szybciej
 // paski HP pokazują wynik końcowy (przegrany 0 HP, zwycięzca – pozostałe HP), potem normalnie nagrody / porażka
 let fightOn = false, skipFight = false;   // skipFight = tryb auto po kliknięciu Skip
-const AUTO_SPEED = 0.7;   // SKIP: walka toczy się sama o 30% szybciej (pauzy ×0.7)
+const AUTO_SPEED = 0.7;
+// TAKT: odstęp między zdarzeniami walki (ms, ×FIGHT_SLOW; w Auto ×AUTO_SPEED) – ok. 0,47 s ręcznie, 0,33 s w Auto
+const FIGHT_TAKT = 360;
+// tempo animacji wyskoku postaci (combat.js) – w Auto szybciej, żeby ruchy na siebie nie nachodziły
+const fightTempo = t => { if (window.FIGHT_TEMPO !== t) { window.FIGHT_TEMPO = t; document.documentElement.style.setProperty('--ftempo', t); } };   // SKIP: walka toczy się sama o 30% szybciej (pauzy ×0.7)
 // WYPRAWA – wynik ostatniej walki: { win, loot: [przedmioty], had }. Póki jest ustawiony, nad przyciskiem widać łup,
 // a przycisk to „Collect” (wygrana) / „Back” (przegrana): kliknięcie odznacza przeciwnika → wraca wybór przeciwnika.
 // Łup trafia do plecaka dopiero po Collect (albo przy każdym innym wyjściu z ekranu wyniku: Back, inny przeciwnik, inna zakładka).
@@ -3334,7 +3341,13 @@ $('go').onclick = async ev => {
     render();
     const io = { sim: false, manual: true }; fightIo = io;
     { const sb = $('skillbar'); if (sb) sb.classList.add('fighting'); }   // w trakcie walki slot ataku jest szary poza Twoją turą   // manual: atak gracza dopiero po kliknięciu slotu 1 / klawisza 1 (symulacja szans – bez czekania)
-    for (const ms of fightGen(mob, io)) { if (ms === 'wait') { if (!skipFight) await waitAttack(); else await slp(325 * FIGHT_SLOW * AUTO_SPEED); continue; } await slp(ms * FIGHT_SLOW * (skipFight ? AUTO_SPEED : 1)); }   // pauzy między ciosami; po Skip – gra sama „klika” (Battle Plan), pauzy ×0.7
+    let lastBeat = 0;   // TAKTY: każde zdarzenie walki (Twój ruch, ruch wroga, efekt) startuje równy takt po poprzednim
+    for (const ms of fightGen(mob, io)) {
+      const tempo = skipFight ? AUTO_SPEED : 1; fightTempo(tempo);
+      if (ms === 'wait') { if (!skipFight) await waitAttack(); continue; }   // Auto: bez osobnej pauzy – odstęp robi takt
+      if (ms === 'beat' || (ms && ms.beat)) { const t = lastBeat + FIGHT_TAKT * (ms.beat || 1) * FIGHT_SLOW * tempo - performance.now(); if (t > 0) await slp(t); lastBeat = performance.now(); continue; }
+      await slp(ms * FIGHT_SLOW * tempo);   // krótkie pauzy wewnątrz zdarzenia (Bladestorm, animacje leczenia)
+    }   // pauzy między ciosami; po Skip – gra sama „klika” (Battle Plan), pauzy ×0.7
     const { ph } = io.res, upd = io.upd;
     fightOn = false;
     const loot = [];   // łup tej walki (pokazywany pod przyciskiem Collect na wyprawie)
@@ -3398,7 +3411,7 @@ $('go').onclick = async ev => {
   } finally {
     fightIo = null; refreshAb();   // ABILITIES: po walce sloty znów normalne
     { const sb = $('skillbar'); if (sb) sb.classList.remove('fighting'); } atkQueued = false;
-    fightOn = false; skipFight = false;
+    fightOn = false; skipFight = false; fightTempo(1);
     setBusy(false); setCdEnd(Date.now() + 1000); render();
   }
 };
