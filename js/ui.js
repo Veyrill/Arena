@@ -1110,7 +1110,7 @@ const isBoss = m => ALL_LOCS.some(l => l.mobs[l.mobs.length - 1] === m);
 // IKONY DEBUFFÓW w prawym górnym rogu okna walki (zamiast wpisów w logu). Curse of Frailty nie ma ikony.
 // st = stosy (liczba w prawym dolnym rogu, tylko dla debuffów, które się kumulują), tip = opis w dymku
 const DEBUFFS = {
-  fury: ['skill_battle_fury', 'Battle Fury', '📯'], cry: ['skill_battle_fury', 'Battlecry', '📯'], rfury: ['skill_battle_fury', 'Relentless Fury', '📯'],
+  fury: ['skill_battle_fury', 'Battle Fury', '📯'], cry: ['skill_battlecry', 'Battlecry', '📯'], rfury: ['skill_relentless_fury', 'Relentless Fury', '📯'],
   // mdeath / crip: morphy Pommel Strike (Marking Strike / Crippling Strike)
   stun: ['debuff_stun', 'Stunned', '💫'], mdeath: ['debuff_mark_of_death', 'Mark of Death', '🎯'], crip: ['debuff_crippled', 'Crippled', '🩼'], rend: ['debuff_deep_wound', 'Deep Wound', '🩸'],   // Earthshaker / Skullsplitter (brak pliku → emoji)   // buff gracza (brak pliku → 📯)
   sunder: ['curse_sunder', 'Curse of Frailty'], exhaust: ['curse_cripple', 'Curse of Withering'], expose: ['curse_exposed', 'Exposed Weakness'], mark: ['curse_shadow_mark', 'Curse of the Void'], agony: ['curse_agony', 'Torment'], warcry: ['skill_war_cry', 'War Cry', '📯'], rage: ['skill_rage_within', 'Rage Within', '😤'], fervor: ['skill_battle_fervor', 'Battle Fervor', '🔥'],
@@ -1206,23 +1206,23 @@ const ABILS = {
   overhead: { n: 'Overhead Blow', ico: '💥', img: 'ab_overhead', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 10, 20, 50, 75], lvC: [0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
     // MORPH (po 5 poziomie, wybór na stałe): zastępuje umiejętność – nazwa, opis, mnożnik; heal = % zadanych obrażeń jako leczenie, critUp = % wyższa szansa i obrażenia krytyka
     morph: {
-      siphon: { n: 'Siphoning Strike', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' },
-      cruel: { n: 'Cruel Blow', mul: 2.5, critUp: 20, d: 'Strike for 250% weapon damage. Its critical hit chance and critical damage are 20% higher.' }
+      siphon: { n: 'Siphoning Strike', img: 'ab_overhead_siphon', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' },
+      cruel: { n: 'Cruel Blow', img: 'ab_overhead_cruel', mul: 2.5, critUp: 20, d: 'Strike for 250% weapon damage. Its critical hit chance and critical damage are 20% higher.' }
     } },
   // lvG = zmiana generowanego Rage na poziomie 1–5 (Pommel Strike: 25 → 30 na 5 poziomie); lvAdd = bonus lvB dodawany do % obrażeń broni (60% → 80 / 100 / 120 / 160%), bez lvAdd – mnożony
   pommel: { n: 'Pommel Strike', ico: '🗡️', img: 'ab_pommel', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 20, 40, 60, 100], lvAdd: true, lvG: [0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
     // markD = Mark of Death na wrogu (Twój następny cios +markD%), crip = wróg zadaje crip% mniej obrażeń przez cripT swoich tur
     morph: {
-      mark: { n: 'Marking Strike', markD: 20, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Marks the enemy with Mark of Death: your next hit against it deals 20% more damage.' },
-      cripple: { n: 'Crippling Strike', crip: 10, cripT: 3, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Cripples the enemy: it deals 10% less damage for 3 turns.' }
+      mark: { n: 'Marking Strike', img: 'ab_pommel_mark', markD: 20, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Marks the enemy with Mark of Death: your next hit against it deals 20% more damage.' },
+      cripple: { n: 'Crippling Strike', img: 'ab_pommel_cripple', crip: 10, cripT: 3, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Cripples the enemy: it deals 10% less damage for 3 turns.' }
     } },
   // buffD = % obrażeń z buffa (Battle Fury: 10% → 15 / 25 / 40 / 60%), lvF = dodatek do buffD na poziomie 1–5, lvT = dodatkowe tury buffa (6 tur na 5 poziomie)
   fury: { n: 'Battle Fury', ico: '📯', img: 'ab_fury', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 5, 15, 30, 50], lvT: [0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
     // dexUp = % wyższa Dexterity na czas buffa (szansa na krytyk liczona od podniesionej Dexterity)
     morph: {
-      cry: { n: 'Battlecry', dexUp: 20, d: 'Instant: does not end your turn. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' },
+      cry: { n: 'Battlecry', img: 'ab_fury_cry', dexUp: 20, d: 'Instant: does not end your turn. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' },
       // Relentless Fury: bez kosztu Rage, za to odnowienie 6 tur (= czas buffa), żeby nie dało się go odpalać co turę za darmo
-      free: { n: 'Relentless Fury', cost: 0, cd: 6, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage and attacks generate 2 more Rage.' }
+      free: { n: 'Relentless Fury', img: 'ab_fury_free', cost: 0, cd: 6, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage and attacks generate 2 more Rage.' }
     } },
   // ULTIMATE (build): raz na walkę, gracz wybiera tylko jeden z trzech (me.abils – pierwszy wytrenowany blokuje pozostałe). hits = liczba ciosów, rend = krwawienie (% zadanych obrażeń przez rendT tur), stunT = ogłuszenie na N tur wroga
   storm: { n: 'Bladestorm', ico: '🌪️', cost: 60, mul: 1.2, hits: 3, cd: 0, lvl: 20, ult: true, d: 'Three strikes in a row, each for 120% weapon damage with its own chance to crit. Once per fight.' },
@@ -1231,8 +1231,8 @@ const ABILS = {
   // execP = próg HP wroga (%), poniżej którego można użyć; lvE = dodatek do progu na poziomie 1–5 (15% → 20% na 5 poziomie); obrażenia 200% → 220 / 240 / 280 / 350%
   decap: { n: 'Decapitate', ico: '💀', img: 'ab_decap', cost: 40, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 15, lvB: [0, 20, 40, 80, 150], lvAdd: true, lvE: [0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 15% health.',
     morph: {
-      reach: { n: "Executioner's Reach", execP: 30, d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 30% health.' },
-      verdict: { n: 'Final Verdict', mul: 4.5, d: 'A finishing blow for 450% weapon damage. Only when the enemy is below 20% health.' }
+      reach: { n: "Executioner's Reach", img: 'ab_decap_reach', execP: 30, d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 30% health.' },
+      verdict: { n: 'Final Verdict', img: 'ab_decap_verdict', mul: 4.5, d: 'A finishing blow for 450% weapon damage. Only when the enemy is below 20% health.' }
     } }
 };
 // KLASA: każda umiejętność należy do klasy (cls; brak = 'warrior'). Zakładka Abilities i pasek pokazują tylko umiejętności klasy gracza (me.cls).
@@ -1242,7 +1242,7 @@ const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = 
 // obrażenia umiejętności dla aktualnych statystyk: zakres obrażeń postaci × mnożnik (losowane w walce jak zwykły atak), np. "6–10"
 // POZIOM UMIEJĘTNOŚCI → efekt (na razie tylko Overhead Blow): kopia umiejętności z kosztem i mnożnikiem dla jej obecnego poziomu
 // mk = klucz morpha (domyślnie wybrany przez gracza: me.morph[id]); morph nadpisuje nazwę, opis i mnożnik (koszt zostaje z 5 poziomu)
-// IKONA UMIEJĘTNOŚCI: obrazek z assets/skills/abilities/<img>.png (brak pliku albo brak img → emoji ico); morph na razie dziedziczy ikonę bazową
+// IKONA UMIEJĘTNOŚCI: obrazek z assets/skills/abilities/<img>.png (brak pliku albo brak img → emoji ico); morph ma własną ikonę (przekolorowana bazowa + 1 cecha)
 const abIco = (a, cls) => a.img ? `<span class="${cls} img"><img src="${ASSETS_DIR}/skills/abilities/${a.img}.png" alt="" onerror="this.parentNode.classList.remove('img');this.outerHTML='${a.ico}'"></span>` : `<span class="${cls}">${a.ico}</span>`;
 const abEff = (id, mk = me.morph && me.morph[id]) => {
   const a = ABILS[id]; if (!a || !(a.lvB || a.lvC || a.lvG || a.lvF || a.lvT || a.lvE)) return a; const l = abLvl(id).l - 1;
