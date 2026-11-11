@@ -1206,8 +1206,8 @@ const ABILS = {
   overhead: { n: 'Overhead Blow', ico: '💥', img: 'ab_overhead', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 5, 10, 15, 20, 25, 40, 55, 65, 75], lvAdd: true, lvC: [0, 0, 0, 0, 0, 0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
     // MORPH (po 5 poziomie, wybór na stałe): zastępuje umiejętność – nazwa, opis, mnożnik; heal = % zadanych obrażeń jako leczenie, critUp = % wyższa szansa i obrażenia krytyka
     morph: {
-      siphon: { n: 'Siphoning Strike', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' },
-      cruel: { n: 'Cruel Blow', mul: 2.5, critUp: 20, d: 'Strike for 250% weapon damage. Its critical hit chance and critical damage are 20% higher.' }
+      siphon: { n: 'Siphoning Strike', img: 'ab_overhead_siphon', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' },
+      cruel: { n: 'Cruel Blow', img: 'ab_overhead_cruel', mul: 2.5, critUp: 20, d: 'Strike for 250% weapon damage. Its critical hit chance and critical damage are 20% higher.' }
     } },
   // lvG = zmiana generowanego Rage na poziomie 1–5 (Pommel Strike: 25 → 30 na 5 poziomie); lvAdd = bonus lvB dodawany do % obrażeń broni (60% → 80 / 100 / 120 / 160%), bez lvAdd – mnożony
   pommel: { n: 'Pommel Strike', ico: '🗡️', img: 'ab_pommel', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 10, 20, 25, 35, 45, 55, 65, 80, 100], lvAdd: true, lvG: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
