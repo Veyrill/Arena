@@ -1206,8 +1206,8 @@ const ABILS = {
   overhead: { n: 'Overhead Blow', ico: '💥', img: 'ab_overhead', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 5, 10, 15, 20, 25, 40, 55, 65, 75], lvAdd: true, lvC: [0, 0, 0, 0, 0, 0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
     // MORPH (po 5 poziomie, wybór na stałe): zastępuje umiejętność – nazwa, opis, mnożnik; heal = % zadanych obrażeń jako leczenie, critUp = % wyższa szansa i obrażenia krytyka
     morph: {
-      siphon: { n: 'Siphoning Strike', img: 'ab_overhead_siphon', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' },
-      cruel: { n: 'Cruel Blow', img: 'ab_overhead_cruel', mul: 2.5, critUp: 20, d: 'Strike for 250% weapon damage. Its critical hit chance and critical damage are 20% higher.' }
+      cruel: { n: 'Cruel Blow', img: 'ab_overhead_cruel', mul: 2.5, critUp: 20, d: 'Strike for 250% weapon damage. Its critical hit chance and critical damage are 20% higher.' },
+      siphon: { n: 'Siphoning Strike', img: 'ab_overhead_siphon', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' }
     } },
   // lvG = zmiana generowanego Rage na poziomie 1–5 (Pommel Strike: 25 → 30 na 5 poziomie); lvAdd = bonus lvB dodawany do % obrażeń broni (60% → 80 / 100 / 120 / 160%), bez lvAdd – mnożony
   pommel: { n: 'Pommel Strike', ico: '🗡️', img: 'ab_pommel', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 10, 20, 25, 35, 45, 55, 65, 80, 100], lvAdd: true, lvG: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
@@ -1231,8 +1231,8 @@ const ABILS = {
   // execP = próg HP wroga (%), poniżej którego można użyć; lvE = dodatek do progu na poziomie 1–5 (20% → 25% na 10 poziomie); obrażenia 200% → 220 / 240 / 280 / 350%
   decap: { n: 'Decapitate', ico: '💀', img: 'ab_decap', cost: 40, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 20, lvB: [0, 10, 20, 25, 35, 45, 60, 80, 115, 150], lvAdd: true, lvE: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 20% health.',
     morph: {
-      reach: { n: "Executioner's Reach", img: 'ab_decap_reach', execP: 30, d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 30% health.' },
-      verdict: { n: 'Final Verdict', img: 'ab_decap_verdict', mul: 4.5, d: 'A finishing blow for 450% weapon damage. Only when the enemy is below 20% health.' }
+      verdict: { n: 'Final Verdict', img: 'ab_decap_verdict', mul: 4.5, d: 'A finishing blow for 450% weapon damage. Only when the enemy is below 20% health.' },
+      reach: { n: "Executioner's Reach", img: 'ab_decap_reach', execP: 30, d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 30% health.' }
     } }
 };
 // KLASA: każda umiejętność należy do klasy (cls; brak = 'warrior'). Zakładka Abilities i pasek pokazują tylko umiejętności klasy gracza (me.cls).
