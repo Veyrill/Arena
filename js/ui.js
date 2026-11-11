@@ -1229,7 +1229,7 @@ const ABILS = {
   split: { n: 'Skullsplitter', ico: '🪓', img: 'ab_split', cost: 60, mul: 3, rend: 0.5, rendT: 10, cd: 0, lvl: 20, ult: true, d: 'A crushing blow for 300% weapon damage. The wound bleeds for 50% of the damage dealt over 10 turns. Once per fight.' },
   quake: { n: 'Earthshaker', ico: '🔨', img: 'ab_quake', cost: 60, mul: 1.5, stunT: 4, cd: 0, lvl: 20, ult: true, d: 'Smash the ground for 150% weapon damage and stun the enemy for 4 turns. Once per fight.' },
   // execP = próg HP wroga (%), poniżej którego można użyć; lvE = dodatek do progu na poziomie 1–5 (20% → 25% na 10 poziomie); obrażenia 200% → 220 / 240 / 280 / 350%
-  decap: { n: 'Decapitate', ico: '💀', img: 'ab_decap', cost: 40, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 20, lvB: [0, 10, 20, 25, 35, 45, 60, 80, 115, 150], lvAdd: true, lvE: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 20% health.',
+  decap: { n: 'Decapitate', ico: '💀', img: 'ab_decap', cost: 25, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 20, lvB: [0, 10, 20, 25, 35, 45, 60, 80, 115, 150], lvAdd: true, lvE: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 20% health.',
     morph: {
       verdict: { n: 'Final Verdict', img: 'ab_decap_verdict', mul: 4.5, d: 'A finishing blow for 450% weapon damage. Only when the enemy is below 20% health.' },
       reach: { n: "Executioner's Reach", img: 'ab_decap_reach', execP: 30, d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 30% health.' }
@@ -4026,7 +4026,7 @@ setInterval(() => {
   let ended = false;
   document.querySelectorAll('#body-dun .dcd').forEach(e => { const ms = dunCd(+e.dataset.cd); if (ms <= 0) ended = true; else e.textContent = fmtCd(ms); });
   const go = $('go'), m = curMob();
-  if (m && dsel >= 0) { const ms = dunCd(dsel); if (ms > 0) go.textContent = `Next fight in ${fmtCd(ms)}`; else if (go.textContent !== 'Fight!') ended = true; }
+  if (m && dsel >= 0) { const ms = dunCd(dsel); if (ms > 0) go.textContent = `Next fight in ${fmtCd(ms)}`; else if (go.textContent.startsWith('Next fight')) ended = true; }   // przerwa właśnie minęła – jednorazowe odświeżenie (wcześniej: co sekundę, bo przycisk ma teraz napis Auto)
   if (ended) render();
 }, 1000);
 
