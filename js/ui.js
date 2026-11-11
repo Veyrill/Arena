@@ -2437,6 +2437,7 @@ function render() {
   const actI = actsOn() ? (eact ?? 0) : 0, off = ACT_START[actI];
   const locTiles = `<div class="tiles">` + ACTS[actI].locs.map((l, j) => { const i = off + j; return !locOpen(i)
     ? (() => { const pl = ALL_LOCS[i - 1], pb = pl.mobs[pl.mobs.length - 1]; return `<div class="tile lock"><span class="ic">${l.e}</span><b>${l.n}</b><small>Defeat: ${pb.e} ${pb.n}</small></div>`; })()
+    : l.bg ? `<button class="tile biome" data-a="eloc" data-i="${i}"${fishing.active ? ' disabled' : ''} style="--biome:url(${ASSETS_DIR}/biomes/${l.bg}.png)"><b>${l.n}</b></button>`   // KAFELEK Z GRAFIKĄ KRAINY (data.js: bg) zamiast emoji
     : `<button class="tile" data-a="eloc" data-i="${i}"${fishing.active ? ' disabled' : ''}><span class="ic">${l.e}</span><b>${l.n}</b></button>`; }).join('') + `</div>`;
   // placeholdery Aktu 2 i 3: 5 zablokowanych lokacji
   const lockedLocs = `<div class="tiles">` + Array.from({ length: 5 }, () => `<div class="tile lock"><b>???</b><small>Coming soon</small></div>`).join('') + `</div>`;
@@ -2493,9 +2494,6 @@ function render() {
   // walka niżej: pas na górze okna walki zarezerwowany na ikony buffów (lewo) i debuffów (prawo) – 6 px odstępu + 36 px kafelek,
   // żeby nie zasłaniały postaci ani nazwy przeciwnika
   const arenaEl = $('fightbox').querySelector('.arena'); if (arenaEl) arenaEl.style.paddingTop = '38px';
-  // TŁO KRAINY: lokacja wyprawy z grafiką (data.js: bg) → krajobraz za postaciami (assets/biomes/<bg>.png); brak pliku / loch → zwykłe tło
-  if (arenaEl) { const L = view == 'exp' && eloc != null ? ALL_LOCS[eloc] : null, bg = L && L.bg;
-    arenaEl.classList.toggle('biome', !!bg); arenaEl.style.setProperty('--biome', bg ? `url(${ASSETS_DIR}/biomes/${bg}.png)` : 'none'); }
   if (m) {
     const fmEl = $('fm');
     if (fmEl) {
