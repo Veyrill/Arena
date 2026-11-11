@@ -1213,8 +1213,8 @@ const ABILS = {
   pommel: { n: 'Pommel Strike', ico: '🗡️', img: 'ab_pommel', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 10, 20, 25, 35, 45, 55, 65, 80, 100], lvAdd: true, lvG: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
     // markD = Mark of Death na wrogu (Twój następny cios +markD%), crip = wróg zadaje crip% mniej obrażeń przez cripT swoich tur
     morph: {
-      mark: { n: 'Marking Strike', markD: 20, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Marks the enemy with Mark of Death: your next hit against it deals 20% more damage.' },
-      cripple: { n: 'Crippling Strike', crip: 10, cripT: 3, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Cripples the enemy: it deals 10% less damage for 3 turns.' }
+      mark: { n: 'Marking Strike', img: 'ab_pommel_mark', markD: 20, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Marks the enemy with Mark of Death: your next hit against it deals 20% more damage.' },
+      cripple: { n: 'Crippling Strike', img: 'ab_pommel_cripple', crip: 10, cripT: 3, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Cripples the enemy: it deals 10% less damage for 3 turns.' }
     } },
   // buffD = % obrażeń z buffa (Battle Fury: 10% → 15 / 25 / 40 / 60%), lvF = dodatek do buffD na poziomie 1–5, lvT = dodatkowe tury buffa (6 tur na 5 poziomie)
   fury: { n: 'Battle Fury', ico: '📯', img: 'ab_fury', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 2, 4, 8, 13, 19, 27, 32, 41, 50], lvT: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
