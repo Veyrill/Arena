@@ -2493,6 +2493,9 @@ function render() {
   // walka niżej: pas na górze okna walki zarezerwowany na ikony buffów (lewo) i debuffów (prawo) – 6 px odstępu + 36 px kafelek,
   // żeby nie zasłaniały postaci ani nazwy przeciwnika
   const arenaEl = $('fightbox').querySelector('.arena'); if (arenaEl) arenaEl.style.paddingTop = '38px';
+  // TŁO KRAINY: lokacja wyprawy z grafiką (data.js: bg) → krajobraz za postaciami (assets/biomes/<bg>.png); brak pliku / loch → zwykłe tło
+  if (arenaEl) { const L = view == 'exp' && eloc != null ? ALL_LOCS[eloc] : null, bg = L && L.bg;
+    arenaEl.classList.toggle('biome', !!bg); arenaEl.style.setProperty('--biome', bg ? `url(${ASSETS_DIR}/biomes/${bg}.png)` : 'none'); }
   if (m) {
     const fmEl = $('fm');
     if (fmEl) {
