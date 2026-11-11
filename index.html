@@ -179,6 +179,12 @@ button.drow:hover{border-color:var(--dc)}
 .abulth{display:flex;align-items:center;gap:12px;margin-bottom:12px;color:var(--mut);font-size:15px;font-weight:800;letter-spacing:.14em;white-space:nowrap}
 .abulth:before,.abulth:after{content:'';flex:1;height:1px;background:var(--bd)}
 .abgrid.abultrow{padding:0 12.5%}
+/* ULTIMATE: rozżarzona ramka (złoto → pomarańcz → czerwień); wybrany ult pulsuje, nazwa złota; niewybrane – szara ramka */
+.abultrow .abtile{border:3px solid transparent;background:linear-gradient(#2d3440,#2d3440) padding-box,linear-gradient(135deg,#ffd36b,#e8793a 40%,#d94b4b 70%,#6e1420) border-box;box-shadow:0 0 0 2px #111}
+.abultrow .abcard.has .abtile{box-shadow:0 0 0 2px #111,0 0 18px #e8793acc;animation:ultglow 1.4s ease-in-out infinite alternate}
+@keyframes ultglow{to{box-shadow:0 0 0 2px #111,0 0 26px #ffb347}}
+.abultrow .abcard.lock .abtile{background:linear-gradient(#2d3440,#2d3440) padding-box,linear-gradient(135deg,#6a6070,#3a3440) border-box}
+.abultrow .abcard.has .abnm{color:#ffd36b}
 .abmorphg{margin-top:18px}
 .abmorphg .abgrid{flex-wrap:nowrap;align-items:center;gap:14px;padding:0 27%}
 .abmorphg .abcard{flex:1 1 0;width:auto;min-width:0}.abmorphg .abtile{width:100%;height:auto;aspect-ratio:1}.abmorphg .abti{font-size:56px}
