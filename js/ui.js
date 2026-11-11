@@ -1388,9 +1388,9 @@ function renderAbilTab() {
   // zwykłe umiejętności, potem grupa ULTIMATE (złota ramka, „choose one”)
   // WYBÓR MORPHA (po kliknięciu Morph): dwa warianty obok siebie z „OR” między nimi; Choose = wybór na stałe, Cancel = zamknij
   const mp = abMorphPick && canMorph(abMorphPick) ? abMorphPick : null;
-  const mcard = k => { const m = abEff(mp, k); return `<div class="abcard has"><div class="abtile" data-tip="${abTip(mp, k).replace(/"/g, '&quot;')}">${abIco(m, 'abti')}</div>`
+  const mcard = k => { const m = abEff(mp, k); return `<div class="abcard"><div class="abtile" data-tip="${abTip(mp, k).replace(/"/g, '&quot;')}">${abIco(m, 'abti')}</div>`
     + `<b class="abnm">${m.n}</b><button class="abtrain" onclick="window.morphAbil('${mp}','${k}')"${busy ? ' disabled' : ''}>Choose</button></div>`; };
-  const morphBox = !mp ? '' : `<div class="abmorphg"><span class="abultl">MORPH · ${ABILS[mp].n} · choose one (permanent)</span>`
+  const morphBox = !mp ? '' : `<div class="abmorphg"><div class="abulth">MORPH · ${ABILS[mp].n.toUpperCase()}</div>`   // jak sekcja ULTIMATE: linia z napisem + 2 duże kafelki z OR; opis tylko w dymku
     + `<div class="abgrid">${Object.keys(ABILS[mp].morph).map(mcard).join('<span class="abor">OR</span>')}</div>`
     + `<button class="abmcancel" onclick="window.morphPick(null)">Cancel</button></div>`;
   el.innerHTML = subs + `<div class="abgrid abmain">${all.filter(e => !e[1].ult).map(card).join('')}</div>` + morphBox
