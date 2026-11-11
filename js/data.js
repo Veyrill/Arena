@@ -148,7 +148,7 @@ export const LOCS2=[
 {n:'Swamp',e:'🐊',mobs:[MX('Giant Frog','🐸'),MX('Bog Lurker','🦎'),MX('Crocodile','🐊'),MX('Swamp Witch','🧙'),MX('Hydra','🐲')]},
 {n:'Lost Jungle',e:'🌴',mobs:[MX('Giant Mantis','🦗'),MX('Raptor','🦖'),MX('Jaguar','🐆'),MX('Triceratops','🦕'),MX('Tyrannosaur','🦖')]},   // dawniej Fungal Hollow / Dark Forest (te same statystyki)
 {n:'Mountain Pass',e:'⛰️',mobs:[MX('Harpy','🦅'),MX('Troll','👹'),MX('Rock Giant','🗿'),MX('Griffin','🦁'),MX('Stone Titan','🏔️')]},
-{n:'Haunted Castle',e:'🏰',mobs:[MX('Ghost Knight','👻'),MX('Banshee','😱'),MX('Cursed Armor','🛡️'),MX('Vampire Bat','🦇'),MX('Vampire Lord','🧛')]},
+{n:'Orc Warcamp',e:'🪓',mobs:[MX('Orc Grunt','👹'),MX('Orc Archer','🏹'),MX('Warg Rider','🐺'),MX('Orc Shaman','🔮'),MX('Orc Warchief','👑')]},   // dawniej Haunted Castle (te same statystyki)
 {n:'Abyssal Rift',e:'🌀',mobs:[MX('Shadow Hound','🐕'),MX('Void Stalker','👁️'),MX('Abyss Knight','⚔️'),MX('Demon Priest','😈'),MX('Abyss Lord','👿')]}];
 export const LOCS3=[
 {n:'Frozen Peaks',e:'🏔️',mobs:[MX('Frost Giant','🧊'),MX('Ice Wraith','👻'),MX('Yeti','🦍'),MX('Frost Wyvern','🐉'),MX('Ice Queen','👸')]},
