@@ -1378,7 +1378,7 @@ function renderAbilTab() {
     const a = me.abils && me.abils[id] ? abEff(id) : a0;   // po morphie: nowa nazwa / ikona
     const has = me.abils && me.abils[id], lvOk = me.lvl >= a.lvl, other = a.ult && ult && ult !== id;
     return `<div class="abcard${a.ult ? ' ult' : ''}${has ? ' has' : lvOk && !other ? '' : ' lock'}">`
-      + `<div class="abtile" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${abIco(a, 'abti')}${a.ult ? '<span class="abulttag">ULT</span>' : ''}${lvOk ? '' : `<span class="ablock">Lv ${a.lvl}</span>`}</div>`
+      + `<div class="abtile" data-tip="${abTip(id).replace(/"/g, '&quot;')}">${abIco(a, 'abti')}${lvOk ? '' : `<span class="ablock">Lv ${a.lvl}</span>`}</div>`
       + `<b class="abnm">${a.n}</b>${has ? abPips(id) : ''}`
       + (has ? (canMorph(id) ? `<button class="abtrain abmorph" onclick="window.morphPick('${id}')"${busy ? ' disabled' : ''}>Morph</button>` : `<span class="abok">${me.morph && me.morph[id] ? 'Morphed' : 'Learned'}</span>`) : other ? `<span class="abnot">Not chosen</span>` : `<button class="abtrain" onclick="window.learnAbil('${id}')"${lvOk && !busy ? '' : ' disabled'}>Train</button>`)
       + `</div>`;
@@ -1394,7 +1394,7 @@ function renderAbilTab() {
     + `<div class="abgrid">${Object.keys(ABILS[mp].morph).map(mcard).join('<span class="abor">OR</span>')}</div>`
     + `<button class="abmcancel" onclick="window.morphPick(null)">Cancel</button></div>`;
   el.innerHTML = subs + `<div class="abgrid abmain">${all.filter(e => !e[1].ult).map(card).join('')}</div>` + morphBox
-    + (!all.some(e => e[1].ult) ? '' : `<div class="abultg"><div class="abulth">ULTIMATE · ${ult ? 'YOUR CHOICE' : 'CHOOSE ONE AT LV 20'}</div><div class="abgrid abmain abultrow">${all.filter(e => e[1].ult).map(card).join('')}</div></div>`);   // sekcja ULTIMATE (jak zwykłe umiejętności: linia z napisem + 3 duże kafelki z etykietą ULT)
+    + (!all.some(e => e[1].ult) ? '' : `<div class="abultg"><div class="abulth">ULTIMATE</div><div class="abgrid abmain abultrow">${all.filter(e => e[1].ult).map(card).join('')}</div></div>`);   // sekcja ULTIMATE (jak zwykłe umiejętności: linia z napisem ULTIMATE + 3 duże kafelki)
 }
 // czy jest jakaś umiejętność Twojej klasy do wytrenowania: wymagany poziom osiągnięty, jeszcze nie wytrenowana; ultimate – tylko dopóki nie wybrano buildu
 const abTrainable = () => Object.keys(ABILS).some(id => myAb(id) && me.lvl >= ABILS[id].lvl && !(me.abils && me.abils[id]) && !(ABILS[id].ult && ultOf()));
