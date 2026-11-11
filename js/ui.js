@@ -1220,9 +1220,9 @@ const ABILS = {
   fury: { n: 'Battle Fury', ico: '📯', img: 'ab_fury', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 2, 4, 8, 13, 19, 27, 32, 41, 50], lvT: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
     // dexUp = % wyższa Dexterity na czas buffa (szansa na krytyk liczona od podniesionej Dexterity)
     morph: {
-      cry: { n: 'Battlecry', dexUp: 20, d: 'Instant: does not end your turn. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' },
+      cry: { n: 'Battlecry', img: 'ab_fury_cry', dexUp: 20, d: 'Instant: does not end your turn. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' },
       // Relentless Fury: bez kosztu Rage, za to odnowienie 6 tur (= czas buffa), żeby nie dało się go odpalać co turę za darmo
-      free: { n: 'Relentless Fury', cost: 0, cd: 6, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage and attacks generate 2 more Rage.' }
+      free: { n: 'Relentless Fury', img: 'ab_fury_free', cost: 0, cd: 6, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage and attacks generate 2 more Rage.' }
     } },
   // ULTIMATE (build): raz na walkę, gracz wybiera tylko jeden z trzech (me.abils – pierwszy wytrenowany blokuje pozostałe). hits = liczba ciosów, rend = krwawienie (% zadanych obrażeń przez rendT tur), stunT = ogłuszenie na N tur wroga
   storm: { n: 'Bladestorm', ico: '🌪️', img: 'ab_storm', cost: 60, mul: 1.2, hits: 3, cd: 0, lvl: 20, ult: true, d: 'Three strikes in a row, each for 120% weapon damage with its own chance to crit. Once per fight.' },
