@@ -1225,9 +1225,9 @@ const ABILS = {
       free: { n: 'Relentless Fury', cost: 0, cd: 6, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage and attacks generate 2 more Rage.' }
     } },
   // ULTIMATE (build): raz na walkę, gracz wybiera tylko jeden z trzech (me.abils – pierwszy wytrenowany blokuje pozostałe). hits = liczba ciosów, rend = krwawienie (% zadanych obrażeń przez rendT tur), stunT = ogłuszenie na N tur wroga
-  storm: { n: 'Bladestorm', ico: '🌪️', cost: 60, mul: 1.2, hits: 3, cd: 0, lvl: 20, ult: true, d: 'Three strikes in a row, each for 120% weapon damage with its own chance to crit. Once per fight.' },
-  split: { n: 'Skullsplitter', ico: '🪓', cost: 60, mul: 3, rend: 0.5, rendT: 10, cd: 0, lvl: 20, ult: true, d: 'A crushing blow for 300% weapon damage. The wound bleeds for 50% of the damage dealt over 10 turns. Once per fight.' },
-  quake: { n: 'Earthshaker', ico: '🔨', cost: 60, mul: 1.5, stunT: 4, cd: 0, lvl: 20, ult: true, d: 'Smash the ground for 150% weapon damage and stun the enemy for 4 turns. Once per fight.' },
+  storm: { n: 'Bladestorm', ico: '🌪️', img: 'ab_storm', cost: 60, mul: 1.2, hits: 3, cd: 0, lvl: 20, ult: true, d: 'Three strikes in a row, each for 120% weapon damage with its own chance to crit. Once per fight.' },
+  split: { n: 'Skullsplitter', ico: '🪓', img: 'ab_split', cost: 60, mul: 3, rend: 0.5, rendT: 10, cd: 0, lvl: 20, ult: true, d: 'A crushing blow for 300% weapon damage. The wound bleeds for 50% of the damage dealt over 10 turns. Once per fight.' },
+  quake: { n: 'Earthshaker', ico: '🔨', img: 'ab_quake', cost: 60, mul: 1.5, stunT: 4, cd: 0, lvl: 20, ult: true, d: 'Smash the ground for 150% weapon damage and stun the enemy for 4 turns. Once per fight.' },
   // execP = próg HP wroga (%), poniżej którego można użyć; lvE = dodatek do progu na poziomie 1–5 (20% → 25% na 10 poziomie); obrażenia 200% → 220 / 240 / 280 / 350%
   decap: { n: 'Decapitate', ico: '💀', img: 'ab_decap', cost: 40, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 20, lvB: [0, 10, 20, 25, 35, 45, 60, 80, 115, 150], lvAdd: true, lvE: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 20% health.',
     morph: {
