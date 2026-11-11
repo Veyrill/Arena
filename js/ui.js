@@ -1217,12 +1217,12 @@ const ABILS = {
       cripple: { n: 'Crippling Strike', img: 'ab_pommel_cripple', crip: 10, cripT: 3, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Cripples the enemy: it deals 10% less damage for 3 turns.' }
     } },
   // buffD = % obrażeń z buffa (Battle Fury: 10% → 15 / 25 / 40 / 60%), lvF = dodatek do buffD na poziomie 1–5, lvT = dodatkowe tury buffa (6 tur na 5 poziomie)
-  fury: { n: 'Battle Fury', ico: '📯', img: 'ab_fury', cost: 15, cd: 0, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 2, 4, 8, 13, 19, 27, 32, 41, 50], lvT: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
+  fury: { n: 'Battle Fury', ico: '📯', img: 'ab_fury', cost: 15, cd: 0, cdBuff: true, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 2, 4, 8, 13, 19, 27, 32, 41, 50], lvT: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
     // dexUp = % wyższa Dexterity na czas buffa (szansa na krytyk liczona od podniesionej Dexterity)
     morph: {
       cry: { n: 'Battlecry', img: 'ab_fury_cry', dexUp: 20, d: 'Instant: does not end your turn. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' },
-      // Relentless Fury: bez kosztu Rage, za to odnowienie 6 tur (= czas buffa), żeby nie dało się go odpalać co turę za darmo
-      free: { n: 'Relentless Fury', img: 'ab_fury_free', cost: 0, cd: 6, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage and attacks generate 2 more Rage.' }
+      // Relentless Fury: bez kosztu Rage; odnowienie = czas buffa (cdBuff), jak w Battle Fury i Battlecry
+      free: { n: 'Relentless Fury', img: 'ab_fury_free', cost: 0, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage and attacks generate 2 more Rage.' }
     } },
   // ULTIMATE (build): raz na walkę, gracz wybiera tylko jeden z trzech (me.abils – pierwszy wytrenowany blokuje pozostałe). hits = liczba ciosów, rend = krwawienie (% zadanych obrażeń przez rendT tur), stunT = ogłuszenie na N tur wroga
   storm: { n: 'Bladestorm', ico: '🌪️', img: 'ab_storm', cost: 60, mul: 1.2, hits: 3, cd: 0, lvl: 20, ult: true, d: 'Three strikes in a row, each for 120% weapon damage with its own chance to crit. Once per fight.' },
@@ -1249,7 +1249,9 @@ const abEff = (id, mk = me.morph && me.morph[id]) => {
   const e = Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: !a.mul ? a.mul : a.lvAdd ? a.mul + ((a.lvB || [])[l] || 0) / 100 : a.mul * (1 + ((a.lvB || [])[l] || 0) / 100), gain: a.gain ? a.gain + ((a.lvG || [])[l] || 0) : a.gain,
     buffD: a.buffD ? a.buffD + ((a.lvF || [])[l] || 0) : a.buffD, buffT: a.buffT ? a.buffT + ((a.lvT || [])[l] || 0) : a.buffT,
     execP: a.execP ? a.execP + ((a.lvE || [])[l] || 0) : a.execP });
-  const m = mk && a.morph && a.morph[mk]; return m ? Object.assign(e, m, { cost: 'cost' in m ? m.cost : a.cost + ((a.lvC || [])[AB_MAX_LVL - 1] || 0) }) : e;   // Battlecry: koszt 0
+  const m = mk && a.morph && a.morph[mk], r = m ? Object.assign(e, m, { cost: 'cost' in m ? m.cost : a.cost + ((a.lvC || [])[AB_MAX_LVL - 1] || 0) }) : e;   // Relentless Fury: koszt 0
+  if (r.cdBuff) r.cd = r.buffT;   // Battle Fury (i morphy): odnowienie = czas trwania buffa
+  return r;
 };
 // MORPH: dostępny po 5 poziomie wytrenowanej umiejętności, która ma warianty i jeszcze nie ma wybranego
 const canMorph = id => { const a = ABILS[id]; return !!(a && a.morph && me.abils && me.abils[id] && abLvl(id).l >= AB_MAX_LVL && !(me.morph && me.morph[id])); };
