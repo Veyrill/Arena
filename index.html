@@ -255,7 +255,10 @@ body :is(.abtrain,#go,.dfbtn,#clsok):disabled{opacity:1;background:#8a8090;color
 .bpf{display:flex;align-items:center;justify-content:space-between;gap:10px;border-top:1px solid #3a3226;margin-top:8px;padding-top:8px}.bpf .bpo{flex:1}
 .bpmv{display:flex;gap:4px}.bpmv button{background:#211b14;border:1px solid #5a4c3a;border-radius:4px;color:var(--tx);font:inherit;font-size:13px;padding:4px 10px;cursor:pointer}.bpmv button:hover:not(:disabled){border-color:#e8793a}.bpmv button:disabled{opacity:.3;cursor:default}
 .bpreset{display:block;margin-top:14px;background:transparent;border:1px solid var(--bd);border-radius:6px;color:var(--mut);font:inherit;font-size:11px;padding:3px 10px;cursor:pointer}.bpreset:hover{color:var(--tx)}
-.sk .abcd.used{font-size:11px;letter-spacing:.06em;color:#ffd36b}
+/* ULTIMATE użyty (do końca walki): ikona mocno wyszarzona + nałożona kłódka z łańcuchami; bez napisu i bez kosztu */
+#skillbar .sk .abcd.used{font-size:0;background:url(assets/ui/ui_ult_used.png) center/82% no-repeat,rgba(0,0,0,.35);image-rendering:pixelated}
+#skillbar .sk:has(.abcd.used) .ic{filter:grayscale(1) brightness(.3)!important}
+#skillbar .sk:has(.abcd.used) .abc{display:none}
 /* ZAKŁADKA SETTINGS */
 .setrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--bg)}
 .setrow small{color:var(--mut);display:block;margin-top:2px}
