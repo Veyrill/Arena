@@ -175,10 +175,14 @@ button.drow:hover{border-color:var(--dc)}
 .abmain .abcard{flex:1 1 0;min-width:0;width:auto}
 .abmain .abtile{width:100%;height:auto;aspect-ratio:1}
 .abmain .abti{font-size:56px}
-.abultg{width:fit-content;margin-left:auto;margin-right:auto;text-align:center;margin-top:14px;padding:10px 12px 12px;border:1px solid #8a6a2a;border-radius:10px;background:linear-gradient(#3a2d17,#241c12)}
-.abultg .abgrid{justify-content:center}
+.abultg{margin-top:18px}
+.abulth{display:flex;align-items:center;gap:10px;margin-bottom:10px;color:var(--mut);font-size:12px;font-weight:700;letter-spacing:.1em;white-space:nowrap}
+.abulth:before,.abulth:after{content:'';flex:1;height:1px;background:var(--bd)}
+.abgrid.abultrow{padding:0 12.5%}
+.abulttag{position:absolute;top:4px;left:4px;z-index:2;font-size:9px;font-weight:800;line-height:1.3;background:#e8793a;color:#fff;border:1px solid #111;border-radius:3px;padding:0 4px;letter-spacing:.06em}
+.abcard.lock .abulttag{background:#5a5060;color:#c8c0cc}
 .abultl{display:block;margin-bottom:8px;font-size:11px;font-weight:800;letter-spacing:.12em;color:#ffd36b}
-.abcard.ult .abtile{box-shadow:0 0 0 2px #8a6a2a}.abcard.ult.has .abtile{box-shadow:0 0 0 2px #ffd36b,0 0 12px #ffd36b66}
+
 .abnot{font-size:11px;color:#6f604f}
 /* MORPH: przycisk po 5 poziomie umiejętności i wybór jednego z dwóch wariantów (OR między nimi) */
 .abtrain.abmorph:not(:disabled){background:#7a3fd0;border-color:#7a3fd0;color:#fff;letter-spacing:.08em;text-transform:uppercase}
