@@ -152,8 +152,8 @@ export const LOCS2=[
 {n:'Abyssal Rift',e:'🌀',mobs:[MX('Shadow Hound','🐕'),MX('Void Stalker','👁️'),MX('Abyss Knight','⚔️'),MX('Demon Priest','😈'),MX('Abyss Lord','👿')]}];
 export const LOCS3=[
 {n:'Frozen Peaks',e:'🏔️',mobs:[MX('Frost Giant','🧊'),MX('Ice Wraith','👻'),MX('Yeti','🦍'),MX('Frost Wyvern','🐉'),MX('Ice Queen','👸')]},
-{n:'Sunken City',e:'🌊',mobs:[MX('Merfolk Warrior','🔱'),MX('Giant Crab','🦀'),MX('Siren','🧜'),MX('Sea Serpent','🐍'),MX('Kraken','🦑')]},
-{n:'Storm Isles',e:'⛈️',mobs:[MX('Storm Elemental','⚡'),MX('Thunderbird','🦅'),MX('Cyclops','👁️'),MX('Storm Giant','🌩️'),MX('Storm Lord','🌪️')]},
+{n:'Sunken City',e:'🌊',mobs:[MX('Merfolk Warrior','🔱'),MX('Giant Crab','🦀'),MX('Siren','🧜'),MX('Sea Serpent','🐍'),MX('Abyssal Angler','🐟')]},   // boss: dawniej Kraken (te same statystyki)
+{n:'Crystal Caverns',e:'💎',mobs:[MX('Gem Scarab','🪲'),MX('Giant Mole','🐀'),MX('Crystal Golem','💎'),MX('Cave Basilisk','🦎'),MX('Crystal Wyrm','🐉')]},   // dawniej Storm Isles (te same statystyki)
 {n:'Dragon Lair',e:'🐲',mobs:[MX('Drake','🦎'),MX('Wyvern','🐉'),MX('Dragon Knight','🛡️'),MX('Elder Drake','🔥'),MX('Ancient Dragon','🐲')]},
 {n:'Throne of Chaos',e:'👑',mobs:[MX('Chaos Spawn','🌀'),MX('Fallen Angel','😇'),MX('Chaos Knight','⚔️'),MX('Archdemon','👹'),MX('Chaos Emperor','👑')]}];
 
@@ -233,7 +233,7 @@ DUN3.mobs[2].lore = 'She loved her roses more than her crown, and when the king 
 // Grafiki: enemies/enemy_bone_drake.png, enemy_grave_keeper.png, enemy_the_undying_wyrm.png (brak pliku → emoji).
 export const DUN4 = { n: 'The Wyrm Graveyard', e: '🦴', req: 60, mobs: [
   pgClone('Bone Drake', '🦴', 63, 'Yeti', { hp: 0.9, dmg: 1.15, crit: 12 }),                          // szybki: szkielet młodego smoka – mniej HP, mocne i częste krytyki
-  pgClone('Grave Keeper', '⚰️', 70, 'Storm Lord', { hp: 1.15, dmg: 0.75, arm: 1.4, dodge: 3 }),         // czołg: olbrzymi strażnik smoczych kości
+  pgClone('Grave Keeper', '⚰️', 70, 'Crystal Wyrm', { hp: 1.15, dmg: 0.75, arm: 1.4, dodge: 3 }),         // czołg: olbrzymi strażnik smoczych kości
   pgClone('The Undying Wyrm', '🐉', 76, 'Ancient Dragon', { hp: 1.05, dmg: 1.05, crit: 15 })         // boss: martwy smok przywrócony do życia
 ] };
 // OPISY (lore) przeciwników The Wyrm Graveyard – dopasowane do sprite'ów (Bone Drake: kości i strzępy skrzydeł; Grave Keeper: szary kaptur, zielone światło, łopata i kościany kostur; The Undying Wyrm: ciemne łuski, zielony ogień w pęknięciach)
@@ -241,7 +241,7 @@ DUN4.mobs[0].lore = 'Its mother laid her egg on the day she came here to die, an
 DUN4.mobs[1].lore = 'He was the last of the dragon riders, and when his dragon fell, he followed it into the valley and never left. Under his grey hood, only a cold green light remains where his face used to be. He still carries the same shovel he used to dig a thousand graves, and a staff made from the bone of his first dragon. He believes you came to rob the dead, and no thief has ever left his valley.';
 DUN4.mobs[2].lore = 'This one belonged to the last rider, and it was the first dragon ever buried in the valley. It refused to stay dead, and the curse answered with green fire that now burns through the cracks in its dark scales. Its body is rotten and its heart is gone, yet it still rises every night to guard its old friend. To end this, you must break a bond that even death could not break.';
 export const DUN5 = { n: 'The Lost Valley', e: '🦖', req: 70, mobs: [
-  pgClone('Razorclaw Raptor', '🦎', 72, 'Storm Lord', { hp: 0.9, dmg: 1.15, crit: 12 }),           // szybki: zwinny drapieżnik – mniej HP, mocne i częste krytyki
+  pgClone('Razorclaw Raptor', '🦎', 72, 'Crystal Wyrm', { hp: 0.9, dmg: 1.15, crit: 12 }),           // szybki: zwinny drapieżnik – mniej HP, mocne i częste krytyki
   pgClone('Thunderhorn', '🦏', 76, 'Ancient Dragon', { hp: 1.15, dmg: 0.75, arm: 1.4, dodge: 3 }),  // czołg: triceratops w kościanej kryzie
   pgClone('The Tyrant King', '🦖', 80, 'Chaos Emperor', { hp: 1.05, dmg: 1.05, crit: 15 })          // boss: prastary tyranozaur
 ] };
