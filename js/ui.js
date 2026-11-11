@@ -1203,21 +1203,21 @@ addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEX
 // gain = Rage za użycie; free = nie zabiera tury (po nim działasz dalej); buffT = tury buffa; need: 'exec' = wróg poniżej 20% HP (Revenge usunięty z gry – stary zapis: pusty slot, ignorowany w me.abils)
 const ABILS = {
   // lvB = % dodatkowych obrażeń umiejętności na poziomie 1–5 (mnoży obrażenia), lvC = zmiana kosztu w Rage na poziomie 1–5
-  overhead: { n: 'Overhead Blow', ico: '💥', img: 'ab_overhead', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 5, 10, 15, 20, 25, 40, 55, 65, 75], lvAdd: true, lvC: [0, 0, 0, 0, 0, 0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
+  overhead: { n: 'Overhead Blow', ico: '💥', img: 'ab_overhead', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 4, 9, 15, 22, 30, 39, 49, 61, 75], lvAdd: true, lvC: [0, 0, 0, 0, 0, 0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
     // MORPH (po 5 poziomie, wybór na stałe): zastępuje umiejętność – nazwa, opis, mnożnik; heal = % zadanych obrażeń jako leczenie, critUp = % wyższa szansa i obrażenia krytyka
     morph: {
       cruel: { n: 'Cruel Blow', img: 'ab_overhead_cruel', mul: 2.5, critUp: 20, d: 'Strike for 250% weapon damage. Its critical hit chance and critical damage are 20% higher.' },
       siphon: { n: 'Siphoning Strike', img: 'ab_overhead_siphon', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' }
     } },
   // lvG = zmiana generowanego Rage na poziomie 1–5 (Pommel Strike: 25 → 30 na 5 poziomie); lvAdd = bonus lvB dodawany do % obrażeń broni (60% → 80 / 100 / 120 / 160%), bez lvAdd – mnożony
-  pommel: { n: 'Pommel Strike', ico: '🗡️', img: 'ab_pommel', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 10, 20, 25, 35, 45, 55, 65, 80, 100], lvAdd: true, lvG: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
+  pommel: { n: 'Pommel Strike', ico: '🗡️', img: 'ab_pommel', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 6, 13, 21, 30, 40, 52, 66, 82, 100], lvAdd: true, lvG: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
     // markD = Mark of Death na wrogu (Twój następny cios +markD%), crip = wróg zadaje crip% mniej obrażeń przez cripT swoich tur
     morph: {
       mark: { n: 'Marking Strike', img: 'ab_pommel_mark', markD: 20, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Marks the enemy with Mark of Death: your next hit against it deals 20% more damage.' },
       cripple: { n: 'Crippling Strike', img: 'ab_pommel_cripple', crip: 10, cripT: 3, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Cripples the enemy: it deals 10% less damage for 3 turns.' }
     } },
   // buffD = % obrażeń z buffa (Battle Fury: 10% → 15 / 25 / 40 / 60%), lvF = dodatek do buffD na poziomie 1–5, lvT = dodatkowe tury buffa (6 tur na 5 poziomie)
-  fury: { n: 'Battle Fury', ico: '📯', img: 'ab_fury', cost: 15, cd: 0, cdBuff: true, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 2, 4, 8, 13, 19, 27, 32, 41, 50], lvT: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
+  fury: { n: 'Battle Fury', ico: '📯', img: 'ab_fury', cost: 15, cd: 0, cdBuff: true, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 1, 3, 6, 10, 16, 23, 31, 40, 50], lvT: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
     // dexUp = % wyższa Dexterity na czas buffa (szansa na krytyk liczona od podniesionej Dexterity)
     morph: {
       cry: { n: 'Battlecry', img: 'ab_fury_cry', dexUp: 20, d: 'Instant: does not end your turn. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' },
@@ -1229,7 +1229,7 @@ const ABILS = {
   split: { n: 'Skullsplitter', ico: '🪓', img: 'ab_split', cost: 60, mul: 3, rend: 0.5, rendT: 10, cd: 0, lvl: 20, ult: true, d: 'A crushing blow for 300% weapon damage. The wound bleeds for 50% of the damage dealt over 10 turns. Once per fight.' },
   quake: { n: 'Earthshaker', ico: '🔨', img: 'ab_quake', cost: 60, mul: 1.5, stunT: 4, cd: 0, lvl: 20, ult: true, d: 'Smash the ground for 150% weapon damage and stun the enemy for 4 turns. Once per fight.' },
   // execP = próg HP wroga (%), poniżej którego można użyć; lvE = dodatek do progu na poziomie 1–5 (20% → 25% na 10 poziomie); obrażenia 200% → 220 / 240 / 280 / 350%
-  decap: { n: 'Decapitate', ico: '💀', img: 'ab_decap', cost: 25, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 20, lvB: [0, 10, 20, 25, 35, 45, 60, 80, 115, 150], lvAdd: true, lvE: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 20% health.',
+  decap: { n: 'Decapitate', ico: '💀', img: 'ab_decap', cost: 25, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 20, lvB: [0, 11, 23, 36, 50, 66, 83, 102, 124, 150], lvAdd: true, lvE: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 20% health.',
     morph: {
       verdict: { n: 'Final Verdict', img: 'ab_decap_verdict', mul: 4.5, d: 'A finishing blow for 450% weapon damage. Only when the enemy is below 20% health.' },
       reach: { n: "Executioner's Reach", img: 'ab_decap_reach', execP: 30, d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 30% health.' }
