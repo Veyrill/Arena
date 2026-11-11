@@ -1231,8 +1231,8 @@ const ABILS = {
   // execP = próg HP wroga (%), poniżej którego można użyć; lvE = dodatek do progu na poziomie 1–5 (20% → 25% na 10 poziomie); obrażenia 200% → 220 / 240 / 280 / 350%
   decap: { n: 'Decapitate', ico: '💀', img: 'ab_decap', cost: 40, mul: 2, cd: 0, lvl: 15, need: 'exec', execP: 20, lvB: [0, 10, 20, 25, 35, 45, 60, 80, 115, 150], lvAdd: true, lvE: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'A finishing blow for 200% weapon damage. Only when the enemy is below 20% health.',
     morph: {
-      reach: { n: "Executioner's Reach", execP: 30, d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 30% health.' },
-      verdict: { n: 'Final Verdict', mul: 4.5, d: 'A finishing blow for 450% weapon damage. Only when the enemy is below 20% health.' }
+      reach: { n: "Executioner's Reach", img: 'ab_decap_reach', execP: 30, d: 'A finishing blow for 350% weapon damage. Only when the enemy is below 30% health.' },
+      verdict: { n: 'Final Verdict', img: 'ab_decap_verdict', mul: 4.5, d: 'A finishing blow for 450% weapon damage. Only when the enemy is below 20% health.' }
     } }
 };
 // KLASA: każda umiejętność należy do klasy (cls; brak = 'warrior'). Zakładka Abilities i pasek pokazują tylko umiejętności klasy gracza (me.cls).
