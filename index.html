@@ -138,10 +138,10 @@ button.drow:hover{border-color:var(--dc)}
 #skillbar .sk{border:0;background:none;box-shadow:none;border-radius:0}
 /* SLOT (PixelLab, 9-slice): ui_bar_slot.png 20×20 – ramka 6 px (×2 = 12 px), ikona na wierzchu */
 #skillbar .sk::before{content:'';position:absolute;inset:0;border:12px solid transparent;border-image:url(assets/ui/ui_bar_slot.png) 6 fill / 12px repeat;image-rendering:pixelated;pointer-events:none;z-index:0}
-#skillbar .sk.atk img{position:relative;z-index:1;width:40px!important;height:40px!important}
+#skillbar .sk.atk img{position:relative;z-index:1;width:calc(100% - 6px)!important;height:calc(100% - 6px)!important}
 #skillbar .sk>.ic:not(.img){position:relative;z-index:1}
-#skillbar .sk .abcd{inset:6px}
-#skillbar .sk.ab .ic.img{inset:6px;border-radius:4px;z-index:1}
+#skillbar .sk .abcd{inset:3px}
+#skillbar .sk.ab .ic.img{inset:3px;border-radius:4px;z-index:1}
 #skillbar .sk .kb{right:auto;left:50%;bottom:-11px;transform:translateX(-50%);background:#15131a;border:1px solid #4a4452;border-radius:4px;padding:2px 5px;font-size:10px;color:#d8cbb4;text-shadow:none}
 #skillbar .sk .abc{left:-4px;top:-5px;background:#15131a;border:1px solid #f07b16;border-radius:4px;padding:2px 4px;font-size:10px;color:#ffb347;text-shadow:none}
 #skillbar .sk .abc.gen{border-color:#3fbf4f;color:#7fe08a}
