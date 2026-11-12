@@ -1605,23 +1605,29 @@ function genShop() {
 function ensureShop() { if (!me.shop || !me.shop.items || Date.now() >= me.shop.t) genShop(); }
 
 // ===== QUESTY =====
-// Co 2 h nowa pula 3–5 questów (me.quests.t = czas resetu). Quest: pokonaj X (3–10) razy wybranego przeciwnika wyprawy
-// z poziomem gracza −3…+4 (tylko odblokowani przeciwnicy). Nagroda: ×3 złota i ×3 XP najlepszego pokonanego przeciwnika (× losowo 0.9–1.1)
-// oraz losowy przedmiot o rzadkości jak w sklepie (szanse dropu najlepszego pokonanego przeciwnika).
-// Aktywny może być tylko 1 quest; po ukończeniu można wziąć kolejny. Porzucony quest przepada do resetu. Reset kasuje wszystkie (także aktywny).
-const QUEST_RESET = 2 * 3600e3, QUEST_LVL = 5;   // questy dostępne od 5 poziomu
-const qMob = q => ALL_LOCS[q.li] && ALL_LOCS[q.li].mobs[q.mi];
+// Co 30 min nowa pula: 3 losowe z 6 rodzajów. Questów się NIE aktywuje – wszystkie 3 liczą się od razu, równolegle.
+// Nagroda: dokładnie 1 Gold Medal (materiał, na razie bez zastosowania) – od razu do plecaka, gdy licznik dojdzie do celu.
+// Bez złota, XP i przedmiotów. Liczą się prawdziwe walki (wyprawa i loch, bez symulacji szans) oraz łowienie.
+// Reset kasuje nieukończone questy (postęp przepada). Ultimate: tylko gdy gracz ma wytrenowany Ultimate.
+const QUEST_RESET = 30 * 60e3, QUEST_LVL = 5, QUEST_N = 3;   // questy dostępne od 5 poziomu
+const QUEST_KINDS = {
+  safe: { r: [5, 7], t: n => `Win ${n} fights without dropping below 50% health` },
+  crit: { r: [17, 27], t: n => `Land ${n} critical hits` },
+  fast: { r: [6, 8], t: n => `Win ${n} fights in 4 turns or less` },
+  ult: { r: [7, 10], t: n => `Use your Ultimate ${n} times`, ok: () => !!ultOf() },
+  fish: { r: [20, 40], t: (n, q) => `Catch ${n}× ${MATS[q.fish] ? MATS[q.fish].name : 'fish'}` },   // ryba: tylko złowiona już choć raz (nic → Crucian Carp)
+  atk: { r: [30, 50], t: n => `Use basic Attack ${n} times` },
+};
 function genQuests() {
-  const L = me.lvl, avail = [];
-  ALL_LOCS.forEach((loc, li) => { if (locOpen(li)) loc.mobs.forEach((m, mi) => { if (mobOpen(li, mi)) avail.push([li, mi]); }); });
-  let pool = avail.filter(([li, mi]) => { const l = ALL_LOCS[li].mobs[mi].l; return l >= L - 3 && l <= L + 4; });
-  if (pool.length < 3) pool = avail.slice().sort((a, b) => Math.abs(ALL_LOCS[a[0]].mobs[a[1]].l - L) - Math.abs(ALL_LOCS[b[0]].mobs[b[1]].l - L)).slice(0, 5);   // za mało w przedziale → najbliżsi poziomem
-  for (let i = pool.length - 1; i > 0; i--) { const j = I(0, i); [pool[i], pool[j]] = [pool[j], pool[i]]; }
-  const b = bestBeatenMob() || ALL_LOCS[0].mobs[0], bx = xpOf(b), bg = Math.round(b.l * 3);
-  me.quests = { t: Date.now() + QUEST_RESET, active: null,
-    list: pool.slice(0, I(3, 5)).map(([li, mi]) => ({ li, mi, need: I(3, 10), got: 0, st: 'open', xp: Math.round(3 * bx * R(0.9, 1.1)), gold: Math.round(3 * bg * R(0.9, 1.1)), item: mk(shopPool(), undefined, undefined, actOfMob(ALL_LOCS[li].mobs[mi])) })) };   // wygląd: akt przeciwnika z questa   // item: nagroda znana od początku (widać w dymku)
+  const kinds = Object.keys(QUEST_KINDS).filter(k => !QUEST_KINDS[k].ok || QUEST_KINDS[k].ok());
+  for (let i = kinds.length - 1; i > 0; i--) { const j = I(0, i); [kinds[i], kinds[j]] = [kinds[j], kinds[i]]; }
+  const caught = FISH.filter(f => fishing.caught && fishing.caught[f.id]).map(f => f.id);
+  me.quests = { v: 2, t: Date.now() + QUEST_RESET, list: kinds.slice(0, QUEST_N).map(k => {
+    const q = { k, need: I(...QUEST_KINDS[k].r), got: 0 };
+    if (k === 'fish') q.fish = caught.length ? caught[I(0, caught.length - 1)] : 'fish_carp';
+    return q; }) };
 }
-function ensureQuests() { if (!me.quests || !me.quests.list || Date.now() >= me.quests.t) genQuests(); }
+function ensureQuests() { if (!me.quests || me.quests.v !== 2 || !me.quests.list || Date.now() >= me.quests.t) genQuests(); }   // v: 2 – stary zapis (Kill X×) → nowa pula
 // XP z nagrody (poza walką też): awanse jak po walce (+1 do statystyk, +1 skill point)
 function addXp(x) {
   if (me.lvl >= MAX_LVL) return 0;
@@ -1629,51 +1635,31 @@ function addXp(x) {
   while (me.lvl < MAX_LVL && me.xp >= xpNeed(me.lvl)) { me.xp -= xpNeed(me.lvl); me.lvl++; me.str += 1; me.dex += 1; me.con += 1; me.sp++; spDot = true; say(`<b>Level up: ${me.lvl}!</b> +1 skill point`, 'crit'); }
   return x;
 }
-window.acceptQuest = k => { ensureQuests(); const Q = me.quests, q = Q.list[k]; if (busy || Q.active != null || !q || q.st !== 'open') return; q.st = 'active'; Q.active = k; render(); };
-window.abandonQuest = () => { const Q = me.quests; if (busy || !Q || Q.active == null) return; Q.list[Q.active].st = 'gone'; Q.active = null; say('Quest abandoned.', 'miss'); render(); };
-// pokonany przeciwnik (wyprawa) → postęp aktywnego questa; ukończenie: złoto, XP i przedmiot (przedmiot trafia do łupu pod Collect)
-function questKill(mob, loot) {
-  const Q = me.quests; if (me.lvl < QUEST_LVL || !Q || Q.active == null || Date.now() >= Q.t) return null;
-  const q = Q.list[Q.active]; if (!q || q.st !== 'active' || qMob(q) !== mob) return null;
-  q.got++;
-  if (q.got < q.need) { say(`Quest: ${mob.n} ${q.got}/${q.need}`, 'miss'); return null; }
-  q.st = 'ready';   // cel osiągnięty – nagrodę odbiera się przyciskiem Complete w panelu Quests
-  say(`<b>Quest objective complete!</b> Claim your reward in Quests.`, 'crit');
-  return null;
+// postęp questów: k = rodzaj, n = ile, fish = id ryby (quest łowienia liczy tylko swoją rybę); cel osiągnięty → +1 Gold Medal od razu
+function questEv(k, n = 1, fish) {
+  const Q = me.quests; if (me.lvl < QUEST_LVL || !Q || Q.v !== 2 || Date.now() >= Q.t) return;
+  let ch = false;
+  for (const q of Q.list) {
+    if (q.k !== k || q.got >= q.need || (k === 'fish' && q.fish !== fish)) continue;
+    q.got = Math.min(q.need, q.got + n); ch = true;
+    if (q.got >= q.need) { giveMatQuiet('gold_medal'); say(`<b>Quest complete!</b> ${QUEST_KINDS[k].t(q.need, q)} – +1 <b class="t${MATS.gold_medal.r}">${MATS.gold_medal.name}</b>`, 'crit'); }
+  }
+  if (ch) renderQuestSide();
 }
-// COMPLETE: odbiór nagrody ukończonego questa – złoto, XP (awanse jak po walce) i przedmiot prosto do plecaka; potem wracają pozostałe questy
-window.completeQuest = () => {
-  const Q = me.quests; if (busy || !Q || Q.active == null) return;
-  const q = Q.list[Q.active]; if (!q || q.st !== 'ready') return;
-  const btn = document.querySelector('#quest-side button[onclick*="completeQuest"]'), from = (btn || $('quest-side')).getBoundingClientRect();   // start animacji: przycisk Complete
-  holdGold = window.G_GLOBAL; holdXp = { lvl: me.lvl, xp: me.xp };   // panel Gold i pasek XP czekają, aż dolecą monety i kulki XP
-  q.st = 'done'; Q.active = null;
-  window.G_GLOBAL += q.gold; const gx = addXp(q.xp);
-  const it = Object.assign({}, q.item || mk(shopPool())); it.fresh = 1; inv.push(it);   // dokładnie ten przedmiot, który pokazywał dymek
-  say(`<b>Quest complete!</b> +${q.gold} gold, +${gx} XP, <b class="t${it.r}">${it.name}</b>`, 'crit');
-  render();
-  setTimeout(() => flyReward(q.gold, gx, from), 60);   // animacja jak po walce: monety do panelu Gold, kulki XP do paska doświadczenia
-};
 function renderQuestSide() {
   const side = $('quest-side'); if (!side) return;
   side.hidden = view !== 'exp' || me.lvl < QUEST_LVL; if (side.hidden) return;   // od 5 poziomu
   ensureQuests();
   placeQuestSide();
   const Q = me.quests, cd = side.querySelector('[data-questcd]'); if (cd) cd.textContent = fmtCd(Q.t - Date.now());
-  const rows = Q.list.map((q, k) => {
-    if (q.st === 'gone' || q.st === 'done') return '';   // porzucone i ukończone (odebrane) questy nie wracają na listę
-    if (Q.active != null && k !== Q.active) return '';   // aktywny quest – pozostałe schowane (wracają po porzuceniu lub ukończeniu)
-    const m = qMob(q); if (!m) return '';
-    if (!q.item) q.item = mk(shopPool());   // stary zapis questów bez przedmiotu
-    const btn = q.st === 'open' ? `<button onclick="window.acceptQuest(${k})"${Q.active != null || busy ? ' disabled' : ''}>Accept</button>`
-      : q.st === 'active' ? `<button onclick="window.abandonQuest()"${busy ? ' disabled' : ''} title="The quest is lost until the next reset">Abandon</button>`
-      : q.st === 'ready' ? `<button onclick="window.completeQuest()"${busy ? ' disabled' : ''} style="background:var(--ac);color:var(--on-ac);border-color:var(--ac);font-weight:700">Complete</button>`   // cel osiągnięty – odbierz nagrodę
-      : '<span style="color:#3fdc3f;font-weight:700">✓</span>';
-    const prog = q.st === 'active' || q.st === 'ready' ? `<div class="qbar"><i style="width:${q.got / q.need * 100}%"></i></div><small>${q.got}/${q.need}</small> ` : '';
-    // bez ikony, poziomu, lokacji i nagród w wierszu – nagroda (XP, złoto, przedmiot) w dymku po najechaniu
-    return `<div class="qrow ${q.st}" data-it="questrw:${k}"><div class="qtx"><b>Kill ${q.need}× ${m.n}</b>${prog ? '<br>' + prog : ''}</div>${btn}</div>`;
+  // wiersz: opis, pasek postępu, licznik; po prawej nagroda (Gold Medal, dymek jak materiał) albo ✓ po ukończeniu
+  const rows = Q.list.map(q => {
+    const K = QUEST_KINDS[q.k]; if (!K) return '';
+    const done = q.got >= q.need;
+    return `<div class="qrow${done ? ' done' : ''}"><div class="qtx"><b>${K.t(q.need, q)}</b><div class="qbar"><i style="width:${q.got / q.need * 100}%"></i></div><small>${q.got}/${q.need}</small></div>`
+      + (done ? '<span style="color:#3fdc3f;font-weight:700;font-size:18px">✓</span>' : `<div class="qic" data-it="mat:gold_medal">${matIco('gold_medal', 32, 24)}</div>`) + `</div>`;
   }).join('');
-  $('body-quest-side').innerHTML = rows || '<small style="color:var(--mut)">All quests done. New quests after the reset.</small>';
+  $('body-quest-side').innerHTML = rows || '<small style="color:var(--mut)">No quests. New quests after the reset.</small>';
 }
 window.refreshShop = () => { genShop(); render(); };   // tylko DEV
 window.buyShop = (n, equipIt) => {   // equipIt = przeciągnięty prosto na postać: kup i od razu załóż (jeśli poziom pozwala)
@@ -2508,8 +2494,7 @@ function render() {
   if (!$('loot').hidden) $('loot').innerHTML = (expRes.loot.length
     ? expRes.loot.map((i, n) => `<div class="cell r${i.r || 0}" data-it="loot:${n}">${invIco(i)}</div>`).join('')   // tylko podgląd (dymek, Shift = porównanie) – bez zakładania
     : expRes.had ? '' : `<small>No loot</small>`)
-    + `<div class="rw">${expRes.xp ? `<span style="color:#8e44ad">+${expRes.xp} XP</span>` : ''}<span style="color:#e69500">+${expRes.gold} ${goldIco(16)}</span></div>`   // pod łupem: +XP i +złoto
-    + (expRes.quest ? `<div class="rw"><span style="color:#3fdc3f">Quest complete!</span><span style="color:#8e44ad">+${expRes.quest.xp} XP</span><span style="color:#e69500">+${expRes.quest.gold} ${goldIco(16)}</span></div>` : '');   // nagroda z questa (przedmiot – w łupie wyżej)
+    + `<div class="rw">${expRes.xp ? `<span style="color:#8e44ad">+${expRes.xp} XP</span>` : ''}<span style="color:#e69500">+${expRes.gold} ${goldIco(16)}</span></div>`   // pod łupem: +XP i +złoto;
   // walka niżej: pas na górze okna walki zarezerwowany na ikony buffów (lewo) i debuffów (prawo) – 6 px odstępu + 36 px kafelek,
   // żeby nie zasłaniały postaci ani nazwy przeciwnika
   const arenaEl = $('fightbox').querySelector('.arena');
@@ -2610,10 +2595,11 @@ function fishTick(upTo = Date.now(), offline = false) {
       // Treasure chance: Sunken Chest do plecaka
       if (Math.random() * 100 < effTreasure()) { giveChest(); say(`<b>Treasure!</b> Found a <b class="t${CHEST.r}">${CHEST.name}</b>!`, 'crit'); }
       addCatch(f.id, nFish);   // Fishpedia: licznik i progi
+      questEv('fish', nFish, f.id);   // QUEST: złowione ryby
       // BYCATCH: dodatkowa losowa gorsza ryba (bez special dropów), liczona do Fishpedii
       if (Math.random() * 100 < effBycatch(f)) {
         const low = FISH.slice(0, FISH.indexOf(f)), bf = low[Math.floor(Math.random() * low.length)]; byId = bf.id;
-        giveMat(bf.id); addCatch(bf.id, 1);
+        giveMat(bf.id); addCatch(bf.id, 1); questEv('fish', 1, bf.id);
         fishing.caught = fishing.caught || {}; fishing.caught[bf.id] = true;
         say(`<b>Bycatch!</b> +1 <b class="t${MATS[bf.id].r || 0}">${bf.name}</b>`, 'crit');
       }
@@ -2910,7 +2896,7 @@ function* fightGen(mob, io) {
     p.lvl = me.lvl; M.lvl = mob.l;   // poziomy do wzoru pancerza (redukcja liczona od poziomu atakującego)
     // kto zaczyna: zawsze Ty (walkę rozpoczyna Twój atak / umiejętność)
     let turn = 0;
-    let ph = p.hp, mh = frailHp(M.hp), rounds = 0;   // Curse of Frailty: wróg zaczyna z obniżonym HP (maks. HP bez zmian)
+    let ph = p.hp, mh = frailHp(M.hp), rounds = 0, phMin = ph;   // Curse of Frailty: wróg zaczyna z obniżonym HP (maks. HP bez zmian)
     // ELEMENTAL BARRIER: tarcza = % maks. HP (3.33% za rangę); obrażenia od wroga najpierw zdejmują tarczę, potem zdrowie
     let sh = Math.round(p.hp * (ub().barrier || 0) / 100);
     const barTot = p.hp + sh;   // skala paska HP gracza na całą walkę: maks. HP + tarcza ze startu (tarcza = dodatkowe zdrowie)
@@ -3090,7 +3076,7 @@ function* fightGen(mob, io) {
         let abDealt = 0;   // suma obrażeń umiejętności (Skullsplitter: krwawienie od tej sumy)
         for (let h = 0, nh = ab && ab.hits || 1; h < nh && mh > 0; h++) {   // Bladestorm: 3 ciosy, każdy z osobną szansą na krytyk
           if (h) yield 230;
-          const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); abDealt += Math.min(dm, Math.max(0, mh)); mh -= dr(ab ? ab.n : execute ? 'Death Sentence' : 'Attack', dm); if (UI) dmgPop(fm, dm, hit.crit, ab ? 'ab' : 'out');   // umiejętność: żółta liczba (krytyk – żółta w formacie krytyka)
+          const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); if (UI && hit.crit) questEv('crit'); abDealt += Math.min(dm, Math.max(0, mh)); mh -= dr(ab ? ab.n : execute ? 'Death Sentence' : 'Attack', dm); if (UI) dmgPop(fm, dm, hit.crit, ab ? 'ab' : 'out');   // umiejętność: żółta liczba (krytyk – żółta w formacie krytyka)   // QUEST: krytyk = +1 do questa
           // BLADESTORM: każdy cios oprócz ostatniego liczy się osobno dla pasywek „za cios / za krytyk” (ostatni obsługuje kod niżej, jak przy zwykłym ataku);
           // nowe stosy Battle Fervor działają już od następnego ciosu tej samej serii
           if (h < nh - 1 && mh > 0) {
@@ -3100,6 +3086,7 @@ function* fightGen(mob, io) {
             if (U.lacerate && hit.crit) { bleed = Math.min(bleedMax, bleed + 1); bleedT = bleedDur; deb.bleed = bleedInfo(); renderDebuffs(deb); }
           }
         }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
+        if (UI) questEv(ab ? (ab.ult ? 'ult' : '') : 'atk');   // QUEST: zwykły atak / użycie Ultimate
         if (!ab) { rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT + (furyT > 0 ? 2 : 0)); if (UI) setRage(rageBar); }   // RAGE: +8 za zwykły atak (+2 z Battle Fury), maks. 100
         if (ab && ab.gain) { rageBar = Math.min(RAGE_MAX, rageBar + ab.gain); if (UI) setRage(rageBar); }   // Pommel Strike +25 (+30 na 5 poziomie)
         if (ab && ab.ult) { abCd[act] = Infinity; if (UI) refreshAb(); }   // ULTIMATE: raz na walkę
@@ -3199,7 +3186,7 @@ function* fightGen(mob, io) {
         { const dm = hit(mob.n, 'You', Mc, p, fm, (t, c) => say(t, c));
           // Elemental Barrier: tarcza pochłania obrażenia (najpierw tarcza, potem zdrowie)
           const ab = Math.min(sh, dm); if (ab > 0) { sh -= ab; say(`Elemental Barrier absorbs <b>${ab}</b>${sh ? ` (${sh} left)` : ' – the shield breaks!'}`, 'miss'); }
-          ph -= dm - ab;
+          ph -= dm - ab; phMin = Math.min(phMin, ph);   // QUEST: najniższe HP w walce
           if (UI) { if (ab) dmgPop(fp, ab, false, 'shield'); if (!ab || dm > ab) dmgPop(fp, dm - ab, hit.crit, 'in'); } }   // pochłonięte – niebieska liczba   // fm = wróg wyskakuje do ataku; liczba obrażeń nad Tobą
         // Endure: pierwszy raz, gdy HP spadnie do zera – powrót z 30% maks. HP (raz na walkę)
         if (ph <= 0 && U.endure && !endured) {
@@ -3238,7 +3225,7 @@ function* fightGen(mob, io) {
       }
       turn ^= 1; upd();
     }
-    io.res = { ph, mh, rounds }; io.upd = upd;
+    io.res = { ph, mh, rounds, phMin, hp: p.hp, turns: pTurns }; io.upd = upd;   // phMin / turns – questy
 }
 
 // SZANSA WYGRANEJ (tylko DEV): 300 symulowanych walk tą samą logiką co prawdziwa walka (fightGen), przeciwnik z prawdziwym HP.
@@ -3391,7 +3378,7 @@ $('go').onclick = async ev => {
     const { ph } = io.res, upd = io.upd;
     fightOn = false;
     const loot = [];   // łup tej walki (pokazywany pod przyciskiem Collect na wyprawie)
-    let rwXp = 0, rwGold = 0, qDone = null;   // nagroda tej walki (napis pod łupem); qDone = nagroda z ukończonego questa
+    let rwXp = 0, rwGold = 0;   // nagroda tej walki (napis pod łupem)
     if (ph > 0) {
       const xp = xpOf(mob), rewardGold = Math.round(mob.l * 3);
       const gainXp = me.lvl >= MAX_LVL ? 0 : xp;   // na 80 poziomie XP już się nie zbiera
@@ -3428,7 +3415,8 @@ $('go').onclick = async ev => {
       }
       // postęp w lokacji: pokonanie kolejnego przeciwnika odblokowuje następnego w tej samej lokacji
       { const li = ALL_LOCS.findIndex(l => l.mobs.includes(mob)); if (li >= 0) { const mi = ALL_LOCS[li].mobs.indexOf(mob); me.eprog = me.eprog || {}; if (mi === (me.eprog[li] || 0)) me.eprog[li] = mi + 1; } }
-      if (view == 'exp') qDone = questKill(mob, loot);   // QUEST: postęp / ukończenie aktywnego questa
+      if (io.res.phMin >= io.res.hp * 0.5) questEv('safe');   // QUEST: wygrana bez spadku poniżej 50% HP
+      if (io.res.turns <= 4) questEv('fast');   // QUEST: wygrana w maks. 4 Twoich turach
       // pokonanie bossa lokacji (ostatni przeciwnik) odblokowuje następną lokację
       const bossLoc = ALL_LOCS.findIndex(l => l.mobs[l.mobs.length - 1] === mob);
       if (bossLoc >= 0 && bossLoc === locUnlocked && bossLoc + 1 < ALL_LOCS.length) {
@@ -3444,7 +3432,7 @@ $('go').onclick = async ev => {
       }
     } else { say('<b>You lost.</b> Get stronger and try again.'); }
     if (view == 'dun') dunRes = { win: ph > 0 };   // LOCH: napis wyniku nad oknem walki
-    if (view == 'exp') { expRes = { win: ph > 0, loot, had: loot.length > 0, xp: rwXp, gold: rwGold, quest: qDone }; if (loot.length) me.pendLoot = loot; }   // pendLoot: ta sama tablica – zapis gry   // had: był łup (po założeniu wszystkiego nie piszemy „No loot”)
+    if (view == 'exp') { expRes = { win: ph > 0, loot, had: loot.length > 0, xp: rwXp, gold: rwGold }; if (loot.length) me.pendLoot = loot; }   // pendLoot: ta sama tablica – zapis gry   // had: był łup (po założeniu wszystkiego nie piszemy „No loot”)
   } catch (err) {
     console.error('Combat error:', err);
     say('An error occurred during combat (see console, F12).', 'miss');
@@ -3491,7 +3479,6 @@ function updateTip(x, y, target) {
       const k = it.split(':')[1], d = MATS[k];
       i = inv.find(x => x.mat && x.sl === k) || { sl: k, r: d.r || 0, name: d.name, mat: 1, qty: 0, val: d.val, s: {} };
     }
-    else if (it.startsWith('questrw:')) i = me.quests?.list?.[+it.split(':')[1]]?.item || null;   // nagroda z questa
     else if (it.startsWith('loot:')) i = expRes?.loot?.[+it.split(':')[1]] || null;   // łup pod przyciskiem Collect
     else if (it.startsWith('dsd:')) { const [, m, n] = it.split(':'), x = curDun().mobs[+m]?.sd?.[+n]; i = x ? makeFixed(x.k) : null; }
     else if (it.startsWith('sdrop:')) { const [, f, n] = it.split(':'); i = SPECIAL_DROPS[f]?.[+n]?.item() || null; }
@@ -3508,11 +3495,9 @@ function updateTip(x, y, target) {
   if (!i) { tipEl.style.display = 'none'; return; }
   if (i.fresh && t.dataset.it.startsWith('inv:')) { delete i.fresh; t.classList.remove('new'); }   // czerwona kropka znika po najechaniu
   // plecak, sklep, dropy: porównanie z założonym – tylko z wciśniętym Shift; bez Shift zwykły dymek z podpowiedzią
-  const cmp = t && /^(inv|shopi|dsd|sdrop|fixed|loot|questrw):/.test(t.dataset.it) ? cmpCard(i) : null;   // loot: łup pod przyciskiem Collect
+  const cmp = t && /^(inv|shopi|dsd|sdrop|fixed|loot):/.test(t.dataset.it) ? cmpCard(i) : null;   // loot: łup pod przyciskiem Collect
   tipEl.style.borderColor = 'var(--c0)';
-  // QUEST: nad przedmiotem nagrody – XP i złoto
-  const qh = t && t.dataset.it.startsWith('questrw:') ? (q => q ? `<div style="font-weight:700;margin-bottom:6px">Reward: <span style="color:#e69500">+${q.gold}</span> ${goldIco(14)} <span style="color:#8e44ad">+${q.xp} XP</span></div>`
-    + `<div class="cell r${q.item.r || 0}" style="width:56px;height:56px;margin:0 0 6px;cursor:default">${invIco(q.item)}</div>` : '')(me.quests.list[+t.dataset.it.split(':')[1]]) : '';   // ikona przedmiotu z nagrody (ramka w kolorze rzadkości)
+  const qh = '';
   if (cmp && shiftDown) { tipEl.innerHTML = qh + cmp.left; if (cmp.right) { tip2.innerHTML = cmp.right; placeTip2(x, y); } else placeTip(x, y); }
   else { tipEl.innerHTML = qh + card(i, cmp ? 'Hold Shift to compare' : ''); placeTip(x, y); }
 }
