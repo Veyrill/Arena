@@ -1110,7 +1110,8 @@ const isBoss = m => ALL_LOCS.some(l => l.mobs[l.mobs.length - 1] === m);
 // IKONY DEBUFFÓW w prawym górnym rogu okna walki (zamiast wpisów w logu). Curse of Frailty nie ma ikony.
 // st = stosy (liczba w prawym dolnym rogu, tylko dla debuffów, które się kumulują), tip = opis w dymku
 const DEBUFFS = {
-  fury: ['skill_battle_fury', 'Call to Arms', '📯'], cry: ['skill_battle_fury', 'Battlecry', '📯'], rfury: ['skill_battle_fury', 'Relentless Fury', '📯'],
+  // buff Call to Arms i morphów: ta sama ikona co umiejętność (assets/skills/abilities, ścieżka względem folderu curses)
+  fury: ['../abilities/ab_fury', 'Call to Arms', '📯'], cry: ['../abilities/ab_fury_cry', 'Battlecry', '📯'], rfury: ['../abilities/ab_fury_free', 'Relentless Fury', '📯'],
   // mdeath / crip: morphy Pommel Strike (Marking Strike / Crippling Strike)
   stun: ['debuff_stun', 'Stunned', '💫'], mdeath: ['debuff_mark_of_death', 'Mark of Death', '🎯'], crip: ['debuff_crippled', 'Crippled', '🩼'], rend: ['debuff_deep_wound', 'Deep Wound', '🩸'],   // Earthshaker / Skullsplitter (brak pliku → emoji)   // buff gracza (brak pliku → 📯)
   sunder: ['curse_sunder', 'Curse of Frailty'], exhaust: ['curse_cripple', 'Curse of Withering'], expose: ['curse_exposed', 'Exposed Weakness'], mark: ['curse_shadow_mark', 'Curse of the Void'], agony: ['curse_agony', 'Torment'], warcry: ['skill_war_cry', 'War Cry', '📯'], rage: ['skill_rage_within', 'Rage Within', '😤'], fervor: ['skill_battle_fervor', 'Battle Fervor', '🔥'],
