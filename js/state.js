@@ -26,6 +26,7 @@ export let inv = DEV ? [
   { sl: 'light_of_anglerfish', r: 3, name: 'Light of Anglerfish', mat: 1, qty: 999, val: 150, s: {} },   // DEV: materiał z Żabnicy (epic) – crafting Sea Raider
   { sl: 'pearl_of_the_deep', r: 4, name: 'Pearl of the Deep', mat: 1, qty: 999, val: 400, s: {} },   // DEV: materiał z Lewiatana (legendary)
   { sl: 'shark_fin', r: 3, name: 'Shark Fin', mat: 1, qty: 999, val: 250, s: {} },   // DEV: materiał z Rekina (epic) – ulepszenie wędki i haczyka rare → epic
+  { sl: 'upgrade_token', r: 4, name: 'Upgrade Token', mat: 1, qty: 999, val: 0, s: {} },   // DEV: token z questów (na razie bez zastosowania)
   // DEV: wędka każdej rzadkości (common → legendary; mityczna tymczasowo usunięta z gry); FP: 25 / 60 / 110 / 175 / 275 (jak ROD_TIERS w fishing.js)
   ...[['Stick and String', 25], ['Uncommon Rod', 60], ['Rare Rod', 110], ['Epic Rod', 175], ['Legendary Rod', 275]]
     .map(([name, fp], r) => ({ sl: 'weapon', r, name, isFishGear: 1, val: 250, fp, s: {} })),

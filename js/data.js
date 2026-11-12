@@ -59,8 +59,8 @@ export const MATS={
   // Płetwa rekina – materiał (epic) do ulepszania wędki i haczyka z rare (niebieskie) na epic (fioletowe); 5% z każdego złowionego Rekina (wielokrotnie, łączy się w stos)
   // Perła głębin – materiał (legendary); 5% z każdego złowionego Lewiatana (wielokrotnie, łączy się w stos). Ulepszenie wędki i haczyka epic → legendary (10 sztuk)
   pearl_of_the_deep:{sl:'pearl_of_the_deep',grp:'fish',name:'Pearl of the Deep',val:400,e:'🦪',r:4,img:'materials/pearl_of_the_deep.png',source:'Fishing (Leviathan)',desc:'Rod and hook upgrade material (purple → gold)'},
-  // Gold Medal – token z questów (dokładnie 1 za ukończony quest). Na razie bez zastosowania. Grafika: assets/materials/gold_medal.png (brak pliku → 🏅)
-  gold_medal:{sl:'gold_medal',grp:'token',name:'Gold Medal',val:0,e:'🏅',r:4,img:'materials/gold_medal.png',source:'Quests (1 per completed quest)',desc:'Quest token – no use yet'},
+  // Upgrade Token – token z questów (dokładnie 1 za ukończony quest). Na razie bez zastosowania. Grafika: assets/materials/upgrade_token.png (brak pliku → 🪙)
+  upgrade_token:{sl:'upgrade_token',grp:'token',name:'Upgrade Token',val:0,e:'🪙',r:4,img:'materials/upgrade_token.png',source:'Quests (1 per completed quest)',desc:'Quest token – no use yet'},
   shark_fin:{sl:'shark_fin',grp:'fish',name:'Shark Fin',val:250,e:'🦈',r:3,img:'materials/shark_fin.png',source:'Fishing (Shark)',desc:'Rod and hook upgrade material (blue → purple)'}
 };
 

@@ -15,6 +15,7 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 5000–5099 | Materiały z przeciwników |
 | 5100–5199 | Ryby |
 | 5200–5299 | Materiały z ryb |
+| 5300–5399 | Tokeny (nagrody z questów) |
 | 6000–6999 | Przedmioty użytkowe (zwoje, jedzenie, przepisy, projekty, inne) |
 
 
@@ -207,6 +208,7 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 5204 | Light of Anglerfish (stos) |
 | 5205 | Pearl of the Deep (stos) |
 | 5206 | Shark Fin (stos) |
+| 5301 | Upgrade Token (stos) |
 
 ## Scroll
 

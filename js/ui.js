@@ -1605,8 +1605,9 @@ function genShop() {
 function ensureShop() { if (!me.shop || !me.shop.items || Date.now() >= me.shop.t) genShop(); }
 
 // ===== QUESTY =====
-// Co 30 min nowa pula: 3 losowe z 6 rodzajów. Questów się NIE aktywuje – wszystkie 3 liczą się od razu, równolegle.
-// Nagroda: dokładnie 1 Gold Medal (materiał, na razie bez zastosowania) – od razu do plecaka, gdy licznik dojdzie do celu.
+// Co 30 min można wylosować nową pulę: 3 losowe z 6 rodzajów. Po upływie czasu w nagłówku pojawia się przycisk Reset –
+// nowe questy dopiero po jego kliknięciu (do tego czasu stare dalej się liczą). Questów się NIE aktywuje – wszystkie 3 liczą się od razu, równolegle.
+// Nagroda: dokładnie 1 Upgrade Token (materiał, na razie bez zastosowania) – od razu do plecaka, gdy licznik dojdzie do celu.
 // Bez złota, XP i przedmiotów. Liczą się prawdziwe walki (wyprawa i loch, bez symulacji szans) oraz łowienie.
 // Reset kasuje nieukończone questy (postęp przepada). Ultimate: tylko gdy gracz ma wytrenowany Ultimate.
 const QUEST_RESET = 30 * 60e3, QUEST_LVL = 5, QUEST_N = 3;   // questy dostępne od 5 poziomu
@@ -1627,7 +1628,11 @@ function genQuests() {
     if (k === 'fish') q.fish = caught.length ? caught[I(0, caught.length - 1)] : 'fish_carp';
     return q; }) };
 }
-function ensureQuests() { if (!me.quests || me.quests.v !== 2 || !me.quests.list || Date.now() >= me.quests.t) genQuests(); }   // v: 2 – stary zapis (Kill X×) → nowa pula
+function ensureQuests() { if (!me.quests || me.quests.v !== 2 || !me.quests.list) genQuests(); }   // v: 2 – stary zapis (Kill X×) → nowa pula; po czasie NIE losuje sama (przycisk Reset)
+// RESET: dostępny dopiero po upływie 30 min (nie w trakcie walki) – nowa pula 3 questów
+window.resetQuests = () => { if (busy || !me.quests || Date.now() < me.quests.t) return; genQuests(); render(); };
+// nagłówek panelu: licznik do resetu albo (po czasie) przycisk Reset
+const questHead = () => Date.now() >= me.quests.t ? `<button class="qreset" onclick="window.resetQuests()">Reset</button>` : fmtCd(me.quests.t - Date.now());
 // XP z nagrody (poza walką też): awanse jak po walce (+1 do statystyk, +1 skill point)
 function addXp(x) {
   if (me.lvl >= MAX_LVL) return 0;
@@ -1635,14 +1640,15 @@ function addXp(x) {
   while (me.lvl < MAX_LVL && me.xp >= xpNeed(me.lvl)) { me.xp -= xpNeed(me.lvl); me.lvl++; me.str += 1; me.dex += 1; me.con += 1; me.sp++; spDot = true; say(`<b>Level up: ${me.lvl}!</b> +1 skill point`, 'crit'); }
   return x;
 }
-// postęp questów: k = rodzaj, n = ile, fish = id ryby (quest łowienia liczy tylko swoją rybę); cel osiągnięty → +1 Gold Medal od razu
+// postęp questów: k = rodzaj, n = ile, fish = id ryby (quest łowienia liczy tylko swoją rybę); cel osiągnięty → +1 Upgrade Token od razu
+// po upływie czasu (przed kliknięciem Reset) questy dalej się liczą
 function questEv(k, n = 1, fish) {
-  const Q = me.quests; if (me.lvl < QUEST_LVL || !Q || Q.v !== 2 || Date.now() >= Q.t) return;
+  const Q = me.quests; if (me.lvl < QUEST_LVL || !Q || Q.v !== 2) return;
   let ch = false;
   for (const q of Q.list) {
     if (q.k !== k || q.got >= q.need || (k === 'fish' && q.fish !== fish)) continue;
     q.got = Math.min(q.need, q.got + n); ch = true;
-    if (q.got >= q.need) { giveMatQuiet('gold_medal'); say(`<b>Quest complete!</b> ${QUEST_KINDS[k].t(q.need, q)} – +1 <b class="t${MATS.gold_medal.r}">${MATS.gold_medal.name}</b>`, 'crit'); }
+    if (q.got >= q.need) { giveMatQuiet('upgrade_token'); say(`<b>Quest complete!</b> ${QUEST_KINDS[k].t(q.need, q)} – +1 <b class="t${MATS.upgrade_token.r}">${MATS.upgrade_token.name}</b>`, 'crit'); }
   }
   if (ch) renderQuestSide();
 }
@@ -1651,13 +1657,13 @@ function renderQuestSide() {
   side.hidden = view !== 'exp' || me.lvl < QUEST_LVL; if (side.hidden) return;   // od 5 poziomu
   ensureQuests();
   placeQuestSide();
-  const Q = me.quests, cd = side.querySelector('[data-questcd]'); if (cd) cd.textContent = fmtCd(Q.t - Date.now());
-  // wiersz: opis, pasek postępu, licznik; po prawej nagroda (Gold Medal, dymek jak materiał) albo ✓ po ukończeniu
+  const Q = me.quests, cd = side.querySelector('[data-questcd]'); if (cd) cd.innerHTML = questHead();
+  // wiersz: opis, pasek postępu, licznik; po prawej nagroda (Upgrade Token, dymek jak materiał) albo ✓ po ukończeniu
   const rows = Q.list.map(q => {
     const K = QUEST_KINDS[q.k]; if (!K) return '';
     const done = q.got >= q.need;
     return `<div class="qrow${done ? ' done' : ''}"><div class="qtx"><b>${K.t(q.need, q)}</b><div class="qbar"><i style="width:${q.got / q.need * 100}%"></i></div><small>${q.got}/${q.need}</small></div>`
-      + (done ? '<span style="color:#3fdc3f;font-weight:700;font-size:18px">✓</span>' : `<div class="qic" data-it="mat:gold_medal">${matIco('gold_medal', 32, 24)}</div>`) + `</div>`;
+      + (done ? '<span style="color:#3fdc3f;font-weight:700;font-size:18px">✓</span>' : `<div class="qic" data-it="mat:upgrade_token">${matIco('upgrade_token', 32, 24)}</div>`) + `</div>`;
   }).join('');
   $('body-quest-side').innerHTML = rows || '<small style="color:var(--mut)">No quests. New quests after the reset.</small>';
 }
@@ -3821,7 +3827,7 @@ if (devBtn) {
 // ZASADA: każdy NOWY przedmiot dostaje tu ID w swoim zakresie; istniejących ID nie zmieniamy ani nie używamy ponownie.
 //   1000–1999 ekwipunek losowy (baza z NAMES, rzadkość i poziom przy spawnie)   2000–2999 przedmioty z lochów
 //   3000–3999 sprzęt wędkarski (stałe, wędki 31xx, haczyki 32xx)               4000–4999 unikaty
-//   5000–5999 materiały (51xx ryby, 52xx materiały z ryb)                        6000–6999 przedmioty użytkowe (zwoje, jedzenie, przepisy, projekty…)
+//   5000–5999 materiały (51xx ryby, 52xx materiały z ryb, 53xx tokeny)                        6000–6999 przedmioty użytkowe (zwoje, jedzenie, przepisy, projekty…)
 const ITEM_REG = [];
 const regI = (id, cat, name, make, opts = {}) => ITEM_REG.push(Object.assign({ id, cat, name, make }, opts));
 regI(1000, 'Equipment', 'Rusty Sword', () => ({ sl: 'weapon', r: 0, name: 'Rusty Sword', ic: 'sword_bronze', rust: 1, s: {}, d: [4, 6], dv: 2 }));
@@ -3876,6 +3882,7 @@ const matI = (id, k) => regI(id, 'Material', MATS[k].name, () => ({ sl: MATS[k].
 ['meat', 'claw', 'bone', 'skull'].forEach((k, n) => matI(5001 + n, k));
 ['fish_carp', 'fish_cod', 'fish_catfish', 'fish_barracuda', 'fish_anglerfish', 'fish_shark', 'fish_leviathan'].forEach((k, n) => matI(5101 + n, k));
 ['eye_of_cod', 'catfish_scale', 'barracuda_fang', 'light_of_anglerfish', 'pearl_of_the_deep', 'shark_fin'].forEach((k, n) => matI(5201 + n, k));
+matI(5301, 'upgrade_token');   // 53xx – tokeny (nagrody z questów)
 ['str', 'dex'].forEach((k, n) => regI(6001 + n, 'Scroll', SCROLLS[k].name, () => ({ isScroll: true, kind: k, name: SCROLLS[k].name, val: 0, noSell: true, qty: 1 }), { scroll: k, stack: true }));
 const DISH_KEYS = ['cooked_carp', 'cooked_cod', 'grilled_catfish', 'steamed_barracuda', 'anglerfish_stew', 'shark_steak', 'abyssal_broth'];
 DISH_KEYS.forEach((k, n) => regI(6101 + n, 'Food', DISHES[k].name, () => makeDish(k), { food: k, stack: true }));
@@ -4016,11 +4023,12 @@ function spawnItem(id, r = 0, qty = 1) {
 setInterval(() => { if (fishTick()) { render(); playFx(); } }, 100);
 (function fishBarLoop() { updateFishUI(); requestAnimationFrame(fishBarLoop); })();
 
-// QUESTY: co sekundę licznik do resetu; po czasie – nowa pula (gdy nie trwa walka)
+// QUESTY: co sekundę licznik do resetu; po czasie – przycisk Reset w nagłówku (nowa pula dopiero po kliknięciu)
 setInterval(() => {
-  if (!me.quests) return;
-  if (Date.now() >= me.quests.t) { if (!busy) { genQuests(); if (view == 'exp') render(); } return; }
-  const e = document.querySelector('#quest-side [data-questcd]'); if (e) e.textContent = fmtCd(me.quests.t - Date.now());
+  if (!me.quests || !me.quests.t) return;
+  const e = document.querySelector('#quest-side [data-questcd]'); if (!e) return;
+  if (Date.now() >= me.quests.t) { if (!e.querySelector('.qreset')) e.innerHTML = questHead(); return; }
+  e.textContent = fmtCd(me.quests.t - Date.now());
 }, 1000);
 // SKLEP: co sekundę licznik do odświeżenia; po czasie – nowe przedmioty
 setInterval(() => {
@@ -4102,6 +4110,7 @@ newBtn.style.cssText = 'position:fixed;left:12px;bottom:46px;z-index:60;font-wei
 newBtn.onclick = () => { if (confirm(`Start a new ${DEV ? 'DEV ' : ''}game? Your current ${DEV ? 'DEV ' : ''}save will be deleted.`)) resetSave(); };
 document.body.appendChild(newBtn);
 // niezebrany łup z wyprawy (strona odświeżona przed Collect) → plecak
+inv.forEach(x => { if (x.mat && x.sl === 'gold_medal') { x.sl = 'upgrade_token'; x.name = MATS.upgrade_token.name; } });   // stary zapis: Gold Medal → Upgrade Token
 if (me.pendLoot) { deliverLoot(me.pendLoot); delete me.pendLoot; }
 render();
 // WYBÓR KLASY (nowa gra / po resecie): ekran wyszarzony, 3 karty – Warlock, Mage, Warrior. Na razie da się wybrać tylko Warrior.
