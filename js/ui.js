@@ -1110,7 +1110,7 @@ const isBoss = m => ALL_LOCS.some(l => l.mobs[l.mobs.length - 1] === m);
 // IKONY DEBUFFÓW w prawym górnym rogu okna walki (zamiast wpisów w logu). Curse of Frailty nie ma ikony.
 // st = stosy (liczba w prawym dolnym rogu, tylko dla debuffów, które się kumulują), tip = opis w dymku
 const DEBUFFS = {
-  fury: ['skill_battle_fury', 'Battle Fury', '📯'], cry: ['skill_battle_fury', 'Battlecry', '📯'], rfury: ['skill_battle_fury', 'Relentless Fury', '📯'],
+  fury: ['skill_battle_fury', 'Call to Arms', '📯'], cry: ['skill_battle_fury', 'Battlecry', '📯'], rfury: ['skill_battle_fury', 'Relentless Fury', '📯'],
   // mdeath / crip: morphy Pommel Strike (Marking Strike / Crippling Strike)
   stun: ['debuff_stun', 'Stunned', '💫'], mdeath: ['debuff_mark_of_death', 'Mark of Death', '🎯'], crip: ['debuff_crippled', 'Crippled', '🩼'], rend: ['debuff_deep_wound', 'Deep Wound', '🩸'],   // Earthshaker / Skullsplitter (brak pliku → emoji)   // buff gracza (brak pliku → 📯)
   sunder: ['curse_sunder', 'Curse of Frailty'], exhaust: ['curse_cripple', 'Curse of Withering'], expose: ['curse_exposed', 'Exposed Weakness'], mark: ['curse_shadow_mark', 'Curse of the Void'], agony: ['curse_agony', 'Torment'], warcry: ['skill_war_cry', 'War Cry', '📯'], rage: ['skill_rage_within', 'Rage Within', '😤'], fervor: ['skill_battle_fervor', 'Battle Fervor', '🔥'],
@@ -1217,7 +1217,7 @@ const ABILS = {
       cripple: { n: 'Crippling Strike', img: 'ab_pommel_cripple', crip: 10, cripT: 3, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Cripples the enemy: it deals 10% less damage for 3 turns.' }
     } },
   // buffD = % obrażeń z buffa (Battle Fury: 10% → 15 / 25 / 40 / 60%), lvF = dodatek do buffD na poziomie 1–5, lvT = dodatkowe tury buffa (6 tur na 5 poziomie)
-  fury: { n: 'Battle Fury', ico: '📯', img: 'ab_fury', cost: 15, cd: 0, cdBuff: true, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 1, 3, 6, 10, 16, 23, 31, 40, 50], lvT: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
+  fury: { n: 'Call to Arms', ico: '📯', img: 'ab_fury', cost: 15, cd: 0, cdBuff: true, lvl: 9, free: true, buffT: 5, buffD: 10, lvF: [0, 1, 3, 6, 10, 16, 23, 31, 40, 50], lvT: [0, 0, 0, 0, 0, 0, 0, 0, 0, 1], d: 'Instant: does not end your turn. For 5 turns you deal 10% more damage and attacks generate 2 more Rage.',
     // dexUp = % wyższa Dexterity na czas buffa (szansa na krytyk liczona od podniesionej Dexterity)
     morph: {
       cry: { n: 'Battlecry', img: 'ab_fury_cry', dexUp: 20, d: 'Instant: does not end your turn. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' },
@@ -1414,7 +1414,7 @@ window.morphAbil = (id, k) => {
 // me.plan = [{ id, c: { warunek: { on, v } }, save (ult: oszczędzaj Rage), off (nie używaj) }] – sprawdzane od lewej, pierwsza gotowa spełniająca warunki = użyta; nic → Attack
 const PLAN_CONDS = {
   eAbove: { t: 'Enemy HP ≥', u: '%', v: 50 }, eBelow: { t: 'Enemy HP ≤', u: '%', v: 30 }, myBelow: { t: 'My HP ≤', u: '%', v: 50 },
-  rage: { t: 'Rage ≥', u: '', v: 60 }, buffOn: { t: 'Battle Fury is active' }, buffOff: { t: 'Battle Fury not active' }
+  rage: { t: 'Rage ≥', u: '', v: 60 }, buffOn: { t: 'Call to Arms is active' }, buffOff: { t: 'Call to Arms not active' }
 };
 const PLAN_ORDER = ['decap', 'storm', 'split', 'quake', 'fury', 'pommel', 'overhead'];   // domyślna kolejność nowego planu
 const planDef = id => {   // domyślne warunki nowej pozycji planu
