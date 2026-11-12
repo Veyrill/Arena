@@ -1424,7 +1424,7 @@ function planGet() {
   const have = new Set(pl.map(s => s.id));
   const add = Object.keys(ABILS).filter(id => ok(id) && !have.has(id)).sort((x, y) => (PLAN_ORDER.indexOf(x) + 1 || 99) - (PLAN_ORDER.indexOf(y) + 1 || 99));
   add.forEach(id => { const s = planDef(id), at = PLAN_ORDER.indexOf(id); const j = pl.findIndex(o => PLAN_ORDER.indexOf(o.id) > at); if (!Array.isArray(me.plan) || at < 0 || j < 0) pl.push(s); else pl.splice(j, 0, s); });
-  pl.forEach(s => { delete s.c; if (ABILS[s.id].ult && !s.when) s.when = s.id === 'split' ? 'ehp' : 'asap'; });   // stary zapis: warunki z suwaków usunięte
+  pl.forEach(s => { delete s.c; if (s.hp) s.hp = PLAN_MY_HP; if (ABILS[s.id].ult && !s.when) s.when = s.id === 'split' ? 'ehp' : 'asap'; });   // stary zapis: warunki z suwaków usunięte
   me.plan = pl; return pl;
 }
 // które opcje ma dana umiejętność
@@ -1433,15 +1433,16 @@ const planOpts = id => {
   return { wait: id === 'overhead' && has('fury'), keep: (id === 'overhead' || id === 'pommel') && has('decap'), hp: id === 'overhead' && !!a.heal,
     when: !!a.ult, ehp: id === 'split', cta: !!a.ult && has('fury'), save: !!a.ult };
 };
-const PLAN_WHEN = { asap: 'ASAP', cta: 'With Call to Arms', ehp: 'Enemy HP ≥ 50%' };
+const PLAN_WHEN = { asap: 'as soon as possible', cta: 'with Call to Arms', ehp: 'while enemy HP ≥ 50%' };
+const PLAN_MY_HP = 50;   // Siphoning: „my HP is below 50%”
 const planChip = s => {   // opis ustawień (dymek kropki na karcie)
   if (s.off) return "Don't use";
   const o = planOpts(s.id), t = [];
-  if (o.when) t.push('Use: ' + (PLAN_WHEN[s.when] || 'ASAP'));
+  if (o.when) t.push('Use ' + (PLAN_WHEN[s.when] || PLAN_WHEN.asap));
   if (o.save && s.save) t.push('Save Rage for Ultimate');
   if (o.wait && s.wait) t.push('Wait for Call to Arms');
   if (o.keep && s.keep) t.push('Keep Rage for Decapitate');
-  if (o.hp && s.hp) t.push(`Only when my HP ≤ ${s.hp}%`);
+  if (o.hp && s.hp) t.push(`My HP below ${PLAN_MY_HP}%`);
   return t.join('<br>');
 };
 let abSub = 'list', abPlanSel = null, planDrag = null;   // podzakładka Abilities / Battle Plan; otwarta karta; przeciągana karta
@@ -1450,12 +1451,11 @@ window.planOpen = i => { abPlanSel = abPlanSel === i ? null : i; render(); };
 window.planSet = (i, k, v) => {
   const s = planGet()[i]; if (!s) return;
   if (k === 'when') s.when = v;
-  else if (k === 'hp') { const n = Math.round(+v); s.hp = n >= 100 ? 0 : Math.max(5, n); }   // suwak na 100% = wyłączony
+  else if (k === 'hp') s.hp = s.hp ? 0 : PLAN_MY_HP;
   else s[k] = !s[k];
   saveGame(); render();
 };
 window.planReset = () => { me.plan = null; abPlanSel = null; planGet(); saveGame(); render(); };
-window.planSlide = el => { const v = +el.value, r = el.closest('.bpr'); r.classList.toggle('on', v < 100); r.querySelector('.bpfill').style.width = v + '%'; r.querySelector('.bpval').textContent = v < 100 ? `≤ ${v}%` : 'any'; };
 function renderPlanTab() {
   const pl = planGet();
   if (!pl.length) return `<small style="color:var(--mut)">Train an ability first – then set the order in which Auto uses it.</small>`;
@@ -1468,20 +1468,24 @@ function renderPlanTab() {
   let pop = '';
   const s = abPlanSel !== null && pl[abPlanSel];
   if (s) {
+    // okienko przypięte do karty (strzałka ustawiana w planDnD): lewo – ikona, nazwa, Don't use; prawo – opcje jako zdanie z „tickerami”
     const a = abEff(s.id), o = planOpts(s.id), i = abPlanSel, rows = [];
-    const chk = (k, txt, sub) => `<label class="bpck${s[k] ? ' on' : ''}"><input type="checkbox"${s[k] ? ' checked' : ''} onchange="window.planSet(${i},'${k}')"><span>${txt}${sub ? ` <i>${sub}</i>` : ''}</span></label>`;
-    if (o.when) rows.push(`<div class="bpr on"><span class="bprn">Use</span><div class="bpseg">${['asap', ...(o.cta ? ['cta'] : []), ...(o.ehp ? ['ehp'] : [])].map(w => `<em class="${(s.when || 'asap') === w ? 'o' : ''}" onclick="window.planSet(${i},'when','${w}')">${PLAN_WHEN[w]}</em>`).join('')}</div></div>`);
-    if (o.save) rows.push(`<div class="bpr">${chk('save', 'Save Rage for Ultimate', `(${a.cost})`)}</div>`);
-    if (o.wait) rows.push(`<div class="bpr">${chk('wait', 'Wait for Call to Arms')}</div>`);
-    if (o.keep) rows.push(`<div class="bpr">${chk('keep', 'Keep Rage for Decapitate', `(when enemy HP ≤ ${PLAN_KEEP_HP}%)`)}</div>`);
-    if (o.hp) { const v = s.hp || 100; rows.push(`<div class="bpr${s.hp ? ' on' : ''}"><span class="bprn">Only when my HP</span><div class="bptr"><div class="bpfill" style="left:0;width:${v}%"></div><input type="range" min="5" max="100" step="5" value="${v}" oninput="window.planSlide(this)" onchange="window.planSet(${i},'hp',this.value)"></div><b class="bpval">${s.hp ? `≤ ${s.hp}%` : 'any'}</b></div>`); }
-    pop = `<div class="bpop"><div class="bph"><b>${a.n}</b><button class="bpoff${s.off ? ' on' : ''}" onclick="window.planSet(${i},'off')">${s.off ? 'Not used' : "Don't use"}</button></div>`
-      + (s.off ? `<div class="bpnone">Auto never uses it.</div>` : rows.length ? rows.join('') : `<div class="bpnone">No options – Auto uses it as soon as it is ready.</div>`) + `</div>`;
+    const chk = (k, txt) => `<label class="bpck${s[k] ? ' on' : ''}"><input type="checkbox"${s[k] ? ' checked' : ''} onchange="window.planSet(${i},'${k}')"><span>${txt}</span></label>`;
+    if (o.when) rows.push(`<div class="bppl">${['asap', ...(o.cta ? ['cta'] : []), ...(o.ehp ? ['ehp'] : [])].map(w => `<span class="${(s.when || 'asap') === w ? 'on' : ''}" onclick="window.planSet(${i},'when','${w}')">${PLAN_WHEN[w]}</span>`).join('')}</div>`);
+    if (o.save) rows.push(chk('save', `save Rage for it <i>(${a.cost})</i>`));
+    if (o.wait) rows.push(chk('wait', 'Call to Arms is active'));
+    if (o.keep) rows.push(chk('keep', 'it leaves Rage for Decapitate'));
+    if (o.hp) rows.push(chk('hp', `my HP is below ${PLAN_MY_HP}%`));
+    const q = s.off ? 'Auto never uses it.' : !rows.length ? 'Auto uses it as soon as it is ready.' : o.when ? 'Auto uses it:' : 'Auto uses it when:';
+    pop = `<div class="bpop"><div class="bplf">${abIco(a, 'bpi')}<b>${a.n}</b><button class="bpoff${s.off ? ' on' : ''}" onclick="window.planSet(${i},'off')">${s.off ? 'Not used' : "Don't use"}</button></div>`
+      + `<div class="bprt${s.off ? ' dis' : ''}"><span class="bpq">${q}</span>${s.off ? '' : rows.join('')}</div></div>`;
   }
   return `<div class="bpflow">${pl.map(card).join('')}${atk}</div>${pop}<button class="bpreset" onclick="window.planReset()">Reset plan</button>`;
 }
 // przeciąganie kart planu (zmiana kolejności)
 function planDnD(el) {
+  const pop = el.querySelector('.bpop'), sc = el.querySelector('.bpc.sel');   // strzałka okienka pod wybraną kartą
+  if (pop && sc) pop.style.setProperty('--ax', (sc.getBoundingClientRect().left - pop.getBoundingClientRect().left + sc.offsetWidth / 2 - 8) + 'px');
   el.querySelectorAll('.bpc[data-pi]').forEach(c => {
     c.addEventListener('dragstart', e => { planDrag = +c.dataset.pi; e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', 'p'); } catch (x) {} c.classList.add('drag'); });
     c.addEventListener('dragend', () => { planDrag = null; el.querySelectorAll('.bpc').forEach(x => x.classList.remove('drag', 'over')); });
