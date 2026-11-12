@@ -1412,19 +1412,11 @@ window.morphAbil = (id, k) => {
   saveGame(); render();
 };
 // BATTLE PLAN (zakładka w Abilities): kolejność i warunki umiejętności używanych automatycznie po kliknięciu Auto.
-// me.plan = [{ id, c: { warunek: { on, v } }, save (ult: oszczędzaj Rage), off (nie używaj) }] – sprawdzane od lewej, pierwsza gotowa spełniająca warunki = użyta; nic → Attack
-const PLAN_CONDS = {
-  eAbove: { t: 'Enemy HP ≥', u: '%', v: 50 }, eBelow: { t: 'Enemy HP ≤', u: '%', v: 30 }, myBelow: { t: 'My HP ≤', u: '%', v: 50 },
-  rage: { t: 'Rage ≥', u: '', v: 60 }, buffOn: { t: 'Call to Arms is active' }, buffOff: { t: 'Call to Arms not active' }
-};
+// me.plan = [{ id, off, wait (czekaj na Call to Arms), keep (zostaw Rage na Decapitate), hp (Siphoning: tylko przy moim HP ≤ hp%), when (ult: asap/cta/ehp), save (ult: oszczędzaj Rage) }]
+// sprawdzane od lewej: pierwsza gotowa umiejętność spełniająca swoje opcje = użyta; nic → Attack. Każda umiejętność ma tylko opcje, które mają dla niej sens.
 const PLAN_ORDER = ['decap', 'storm', 'split', 'quake', 'fury', 'pommel', 'overhead'];   // domyślna kolejność nowego planu
-const planDef = id => {   // domyślne warunki nowej pozycji planu
-  const s = { id, c: {} };
-  if (id === 'fury') s.c.buffOff = { on: true };
-  if (id === 'split') s.c.eAbove = { on: true, v: 50 };   // Skullsplitter: krwawienie ma czas zadziałać
-  if (ABILS[id].ult) s.save = true;
-  return s;
-};
+const PLAN_KEEP_HP = 35;   // Keep Rage for Decapitate: działa, gdy wróg ma ≤ 35% HP (tuż przed progiem egzekucji)
+const planDef = id => { const s = { id }; if (ABILS[id].ult) { s.save = true; s.when = id === 'split' ? 'ehp' : 'asap'; } return s; };
 // plan bez nieznanych / niewytrenowanych umiejętności; nowo wytrenowane dopisane (wg domyślnej kolejności)
 function planGet() {
   const ok = id => !!ABILS[id] && myAb(id) && !!(me.abils && me.abils[id]);
@@ -1432,71 +1424,59 @@ function planGet() {
   const have = new Set(pl.map(s => s.id));
   const add = Object.keys(ABILS).filter(id => ok(id) && !have.has(id)).sort((x, y) => (PLAN_ORDER.indexOf(x) + 1 || 99) - (PLAN_ORDER.indexOf(y) + 1 || 99));
   add.forEach(id => { const s = planDef(id), at = PLAN_ORDER.indexOf(id); const j = pl.findIndex(o => PLAN_ORDER.indexOf(o.id) > at); if (!Array.isArray(me.plan) || at < 0 || j < 0) pl.push(s); else pl.splice(j, 0, s); });
+  pl.forEach(s => { delete s.c; if (ABILS[s.id].ult && !s.when) s.when = s.id === 'split' ? 'ehp' : 'asap'; });   // stary zapis: warunki z suwaków usunięte
   me.plan = pl; return pl;
 }
-const planCondOk = (id, k) => k !== 'buffOn' && k !== 'buffOff' ? true : id === 'fury' ? k === 'buffOff' : !!(me.abils && me.abils.fury);   // warunki buffa tylko przy wytrenowanym Battle Fury
-const planChip = s => {
-  if (s.off) return 'Skipped on Auto';
-  const c = s.c || {}, t = Object.keys(PLAN_CONDS).filter(k => c[k] && c[k].on && planCondOk(s.id, k)).map(k => { const d = PLAN_CONDS[k]; return d.u === undefined ? (s.id === 'fury' ? 'Buff not active' : d.t) : `${d.t} ${c[k].v}${d.u}`; });
-  return t.length ? t.join('<br>') : 'When ready';
+// które opcje ma dana umiejętność
+const planOpts = id => {
+  const a = abEff(id), has = x => !!(me.abils && me.abils[x]);
+  return { wait: id === 'overhead' && has('fury'), keep: (id === 'overhead' || id === 'pommel') && has('decap'), hp: id === 'overhead' && !!a.heal,
+    when: !!a.ult, ehp: id === 'split', cta: !!a.ult && has('fury'), save: !!a.ult };
+};
+const PLAN_WHEN = { asap: 'ASAP', cta: 'With Call to Arms', ehp: 'Enemy HP ≥ 50%' };
+const planChip = s => {   // opis ustawień (dymek kropki na karcie)
+  if (s.off) return "Don't use";
+  const o = planOpts(s.id), t = [];
+  if (o.when) t.push('Use: ' + (PLAN_WHEN[s.when] || 'ASAP'));
+  if (o.save && s.save) t.push('Save Rage for Ultimate');
+  if (o.wait && s.wait) t.push('Wait for Call to Arms');
+  if (o.keep && s.keep) t.push('Keep Rage for Decapitate');
+  if (o.hp && s.hp) t.push(`Only when my HP ≤ ${s.hp}%`);
+  return t.join('<br>');
 };
 let abSub = 'list', abPlanSel = null, planDrag = null;   // podzakładka Abilities / Battle Plan; otwarta karta; przeciągana karta
 window.abSubTab = t => { abSub = t; abPlanSel = null; render(); };
 window.planOpen = i => { abPlanSel = abPlanSel === i ? null : i; render(); };
-window.planSet = (i, k, f, v) => {
+window.planSet = (i, k, v) => {
   const s = planGet()[i]; if (!s) return;
-  if (k === 'save' || k === 'off') s[k] = !!v;
-  else if (k === 'buff') { s.c = s.c || {}; s.c.buffOn = { on: v === 'on' }; s.c.buffOff = { on: v === 'off' }; }   // Call to Arms: any / on / off
-  else { s.c = s.c || {}; const n = Math.round(+v); if (!isFinite(n)) return; const c = s.c[k] = { on: false, v: n };
-    c.on = k === 'rage' || k === 'eAbove' ? n > 0 : n < 100; }   // suwak na skraju = „any” (warunek wyłączony)
+  if (k === 'when') s.when = v;
+  else if (k === 'hp') { const n = Math.round(+v); s.hp = n >= 100 ? 0 : Math.max(5, n); }   // suwak na 100% = wyłączony
+  else s[k] = !s[k];
   saveGame(); render();
 };
 window.planReset = () => { me.plan = null; abPlanSel = null; planGet(); saveGame(); render(); };
-// suwak: aktualna wartość warunku (wyłączony = skraj zakresu); opis i wypełnienie paska
-const planVal = (c, k) => { const o = c[k]; if (o && o.on && o.v !== undefined) return o.v; return k === 'rage' || k === 'eAbove' ? 0 : 100; };
-const planLbl = (k, v, v2) => k === 'ehp' ? (v > 0 && v2 < 100 ? `${v}–${v2}%` : v > 0 ? `≥ ${v}%` : v2 < 100 ? `≤ ${v2}%` : 'any')
-  : k === 'rage' ? (v > 0 ? `≥ ${v}` : 'any') : (v < 100 ? `≤ ${v}%` : 'any');
-// podgląd na żywo podczas przeciągania (bez przebudowy widoku)
-window.planSlide = el => {
-  const r = el.closest('.bpr'), ins = r.querySelectorAll('input[type=range]'), mx = +ins[0].max;
-  if (ins.length === 2) { let lo = +ins[0].value, hi = +ins[1].value; if (lo > hi) { if (el === ins[0]) ins[0].value = lo = hi; else ins[1].value = hi = lo; } }
-  const k = r.dataset.k, v = +ins[0].value, v2 = ins.length === 2 ? +ins[1].value : v;
-  const l = k === 'ehp' ? v : k === 'rage' ? v : 0, h = k === 'ehp' ? v2 : k === 'rage' ? mx : v;
-  const any = planLbl(k, v, v2) === 'any';
-  r.classList.toggle('on', !any);
-  r.querySelector('.bpfill').style.cssText = `left:${l / mx * 100}%;width:${(h - l) / mx * 100}%`;
-  r.querySelector('.bpval').textContent = planLbl(k, v, v2);
-};
+window.planSlide = el => { const v = +el.value, r = el.closest('.bpr'); r.classList.toggle('on', v < 100); r.querySelector('.bpfill').style.width = v + '%'; r.querySelector('.bpval').textContent = v < 100 ? `≤ ${v}%` : 'any'; };
 function renderPlanTab() {
   const pl = planGet();
   if (!pl.length) return `<small style="color:var(--mut)">Train an ability first – then set the order in which Auto uses it.</small>`;
-  const hasC = s => Object.keys(PLAN_CONDS).some(k => s.c && s.c[k] && s.c[k].on && planCondOk(s.id, k));
-  const card = (s, i) => { const a = abEff(s.id);
+  const isSet = s => { const o = planOpts(s.id); return (o.wait && s.wait) || (o.keep && s.keep) || (o.hp && s.hp) || (o.when && s.when !== 'asap'); };
+  const card = (s, i) => { const a = abEff(s.id), tip = planChip(s);
     return `<div class="bpc${abPlanSel === i ? ' sel' : ''}${s.off ? ' off' : ''}${a.ult ? ' ult' : ''}" draggable="true" data-pi="${i}" onclick="window.planOpen(${i})">`
       + `<span class="bpn">${i + 1}</span><span data-tip="${abTip(s.id).replace(/"/g, '&quot;')}">${abIco(a, 'bpi')}</span><b>${a.n}</b>`
-      + (hasC(s) || s.off ? `<span class="bpdot${s.off ? ' skip' : ''}" data-tip="${planChip(s)}"></span>` : '') + `</div><span class="bpa">›</span>`; };
+      + (isSet(s) || s.off ? `<span class="bpdot${s.off ? ' skip' : ''}" data-tip="${tip}"></span>` : '') + `</div><span class="bpa">›</span>`; };
   const atk = `<div class="bpc atk"><span class="bpn">∞</span><span class="bpi img"><img src="${ASSETS_DIR}/weapon/weapon_sword.png" alt=""></span><b>Attack</b></div>`;
   let pop = '';
   const s = abPlanSel !== null && pl[abPlanSel];
   if (s) {
-    const a = abEff(s.id), c = s.c || {}, i = abPlanSel;
-    // wiersz z suwakiem; Enemy HP = zakres (dwa uchwyty: ≥ dolny, ≤ górny)
-    const row = (k, name) => {
-      const mx = k === 'rage' ? RAGE_MAX : 100;
-      const v = k === 'ehp' ? planVal(c, 'eAbove') : planVal(c, k), v2 = k === 'ehp' ? planVal(c, 'eBelow') : v;
-      const l = k === 'ehp' || k === 'rage' ? v : 0, h = k === 'ehp' ? v2 : k === 'rage' ? mx : v, lbl = planLbl(k, v, v2);
-      const inp = (key, val) => `<input type="range" min="0" max="${mx}" step="5" value="${val}" oninput="window.planSlide(this)" onchange="window.planSet(${i},'${key}','v',this.value)">`;
-      return `<div class="bpr${lbl === 'any' ? '' : ' on'}" data-k="${k}"><span class="bprn">${name}</span><div class="bptr"><div class="bpfill" style="left:${l / mx * 100}%;width:${(h - l) / mx * 100}%"></div>`
-        + (k === 'ehp' ? inp('eAbove', v) + inp('eBelow', v2) : inp(k, v)) + `</div><b class="bpval">${lbl}</b></div>`;
-    };
-    const bv = c.buffOn && c.buffOn.on ? 'on' : c.buffOff && c.buffOff.on ? 'off' : 'any';
-    const seg = (s.id === 'fury' ? ['any', 'off'] : ['any', 'on', 'off']).map(o => `<em class="${bv === o ? 'o' : ''}" onclick="window.planSet(${i},'buff','','${o}')">${o}</em>`).join('');
-    const buffRow = planCondOk(s.id, 'buffOn') || planCondOk(s.id, 'buffOff')
-      ? `<div class="bpr${bv === 'any' ? '' : ' on'}"><span class="bprn">${s.id === 'fury' ? 'Buff' : 'Call to Arms'}</span><div class="bpseg">${seg}</div></div>` : '';
-    const chk = (k, on, txt) => `<label class="bpck${on ? ' on' : ''}"><input type="checkbox"${on ? ' checked' : ''} onchange="window.planSet(${i},'${k}','',this.checked)"><span>${txt}</span></label>`;
-    pop = `<div class="bpop">`
-      + row('ehp', 'Enemy HP') + row('myBelow', 'My HP') + row('rage', 'Rage') + buffRow
-      + `<div class="bpft">${a.ult ? chk('save', s.save, `Save Rage for Ultimate <i>(${a.cost})</i>`) : ''}${chk('off', s.off, 'Skip on Auto')}</div></div>`;
+    const a = abEff(s.id), o = planOpts(s.id), i = abPlanSel, rows = [];
+    const chk = (k, txt, sub) => `<label class="bpck${s[k] ? ' on' : ''}"><input type="checkbox"${s[k] ? ' checked' : ''} onchange="window.planSet(${i},'${k}')"><span>${txt}${sub ? ` <i>${sub}</i>` : ''}</span></label>`;
+    if (o.when) rows.push(`<div class="bpr on"><span class="bprn">Use</span><div class="bpseg">${['asap', ...(o.cta ? ['cta'] : []), ...(o.ehp ? ['ehp'] : [])].map(w => `<em class="${(s.when || 'asap') === w ? 'o' : ''}" onclick="window.planSet(${i},'when','${w}')">${PLAN_WHEN[w]}</em>`).join('')}</div></div>`);
+    if (o.save) rows.push(`<div class="bpr">${chk('save', 'Save Rage for Ultimate', `(${a.cost})`)}</div>`);
+    if (o.wait) rows.push(`<div class="bpr">${chk('wait', 'Wait for Call to Arms')}</div>`);
+    if (o.keep) rows.push(`<div class="bpr">${chk('keep', 'Keep Rage for Decapitate', `(when enemy HP ≤ ${PLAN_KEEP_HP}%)`)}</div>`);
+    if (o.hp) { const v = s.hp || 100; rows.push(`<div class="bpr${s.hp ? ' on' : ''}"><span class="bprn">Only when my HP</span><div class="bptr"><div class="bpfill" style="left:0;width:${v}%"></div><input type="range" min="5" max="100" step="5" value="${v}" oninput="window.planSlide(this)" onchange="window.planSet(${i},'hp',this.value)"></div><b class="bpval">${s.hp ? `≤ ${s.hp}%` : 'any'}</b></div>`); }
+    pop = `<div class="bpop"><div class="bph"><b>${a.n}</b><button class="bpoff${s.off ? ' on' : ''}" onclick="window.planSet(${i},'off')">${s.off ? 'Not used' : "Don't use"}</button></div>`
+      + (s.off ? `<div class="bpnone">Auto never uses it.</div>` : rows.length ? rows.join('') : `<div class="bpnone">No options – Auto uses it as soon as it is ready.</div>`) + `</div>`;
   }
   return `<div class="bpflow">${pl.map(card).join('')}${atk}</div>${pop}<button class="bpreset" onclick="window.planReset()">Reset plan</button>`;
 }
@@ -2935,19 +2915,19 @@ function* fightGen(mob, io) {
     // Save Rage: dopóki Ultimate nieużyty (i jego warunek „Enemy HP ≥” jeszcze możliwy), inne umiejętności z kosztem nie schodzą poniżej kosztu Ultimate
     const planPick = noFree => {
       const pl = planGet(), eh = mh / M.hp * 100, myh = ph / p.hp * 100;
-      const us = pl.find(s => ABILS[s.id].ult);
-      const ue = us && us.c && us.c.eAbove;
-      const saving = us && us.save && !us.off && abCd[us.id] !== Infinity && !(ue && ue.on && eh < ue.v) ? abEff(us.id).cost : 0;
+      const us = pl.find(s => ABILS[s.id].ult), ds = pl.find(s => s.id === 'decap');
+      // Save Rage: dopóki Ultimate nieużyty (i jego „Enemy HP ≥ 50%” jeszcze możliwe), inne umiejętności z kosztem nie schodzą poniżej kosztu Ultimate
+      const saving = us && us.save && !us.off && abCd[us.id] !== Infinity && !(us.when === 'ehp' && eh < 50) ? abEff(us.id).cost : 0;
+      const decapCost = ds && !ds.off ? abEff('decap').cost : 0, cta = pl.some(x => x.id === 'fury' && !x.off);   // Call to Arms wyłączony w planie → nie ma na co czekać
       for (const s of pl) {
         if (s.off || !abOk(s.id)) continue;
-        const a = abEff(s.id), c = s.c || {}, on = k => c[k] && c[k].on && planCondOk(s.id, k);
+        const a = abEff(s.id), o = planOpts(s.id);
         if (noFree && a.free) continue;
-        if (on('eAbove') && eh < c.eAbove.v) continue;
-        if (on('eBelow') && eh > c.eBelow.v) continue;
-        if (on('myBelow') && myh > c.myBelow.v) continue;
-        if (on('rage') && rageBar < c.rage.v) continue;
-        if (on('buffOn') && !(furyT > 0)) continue;
-        if (on('buffOff') && furyT > 0) continue;
+        if (o.when && s.when === 'ehp' && eh < 50) continue;
+        if (o.when && s.when === 'cta' && o.cta && cta && !(furyT > 0)) continue;
+        if (o.wait && s.wait && cta && !(furyT > 0)) continue;
+        if (o.keep && s.keep && decapCost && eh <= PLAN_KEEP_HP && rageBar - a.cost < decapCost) continue;
+        if (o.hp && s.hp && myh > s.hp) continue;
         if (saving && !a.ult && a.cost > 0 && rageBar - a.cost < saving) continue;
         return s.id;
       }
