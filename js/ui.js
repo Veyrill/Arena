@@ -1536,7 +1536,7 @@ function setDps(by, turns) {
   const el = $('dpsm'); if (!el) return;
   const ent = Object.entries(by || {}).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
   const tot = ent.reduce((a, e) => a + e[1], 0), top = ent.length ? ent[0][1] : 1;
-  { const v = $('dpsv'); if (v) { v.textContent = turns ? fmtN(tot / turns).replace(/,/g, '') : '–'; v.style.fontSize = v.textContent.length > 6 ? '10px' : ''; } }   // kafelek: liczba bez przecinka (1284, nie 1,284); 7+ znaków → mniejsze piksele, żeby zmieściło się w ramce
+  { const v = $('dpsv'); if (v) { v.textContent = turns ? fmtN(tot / turns).replace(/,/g, '') : '–'; v.style.fontSize = v.textContent.length > 6 ? '8px' : ''; } }   // kafelek: liczba bez przecinka (1284, nie 1,284); 7+ znaków → mniejsze piksele, żeby zmieściło się w ramce
   const rows = ent.map(([k, v]) => `<div class="dprow">${dpsIco(k)}<div class="dpbar"><i style="width:${v / top * 100}%"></i><span class="dpn">${k}</span>`
     + `<span class="dpv">${fmtN(v / turns)} (${fmtN(v)}) ${Math.round(v / tot * 100)}%</span></div></div>`).join('');
   // PANEL DPS (zamiast dymka nad kafelkiem): szczegóły w karcie po prawej, widocznej w trakcie walki
