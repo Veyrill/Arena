@@ -1631,7 +1631,7 @@ function genQuests() {
 function ensureQuests() { if (!me.quests || me.quests.v !== 2 || !me.quests.list) genQuests(); }   // v: 2 – stary zapis (Kill X×) → nowa pula; po czasie NIE losuje sama (przycisk Reset)
 // RESET: dostępny dopiero po upływie 30 min (nie w trakcie walki) – nowa pula 3 questów
 window.resetQuests = () => { if (busy || !me.quests || Date.now() < me.quests.t) return; genQuests(); render(); };
-// nagłówek panelu: licznik do resetu albo (po czasie) przycisk z kręcącą się strzałką (assets/ui/ui_reset.png)
+// nagłówek panelu: licznik do resetu albo (po czasie) przycisk z okrągłą strzałką (assets/ui/ui_reset.png)
 const questHead = () => Date.now() >= me.quests.t ? `<button class="qreset" onclick="window.resetQuests()" title="Reset quests – draw 3 new quests"><img src="${ASSETS_DIR}/ui/ui_reset.png" alt="Reset"></button>` : fmtCd(me.quests.t - Date.now());
 // XP z nagrody (poza walką też): awanse jak po walce (+1 do statystyk, +1 skill point)
 function addXp(x) {
