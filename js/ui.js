@@ -2123,7 +2123,7 @@ function render() {
     return `<div class="sr${k ? ' at' : ''}"><span class="lb" data-tip="<b>${n}</b>${tips[n]}">${n}</span><i class="sdot"></i><b class="sv">${v}</b>${k ? `<span class="plusw" data-tip="${ok ? 'Cost: ' + c : 'Missing ' + (c - G0) + ' (cost: ' + c + ')'}"><button class="plus" data-k="${k}"${busy || !ok ? ' disabled' : ''}>+</button></span>` : ''}</div>`;
   };
   $('stats').innerHTML = '<h6 class="sth">ATTRIBUTES</h6>' + [['str', 'Strength', d.str], ['dex', 'Dexterity', d.dex], ['con', 'Vitality', d.con]].map(sRow).join('')
-    + '<h6 class="sth">COMBAT</h6>' + [[0, 'Health', d.hp], [0, 'Damage', r(d.min) + '-' + r(d.max)], [0, 'Armor', d.arm], [0, 'Crit chance', r(d.crit) + '%'], [0, 'Crit damage', Math.round(d.critMul * 100) + '%']].map(sRow).join('');
+    + '<h6 class="sth">COMBAT</h6>' + [[0, 'Damage', r(d.min) + '-' + r(d.max)], [0, 'Health', d.hp], [0, 'Armor', d.arm], [0, 'Crit chance', r(d.crit) + '%'], [0, 'Crit damage', Math.round(d.critMul * 100) + '%']].map(sRow).join('');
   // skill pointy nad złotem – widoczne tylko, gdy gracz ma co najmniej 1
   const spEl = $('sp');
   { const spShow = Math.max(0, me.sp - Math.max(0, me.lvl - lastLvl));   // punkty z poziomów jeszcze niepokazanych (XP leci / opóźnienie level-upu) dochodzą razem z animacją
