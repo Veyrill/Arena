@@ -1533,7 +1533,7 @@ function setDps(by, turns) {
   const el = $('dpsm'); if (!el) return;
   const ent = Object.entries(by || {}).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
   const tot = ent.reduce((a, e) => a + e[1], 0), top = ent.length ? ent[0][1] : 1;
-  { const v = $('dpsv'); if (v) v.textContent = turns ? fmtN(tot / turns).replace(/,/g, '') : '–'; }   // kafelek: liczba bez przecinka (1284, nie 1,284)
+  { const v = $('dpsv'); if (v) { v.textContent = turns ? fmtN(tot / turns).replace(/,/g, '') : '–'; v.style.fontSize = v.textContent.length > 6 ? '10px' : ''; } }   // kafelek: liczba bez przecinka (1284, nie 1,284); 7+ znaków → mniejsze piksele, żeby zmieściło się w ramce
   const rows = ent.map(([k, v]) => `<div class="dprow">${dpsIco(k)}<div class="dpbar"><i style="width:${v / top * 100}%"></i><span class="dpn">${k}</span>`
     + `<span class="dpv">${fmtN(v / turns)} (${fmtN(v)}) ${Math.round(v / tot * 100)}%</span></div></div>`).join('');
   // PANEL DPS (zamiast dymka nad kafelkiem): szczegóły w karcie po prawej, widocznej w trakcie walki
@@ -2520,7 +2520,7 @@ function render() {
     renderInfo(m);
     // przycisk „Show battle log” (absolutnie pod przeciwnikiem) zjeżdża pod panel ℹ️, gdy ten jest otwarty
     { const lw = $('logwrap'), sb = $('skillbar'); if (lw) { const dm = $('dpsm'); lw.style.marginTop = ((sb ? sb.offsetHeight + 26 : 0) + (showInfo ? $('info').offsetHeight : 0) + 24 - (dm ? Math.max(0, dm.offsetHeight - 24) / 2 : 0)) + 'px';
-      const g = $('go'); if (dm && g && g.offsetParent) { const gr = g.getBoundingClientRect(), dr = dm.getBoundingClientRect(); lw.style.marginTop = (parseFloat(lw.style.marginTop) + (gr.top + gr.height / 2) - (dr.top + dr.height / 2)) + 'px'; } } }   // środek odznaki na wysokości przycisku Fight! / Skip   // DPS meter wyśrodkowany w miejscu dawnego „Show battle log” (szer. 132 px, środek na tej samej wysokości)   // przycisk logu pod paskiem umiejętności (i pod panelem ℹ️)
+      const g = $('go'); if (dm && g && g.offsetParent) { const gr = g.getBoundingClientRect(), dr = dm.getBoundingClientRect(); lw.style.marginTop = (parseFloat(lw.style.marginTop) + (gr.top + gr.height / 2) - (dr.top + dr.height / 2) - 4) + 'px'; } } }   // środek odznaki na wysokości przycisku Fight! / Skip   // DPS meter wyśrodkowany w miejscu dawnego „Show battle log” (szer. 132 px, środek na tej samej wysokości)   // przycisk logu pod paskiem umiejętności (i pod panelem ℹ️)
     if (lastMob !== m && !busy) { setLastMob(m); setShowInfo(false); renderDebuffs({}); setDps({}, 0); const h0 = frailHp(s.hp);
       // Elemental Barrier widoczna już przed walką: niebieska końcówka paska i HP + tarcza / maks. HP (bez ikony buffa)
       const sh0 = Math.round(d.hp * (ub().barrier || 0) / 100), tot = d.hp + sh0;
