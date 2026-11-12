@@ -2119,11 +2119,14 @@ function render() {
     'Crit chance': `Chance for a hit dealing ×${d.critMul.toFixed(2)} damage. Dexterity / (Dexterity + ${CRIT_K} × level + ${CRIT_C}) = ${+(d.crit - d.critSet).toFixed(1)}%, max ${CRIT_CAP}%.${d.critSet ? ` Set bonus: +${d.critSet}% (above the limit).` : ''}`,
     'Crit damage': `Critical hits deal ${Math.round(d.critMul * 100)}% damage: base 180% + 0.1% for every point of Dexterity above ${CRIT_K * me.lvl + CRIT_C} (the amount needed for 50% crit chance at your level). Now ${d.critOver} points above.${d.critDmgSet ? ` Set bonus: +${d.critDmgSet}%.` : ''}${UB.critBonus ? ` Bloodlust: +${UB.critBonus}% on top.` : ''}`
   };
-  $('stats').innerHTML = [['str', 'Strength', d.str], ['dex', 'Dexterity', d.dex], ['con', 'Vitality', d.con], [0, 'Health', d.hp], [0, 'Damage', r(d.min) + '-' + r(d.max)], [0, 'Armor', d.arm], [0, 'Crit chance', r(d.crit) + '%'], [0, 'Crit damage', Math.round(d.critMul * 100) + '%']].map(([k, n, v]) => {
+  // PANEL STATYSTYK (wariant E): dwie sekcje z nagłówkiem (ATTRIBUTES / COMBAT), kropkowana linia od nazwy do wartości, liczby pixelową czcionką ArenaCaps
+  const sRow = ([k, n, v]) => {
     const c = k && cost(k), ok = k && G0 >= c;
     // przycisk (+) owinięty w <span data-tip>, żeby dymek działał też na wyłączonym przycisku
-    return `<div><span class="lb" data-tip="<b>${n}</b>${tips[n]}">${n}</span><span><b>${v}</b>${k ? `<span class="plusw" data-tip="${ok ? 'Cost: ' + c : 'Missing ' + (c - G0) + ' (cost: ' + c + ')'}"><button class="plus" data-k="${k}"${busy || !ok ? ' disabled' : ''}>+</button></span>` : ''}</span></div>`;
-  }).join('');
+    return `<div class="sr${k ? ' at' : ''}"><span class="lb" data-tip="<b>${n}</b>${tips[n]}">${n}</span><i class="sdot"></i><b class="sv">${v}</b>${k ? `<span class="plusw" data-tip="${ok ? 'Cost: ' + c : 'Missing ' + (c - G0) + ' (cost: ' + c + ')'}"><button class="plus" data-k="${k}"${busy || !ok ? ' disabled' : ''}>+</button></span>` : ''}</div>`;
+  };
+  $('stats').innerHTML = '<h6 class="sth">ATTRIBUTES</h6>' + [['str', 'Strength', d.str], ['dex', 'Dexterity', d.dex], ['con', 'Vitality', d.con]].map(sRow).join('')
+    + '<h6 class="sth">COMBAT</h6>' + [[0, 'Health', d.hp], [0, 'Damage', r(d.min) + '-' + r(d.max)], [0, 'Armor', d.arm], [0, 'Crit chance', r(d.crit) + '%'], [0, 'Crit damage', Math.round(d.critMul * 100) + '%']].map(sRow).join('');
   // skill pointy nad złotem – widoczne tylko, gdy gracz ma co najmniej 1
   const spEl = $('sp');
   { const spShow = Math.max(0, me.sp - Math.max(0, me.lvl - lastLvl));   // punkty z poziomów jeszcze niepokazanych (XP leci / opóźnienie level-upu) dochodzą razem z animacją
