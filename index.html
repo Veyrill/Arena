@@ -112,12 +112,15 @@ button.drow:hover{border-color:var(--dc)}
 .arena .bar #sh1{z-index:2}
 /* PASEK UMIEJĘTNOŚCI gracza pod paskami HP: 10 kwadratowych slotów w jednym rzędzie na całą szerokość (na razie puste – miejsce na aktywne skille);
    ciemne wypełnienie (jak pasek akcji), w prawym dolnym rogu klawisz: 1 2 3 4 5 Q W E R Tab. */
-.skillbar{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;margin:18px 40px 0;padding:4px 10px;position:relative;
-  /* PASEK „Smocza deska” (PixelLab, 9-slice): ui_bar_frame.png 28×19 – rogi i szyny ostre, środek (deska) powtarzany; wszystko ×2 */
-  border-style:solid;border-width:12px 8px 8px;border-image:url(assets/ui/ui_bar_frame.png) 6 4 4 fill / 12px 8px 8px repeat;image-rendering:pixelated;background:none;box-shadow:none;border-radius:0}
+.skillbar{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;margin:18px 40px 0;position:relative;padding:12px 16px;border-radius:12px;
+  /* tło „Żelazo i ogień”: ciemna stalowa płyta (jaśniejsza góra, ciemniejszy dół), 4 nity w rogach, żarząca się pomarańczowa krawędź */
+  background:radial-gradient(circle at 9px 9px,#8e8a99 0 3px,#111 3px 5px,transparent 5px),radial-gradient(circle at calc(100% - 9px) 9px,#8e8a99 0 3px,#111 3px 5px,transparent 5px),
+    radial-gradient(circle at 9px calc(100% - 9px),#8e8a99 0 3px,#111 3px 5px,transparent 5px),radial-gradient(circle at calc(100% - 9px) calc(100% - 9px),#8e8a99 0 3px,#111 3px 5px,transparent 5px),
+    linear-gradient(#3a3640 0 6px,#26232b 6px calc(100% - 6px),#17151b calc(100% - 6px));
+  box-shadow:inset 0 0 14px 2px rgba(232,121,58,.55),0 0 0 4px #111,0 0 12px 3px rgba(232,121,58,.45),0 8px 0 rgba(0,0,0,.3)}
 /* głowy smoków na końcach paska (ui_bar_dragon.png 19×27 ×2); prawa = lustrzane odbicie */
-.skillbar::before,.skillbar::after{content:'';position:absolute;top:50%;width:38px;height:54px;margin-top:-29px;background:url(assets/ui/ui_bar_dragon.png) 0 0/38px 54px no-repeat;image-rendering:pixelated;pointer-events:none;z-index:2}
-.skillbar::before{left:-40px}.skillbar::after{right:-40px;transform:scaleX(-1)}
+.skillbar::before,.skillbar::after{content:'';position:absolute;top:50%;width:38px;height:54px;margin-top:-27px;background:url(assets/ui/ui_bar_dragon.png) 0 0/38px 54px no-repeat;image-rendering:pixelated;pointer-events:none;z-index:2}
+.skillbar::before{left:-42px}.skillbar::after{right:-42px;transform:scaleX(-1)}
 .sk{position:relative;display:flex;align-items:center;justify-content:center;aspect-ratio:1;background:linear-gradient(#46505e,#2d3440);border:3px solid #111;border-radius:8px;box-shadow:inset 0 3px 0 rgba(255,255,255,.08),0 3px 0 rgba(0,0,0,.28);box-sizing:border-box}
 .sk .kb{position:absolute;right:3px;bottom:2px;font-size:11px;font-weight:700;line-height:1;color:#f3e3c4;z-index:2;text-shadow:1px 1px 0 #000,-1px 1px 0 #000,1px -1px 0 #000,-1px -1px 0 #000}   /* czarny kontur – klawisz czytelny także na ikonie */
 /* slot 1 = ATAK: duża ikona obecnej broni; w trakcie walki, gdy ruch ma przeciwnik, ikona jest wyszarzona (Twoja tura = pełne kolory) */
@@ -134,14 +137,9 @@ button.drow:hover{border-color:var(--dc)}
 .sk.ab.proc{animation:abproc .7s ease-in-out infinite alternate}   /* Revenge / Decapitate gotowe – pulsuje */
 /* PASEK – wygląd (1+2): ikona wypełnia cały slot; klawisz na plakietce pod slotem; koszt Rage na plakietce w lewym górnym rogu
    (pomarańczowa = koszt, zielona = generuje Rage); niedostępne – przygaszone, ale kolorowe; odnowienie – ciemna nakładka z liczbą tur */
-#skillbar{padding-bottom:6px}
-#skillbar .sk{border:0;background:none;box-shadow:none;border-radius:0}
-/* SLOT (PixelLab, 9-slice): ui_bar_slot.png 20×20 – ramka 6 px (×2 = 12 px), ikona na wierzchu */
-#skillbar .sk::before{content:'';position:absolute;inset:0;border:12px solid transparent;border-image:url(assets/ui/ui_bar_slot.png) 6 fill / 12px repeat;image-rendering:pixelated;pointer-events:none;z-index:0}
-#skillbar .sk.atk img{position:relative;z-index:1;width:calc(100% - 6px)!important;height:calc(100% - 6px)!important}
-#skillbar .sk>.ic:not(.img){position:relative;z-index:1}
-#skillbar .sk .abcd{inset:3px}
-#skillbar .sk.ab .ic.img{inset:3px;border-radius:4px;z-index:1}
+#skillbar{padding-bottom:20px}
+#skillbar .sk{border:2px solid #000;background:#14161b}
+#skillbar .sk.ab .ic.img{inset:0;border-radius:6px}
 #skillbar .sk .kb{right:auto;left:50%;bottom:-11px;transform:translateX(-50%);background:#15131a;border:1px solid #4a4452;border-radius:4px;padding:2px 5px;font-size:10px;color:#d8cbb4;text-shadow:none}
 #skillbar .sk .abc{left:-4px;top:-5px;background:#15131a;border:1px solid #f07b16;border-radius:4px;padding:2px 4px;font-size:10px;color:#ffb347;text-shadow:none}
 #skillbar .sk .abc.gen{border-color:#3fbf4f;color:#7fe08a}
