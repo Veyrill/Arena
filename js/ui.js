@@ -1436,41 +1436,67 @@ function planGet() {
 }
 const planCondOk = (id, k) => k !== 'buffOn' && k !== 'buffOff' ? true : id === 'fury' ? k === 'buffOff' : !!(me.abils && me.abils.fury);   // warunki buffa tylko przy wytrenowanym Battle Fury
 const planChip = s => {
-  if (s.off) return 'Disabled';
+  if (s.off) return 'Skipped on Auto';
   const c = s.c || {}, t = Object.keys(PLAN_CONDS).filter(k => c[k] && c[k].on && planCondOk(s.id, k)).map(k => { const d = PLAN_CONDS[k]; return d.u === undefined ? (s.id === 'fury' ? 'Buff not active' : d.t) : `${d.t} ${c[k].v}${d.u}`; });
-  if (ABILS[s.id].ult) t.push('1×');
-  return t.length ? t.join(' · ') : 'When ready';
+  return t.length ? t.join('<br>') : 'When ready';
 };
 let abSub = 'list', abPlanSel = null, planDrag = null;   // podzakładka Abilities / Battle Plan; otwarta karta; przeciągana karta
 window.abSubTab = t => { abSub = t; abPlanSel = null; render(); };
 window.planOpen = i => { abPlanSel = abPlanSel === i ? null : i; render(); };
-window.planMove = (i, d) => { const pl = planGet(), j = i + d; if (j < 0 || j >= pl.length) return; [pl[i], pl[j]] = [pl[j], pl[i]]; abPlanSel = j; saveGame(); render(); };
 window.planSet = (i, k, f, v) => {
   const s = planGet()[i]; if (!s) return;
   if (k === 'save' || k === 'off') s[k] = !!v;
-  else { s.c = s.c || {}; const c = s.c[k] = s.c[k] || { on: false, v: PLAN_CONDS[k].v }; if (f === 'on') c.on = !!v; else { const n = Math.round(+v); if (isFinite(n)) c.v = Math.max(0, Math.min(k === 'rage' ? RAGE_MAX : 100, n)); } if (c.v === undefined && PLAN_CONDS[k].v !== undefined) c.v = PLAN_CONDS[k].v; }
+  else if (k === 'buff') { s.c = s.c || {}; s.c.buffOn = { on: v === 'on' }; s.c.buffOff = { on: v === 'off' }; }   // Call to Arms: any / on / off
+  else { s.c = s.c || {}; const n = Math.round(+v); if (!isFinite(n)) return; const c = s.c[k] = { on: false, v: n };
+    c.on = k === 'rage' || k === 'eAbove' ? n > 0 : n < 100; }   // suwak na skraju = „any” (warunek wyłączony)
   saveGame(); render();
 };
 window.planReset = () => { me.plan = null; abPlanSel = null; planGet(); saveGame(); render(); };
+// suwak: aktualna wartość warunku (wyłączony = skraj zakresu); opis i wypełnienie paska
+const planVal = (c, k) => { const o = c[k]; if (o && o.on && o.v !== undefined) return o.v; return k === 'rage' || k === 'eAbove' ? 0 : 100; };
+const planLbl = (k, v, v2) => k === 'ehp' ? (v > 0 && v2 < 100 ? `${v}–${v2}%` : v > 0 ? `≥ ${v}%` : v2 < 100 ? `≤ ${v2}%` : 'any')
+  : k === 'rage' ? (v > 0 ? `≥ ${v}` : 'any') : (v < 100 ? `≤ ${v}%` : 'any');
+// podgląd na żywo podczas przeciągania (bez przebudowy widoku)
+window.planSlide = el => {
+  const r = el.closest('.bpr'), ins = r.querySelectorAll('input[type=range]'), mx = +ins[0].max;
+  if (ins.length === 2) { let lo = +ins[0].value, hi = +ins[1].value; if (lo > hi) { if (el === ins[0]) ins[0].value = lo = hi; else ins[1].value = hi = lo; } }
+  const k = r.dataset.k, v = +ins[0].value, v2 = ins.length === 2 ? +ins[1].value : v;
+  const l = k === 'ehp' ? v : k === 'rage' ? v : 0, h = k === 'ehp' ? v2 : k === 'rage' ? mx : v;
+  const any = planLbl(k, v, v2) === 'any';
+  r.classList.toggle('on', !any);
+  r.querySelector('.bpfill').style.cssText = `left:${l / mx * 100}%;width:${(h - l) / mx * 100}%`;
+  r.querySelector('.bpval').textContent = planLbl(k, v, v2);
+};
 function renderPlanTab() {
   const pl = planGet();
   if (!pl.length) return `<small style="color:var(--mut)">Train an ability first – then set the order in which Auto uses it.</small>`;
+  const hasC = s => Object.keys(PLAN_CONDS).some(k => s.c && s.c[k] && s.c[k].on && planCondOk(s.id, k));
   const card = (s, i) => { const a = abEff(s.id);
-    return `<div class="bpc${abPlanSel === i ? ' sel' : ''}${s.off ? ' off' : ''}" draggable="true" data-pi="${i}" onclick="window.planOpen(${i})">`
-      + `<span class="bpn">${i + 1}</span><span data-tip="${abTip(s.id).replace(/"/g, '&quot;')}">${abIco(a, 'bpi')}</span><b>${a.n}</b><span class="bpch">${planChip(s)}</span></div><span class="bpa">›</span>`; };
-  const atk = `<div class="bpc atk"><span class="bpn">∞</span><span class="bpi img"><img src="${ASSETS_DIR}/weapon/weapon_sword.png" alt=""></span><b>Attack</b><span class="bpch">Otherwise</span></div>`;
+    return `<div class="bpc${abPlanSel === i ? ' sel' : ''}${s.off ? ' off' : ''}${a.ult ? ' ult' : ''}" draggable="true" data-pi="${i}" onclick="window.planOpen(${i})">`
+      + `<span class="bpn">${i + 1}</span><span data-tip="${abTip(s.id).replace(/"/g, '&quot;')}">${abIco(a, 'bpi')}</span><b>${a.n}</b>`
+      + (hasC(s) || s.off ? `<span class="bpdot${s.off ? ' skip' : ''}" data-tip="${planChip(s)}"></span>` : '') + `</div><span class="bpa">›</span>`; };
+  const atk = `<div class="bpc atk"><span class="bpn">∞</span><span class="bpi img"><img src="${ASSETS_DIR}/weapon/weapon_sword.png" alt=""></span><b>Attack</b></div>`;
   let pop = '';
   const s = abPlanSel !== null && pl[abPlanSel];
   if (s) {
     const a = abEff(s.id), c = s.c || {}, i = abPlanSel;
-    const opt = k => { if (!planCondOk(s.id, k)) return ''; const d = PLAN_CONDS[k], o = c[k] || {}, val = o.v !== undefined ? o.v : d.v;
-      return `<label class="bpo${o.on ? ' on' : ''}"><input type="checkbox"${o.on ? ' checked' : ''} onchange="window.planSet(${i},'${k}','on',this.checked)"><span class="bpl">${s.id === 'fury' && k === 'buffOff' ? 'Buff not active' : d.t}</span>`
-        + (d.u !== undefined ? `<span class="bpvw"><input type="number" class="bpv" min="0" max="${k === 'rage' ? RAGE_MAX : 100}" step="5" value="${val}" onclick="event.stopPropagation()" onchange="window.planSet(${i},'${k}','v',this.value)">${d.u}</span>` : '') + `</label>`; };
-    pop = `<div class="bpop"><div class="bph">${abIco(a, 'bphi')}<span><b>${a.n}</b><small>${a.ult ? 'Ultimate · once per fight · ' : ''}use only when:</small></span></div>`
-      + `<div class="bplist">${Object.keys(PLAN_CONDS).map(opt).join('')}</div>`
-      + (a.ult ? `<label class="bpo bpsave${s.save ? ' on' : ''}"><input type="checkbox"${s.save ? ' checked' : ''} onchange="window.planSet(${i},'save','',this.checked)"><span class="bpl"><b>Save Rage for Ultimate</b><i>Other abilities keep ${a.cost} Rage until it is used</i></span></label>` : '')
-      + `<div class="bpf"><label class="bpo${s.off ? ' on' : ''}"><input type="checkbox"${s.off ? ' checked' : ''} onchange="window.planSet(${i},'off','',this.checked)"><span class="bpl">Don't use on Auto</span></label>`
-      + `<span class="bpmv"><button onclick="window.planMove(${i},-1)"${i ? '' : ' disabled'} title="Move left">◀</button><button onclick="window.planMove(${i},1)"${i < pl.length - 1 ? '' : ' disabled'} title="Move right">▶</button></span></div></div>`;
+    // wiersz z suwakiem; Enemy HP = zakres (dwa uchwyty: ≥ dolny, ≤ górny)
+    const row = (k, name) => {
+      const mx = k === 'rage' ? RAGE_MAX : 100;
+      const v = k === 'ehp' ? planVal(c, 'eAbove') : planVal(c, k), v2 = k === 'ehp' ? planVal(c, 'eBelow') : v;
+      const l = k === 'ehp' || k === 'rage' ? v : 0, h = k === 'ehp' ? v2 : k === 'rage' ? mx : v, lbl = planLbl(k, v, v2);
+      const inp = (key, val) => `<input type="range" min="0" max="${mx}" step="5" value="${val}" oninput="window.planSlide(this)" onchange="window.planSet(${i},'${key}','v',this.value)">`;
+      return `<div class="bpr${lbl === 'any' ? '' : ' on'}" data-k="${k}"><span class="bprn">${name}</span><div class="bptr"><div class="bpfill" style="left:${l / mx * 100}%;width:${(h - l) / mx * 100}%"></div>`
+        + (k === 'ehp' ? inp('eAbove', v) + inp('eBelow', v2) : inp(k, v)) + `</div><b class="bpval">${lbl}</b></div>`;
+    };
+    const bv = c.buffOn && c.buffOn.on ? 'on' : c.buffOff && c.buffOff.on ? 'off' : 'any';
+    const seg = (s.id === 'fury' ? ['any', 'off'] : ['any', 'on', 'off']).map(o => `<em class="${bv === o ? 'o' : ''}" onclick="window.planSet(${i},'buff','','${o}')">${o}</em>`).join('');
+    const buffRow = planCondOk(s.id, 'buffOn') || planCondOk(s.id, 'buffOff')
+      ? `<div class="bpr${bv === 'any' ? '' : ' on'}"><span class="bprn">${s.id === 'fury' ? 'Buff' : 'Call to Arms'}</span><div class="bpseg">${seg}</div></div>` : '';
+    const chk = (k, on, txt) => `<label class="bpck${on ? ' on' : ''}"><input type="checkbox"${on ? ' checked' : ''} onchange="window.planSet(${i},'${k}','',this.checked)"><span>${txt}</span></label>`;
+    pop = `<div class="bpop">`
+      + row('ehp', 'Enemy HP') + row('myBelow', 'My HP') + row('rage', 'Rage') + buffRow
+      + `<div class="bpft">${a.ult ? chk('save', s.save, `Save Rage for Ultimate <i>(${a.cost})</i>`) : ''}${chk('off', s.off, 'Skip on Auto')}</div></div>`;
   }
   return `<div class="bpflow">${pl.map(card).join('')}${atk}</div>${pop}<button class="bpreset" onclick="window.planReset()">Reset plan</button>`;
 }
