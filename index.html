@@ -112,7 +112,7 @@ button.drow:hover{border-color:var(--dc)}
 .arena .bar #sh1{z-index:2}
 /* PASEK UMIEJĘTNOŚCI gracza pod paskami HP: 10 kwadratowych slotów w jednym rzędzie na całą szerokość (na razie puste – miejsce na aktywne skille);
    ciemne wypełnienie (jak pasek akcji), w prawym dolnym rogu klawisz: 1 2 3 4 5 Q W E R Tab. */
-.skillbar{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;margin:18px 40px 0;padding:6px 10px;position:relative;
+.skillbar{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:8px;margin:18px 40px 0;padding:4px 10px;position:relative;
   /* PASEK „Smocza deska” (PixelLab, 9-slice): ui_bar_frame.png 28×19 – rogi i szyny ostre, środek (deska) powtarzany; wszystko ×2 */
   border-style:solid;border-width:12px 8px 8px;border-image:url(assets/ui/ui_bar_frame.png) 6 4 4 fill / 12px 8px 8px repeat;image-rendering:pixelated;background:none;box-shadow:none;border-radius:0}
 /* głowy smoków na końcach paska (ui_bar_dragon.png 19×27 ×2); prawa = lustrzane odbicie */
@@ -134,7 +134,7 @@ button.drow:hover{border-color:var(--dc)}
 .sk.ab.proc{animation:abproc .7s ease-in-out infinite alternate}   /* Revenge / Decapitate gotowe – pulsuje */
 /* PASEK – wygląd (1+2): ikona wypełnia cały slot; klawisz na plakietce pod slotem; koszt Rage na plakietce w lewym górnym rogu
    (pomarańczowa = koszt, zielona = generuje Rage); niedostępne – przygaszone, ale kolorowe; odnowienie – ciemna nakładka z liczbą tur */
-#skillbar{padding-bottom:20px}
+#skillbar{padding-bottom:6px}
 #skillbar .sk{border:0;background:none;box-shadow:none;border-radius:0}
 /* SLOT (PixelLab, 9-slice): ui_bar_slot.png 20×20 – ramka 6 px (×2 = 12 px), ikona na wierzchu */
 #skillbar .sk::before{content:'';position:absolute;inset:0;border:12px solid transparent;border-image:url(assets/ui/ui_bar_slot.png) 6 fill / 12px repeat;image-rendering:pixelated;pointer-events:none;z-index:0}
