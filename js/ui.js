@@ -1111,7 +1111,7 @@ const isBoss = m => ALL_LOCS.some(l => l.mobs[l.mobs.length - 1] === m);
 // st = stosy (liczba w prawym dolnym rogu, tylko dla debuffów, które się kumulują), tip = opis w dymku
 const DEBUFFS = {
   // buff Call to Arms i morphów: ta sama ikona co umiejętność (assets/skills/abilities, ścieżka względem folderu curses)
-  fury: ['../abilities/ab_fury', 'Call to Arms', '📯'], cry: ['../abilities/ab_fury_cry', 'Battlecry', '📯'], rfury: ['../abilities/ab_fury_free', 'Relentless Fury', '📯'],
+  fury: ['../abilities/ab_fury', 'Call to Arms', '📯'], cry: ['../abilities/ab_fury_cry', 'Battlecry', '📯'], rfury: ['../abilities/ab_fury_free', 'Rally', '🚩'],
   // mdeath / crip: morphy Pommel Strike (Marking Strike / Crippling Strike)
   stun: ['debuff_stun', 'Stunned', '💫'], mdeath: ['debuff_mark_of_death', 'Mark of Death', '🎯'], crip: ['debuff_crippled', 'Crippled', '🩼'], rend: ['debuff_deep_wound', 'Deep Wound', '🩸'],   // Earthshaker / Skullsplitter (brak pliku → emoji)   // buff gracza (brak pliku → 📯)
   sunder: ['curse_sunder', 'Curse of Frailty'], exhaust: ['curse_cripple', 'Curse of Withering'], expose: ['curse_exposed', 'Exposed Weakness'], mark: ['curse_shadow_mark', 'Curse of the Void'], agony: ['curse_agony', 'Torment'], warcry: ['skill_war_cry', 'War Cry', '📯'], rage: ['skill_rage_within', 'Rage Within', '😤'], fervor: ['skill_battle_fervor', 'Battle Fervor', '🔥'],
@@ -1222,8 +1222,8 @@ const ABILS = {
     // dexUp = % wyższa Dexterity na czas buffa (szansa na krytyk liczona od podniesionej Dexterity)
     morph: {
       cry: { n: 'Battlecry', img: 'ab_fury_cry', dexUp: 20, d: 'Instant: does not end your turn. For 6 turns you deal 60% more damage, your Dexterity is 20% higher and attacks generate 2 more Rage.' },
-      // Relentless Fury: bez kosztu Rage; odnowienie = czas buffa (cdBuff), jak w Battle Fury i Battlecry
-      free: { n: 'Relentless Fury', img: 'ab_fury_free', cost: 0, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage and attacks generate 2 more Rage.' }
+      // Rally: bez kosztu Rage; odnowienie = czas buffa (cdBuff), jak w Battle Fury i Battlecry
+      free: { n: 'Rally', img: 'ab_fury_free', cost: 0, d: 'Instant: does not end your turn. Costs no Rage. For 6 turns you deal 60% more damage and attacks generate 2 more Rage.' }
     } },
   // ULTIMATE (build): raz na walkę, gracz wybiera tylko jeden z trzech (me.abils – pierwszy wytrenowany blokuje pozostałe). hits = liczba ciosów, rend = krwawienie (% zadanych obrażeń przez rendT tur), stunT = ogłuszenie na N tur wroga
   storm: { n: 'Bladestorm', ico: '🌪️', img: 'ab_storm', cost: 60, mul: 1.2, hits: 3, cd: 0, lvl: 20, ult: true, d: 'Three strikes in a row, each for 120% weapon damage with its own chance to crit. Once per fight.' },
@@ -1250,7 +1250,7 @@ const abEff = (id, mk = me.morph && me.morph[id]) => {
   const e = Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: !a.mul ? a.mul : a.lvAdd ? a.mul + ((a.lvB || [])[l] || 0) / 100 : a.mul * (1 + ((a.lvB || [])[l] || 0) / 100), gain: a.gain ? a.gain + ((a.lvG || [])[l] || 0) : a.gain,
     buffD: a.buffD ? a.buffD + ((a.lvF || [])[l] || 0) : a.buffD, buffT: a.buffT ? a.buffT + ((a.lvT || [])[l] || 0) : a.buffT,
     execP: a.execP ? a.execP + ((a.lvE || [])[l] || 0) : a.execP });
-  const m = mk && a.morph && a.morph[mk], r = m ? Object.assign(e, m, { cost: 'cost' in m ? m.cost : a.cost + ((a.lvC || [])[AB_MAX_LVL - 1] || 0) }) : e;   // Relentless Fury: koszt 0
+  const m = mk && a.morph && a.morph[mk], r = m ? Object.assign(e, m, { cost: 'cost' in m ? m.cost : a.cost + ((a.lvC || [])[AB_MAX_LVL - 1] || 0) }) : e;   // Rally: koszt 0
   if (r.cdBuff) r.cd = r.buffT;   // Battle Fury (i morphy): odnowienie = czas trwania buffa
   return r;
 };
@@ -2929,7 +2929,7 @@ function* fightGen(mob, io) {
     };
     // BATTLE FURY: furyP = % obrażeń (wg poziomu), furyDex = % wyższej Dexterity (Battlecry) – szansa na krytyk przeliczona od podniesionej Dexterity
     let furyP = 0, furyDex = 0; const critRaw0 = p.critRaw;
-    let furyKey = 'fury'; const furyK = () => furyKey;   // ikona buffa: morphy Battle Fury mają własną nazwę w dymku (Battlecry / Relentless Fury)
+    let furyKey = 'fury'; const furyK = () => furyKey;   // ikona buffa: morphy Battle Fury mają własną nazwę w dymku (Battlecry / Rally)
     const furyTip = () => `Damage +${furyP}%${furyDex ? `<br>Dexterity +${furyDex}%` : ''}<br>Attacks generate +2 Rage<br>Turns left: ${furyT}`;
     // crit z Dexterity: r = 100·D / (D + X) → przy D × f: r' = 100·f / (f + 100/r − 1)
     const furyCrit = on => { p.critRaw = on && furyDex && critRaw0 > 0 ? 100 * (1 + furyDex / 100) / (1 + furyDex / 100 + 100 / critRaw0 - 1) : critRaw0; updCrit(); };
@@ -3019,7 +3019,7 @@ function* fightGen(mob, io) {
           if (skipFight) { io.act = planPick(planFree > 0); if (ABILS[io.act] && ABILS[io.act].free) planFree++; }   // SKIP: ruch wybiera Battle Plan
           const fa = io.act; if (!(fa && ABILS[fa] && ABILS[fa].free)) break;
           io.act = 'atk';
-          if (abOk(fa)) { yield { beat: 0.5 }; const a = abEff(fa); if (UI) abUse(fa); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; furyP = a.buffD || 0; furyDex = a.dexUp || 0; furyKey = { 'Battlecry': 'cry', 'Relentless Fury': 'rfury' }[a.n] || 'fury'; furyCrit(true); pbuf[furyK()] = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b>${a.cost ? ` (−${a.cost} Rage)` : ''}`, 'crit'); }
+          if (abOk(fa)) { yield { beat: 0.5 }; const a = abEff(fa); if (UI) abUse(fa); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; furyP = a.buffD || 0; furyDex = a.dexUp || 0; furyKey = { 'Battlecry': 'cry', 'Rally': 'rfury' }[a.n] || 'fury'; furyCrit(true); pbuf[furyK()] = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b>${a.cost ? ` (−${a.cost} Rage)` : ''}`, 'crit'); }
         }
       } else yield 'beat';   // TAKT: tura wroga zaczyna się równy takt po Twoim ruchu (WALKA RĘCZNA: w Twojej turze walka czeka na atak – slot 1 / klawisz 1)
       if (turn == 0) {
