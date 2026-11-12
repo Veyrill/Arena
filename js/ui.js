@@ -1313,7 +1313,9 @@ const abTip = (id, mk) => { const a = mk ? abEff(id, mk) : abEff(id), dm = abDmg
   if (a.d === d0.d && a.execP && a.execP !== d0.execP) desc = desc.replace(`below ${d0.execP}% health`, `below ${a.execP}% health`);   // Decapitate: próg HP wg poziomu
   if (a.d === d0.d && a.buffT && a.buffT !== d0.buffT) desc = desc.replace(`For ${d0.buffT} turns`, `For ${a.buffT} turns`);
   if (a.d === d0.d && a.gain && a.gain !== d0.gain) desc = desc.replace(`gain ${d0.gain} Rage`, `gain ${a.gain} Rage`);   // generowany Rage wg poziomu (Pommel Strike 25 → 30)
-  return `<b${a.ult ? ' style="color:#ffd36b"' : ''}>${a.n}</b>${abPips(id)}${a.gain ? `Generates: ${a.gain} Rage` : `Cost: ${a.cost} Rage`}<br>Cooldown: ${a.ult ? 'once per fight' : a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none'}<br>${desc}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage${a.hits ? ` × ${a.hits}` : ''}.` : ''}${a.ult ? '<br><span style="color:#ffd36b">Ultimate: you can train only one.</span>' : ''}${abLvlBar(id)}`; };
+  // nagłówek dymka: nazwa (+ poziom) po lewej, koszt i odnowienie w prawym górnym rogu
+  const cdT = a.ult ? 'once per fight' : a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none';
+  return `<span class="tiph"><span><b${a.ult ? ' style="color:#ffd36b"' : ''}>${a.n}</b>${abPips(id)}</span><span class="tipc">${a.gain ? `<em class="gen">+${a.gain} Rage</em>` : `<em>${a.cost} Rage</em>`}<i>CD: ${cdT}</i></span></span>${desc}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage${a.hits ? ` × ${a.hits}` : ''}.` : ''}${a.ult ? '<br><span style="color:#ffd36b">Ultimate: you can train only one.</span>' : ''}${abLvlBar(id)}`; };
 let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
 // pasek: ikony umiejętności w slotach 2–Tab (przebudowa tylko, gdy zmieni się rozmieszczenie – nie miga)
 function renderBarAbils() {
