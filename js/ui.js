@@ -1126,7 +1126,10 @@ function renderAuras(id, list) {
     $('fightbox').appendChild(el);
   }
   // pod wierszem Back / Victory (wyprawa) – ikony nie zasłaniają przycisku; bez tego wiersza (lochy) jak dawniej 6 px od góry
-  { const fr = $('fbackrow'); el.style.top = (fr && fr.style.display !== 'none' ? fr.offsetTop + fr.offsetHeight + 4 : 6) + 'px'; }
+  { const fr = $('fbackrow'); let t = fr && fr.style.display !== 'none' ? fr.offsetTop + fr.offsetHeight + 4 : 6;
+    // debuffy wroga (prawy górny róg) pod licznikiem DMG / TURN – licznik ich nie zasłania
+    const lw = $('logwrap'); if (id === 'debuffs' && lw && lw.parentElement === FIGHTBOX && lw.offsetHeight) t = Math.max(t, lw.offsetTop + lw.offsetHeight + 4);
+    el.style.top = t + 'px'; }
   // obwódka: czerwona = debuff na wrogu, zielona = buff gracza
   const bc = id === 'pbuffs' ? '#3fbf4f' : '#e53935';
   // ikony to pixel art 32×32 (plik 128 px = ×4) → wyświetlane dokładnie 32×32 (skala całkowita) bez wygładzania, żeby piksele były równe
@@ -2507,7 +2510,11 @@ function render() {
     + (expRes.quest ? `<div class="rw"><span style="color:#3fdc3f">Quest complete!</span><span style="color:#8e44ad">+${expRes.quest.xp} XP</span><span style="color:#e69500">+${expRes.quest.gold} ${goldIco(16)}</span></div>` : '');   // nagroda z questa (przedmiot – w łupie wyżej)
   // walka niżej: pas na górze okna walki zarezerwowany na ikony buffów (lewo) i debuffów (prawo) – 6 px odstępu + 36 px kafelek,
   // żeby nie zasłaniały postaci ani nazwy przeciwnika
-  const arenaEl = $('fightbox').querySelector('.arena'); if (arenaEl) arenaEl.style.paddingTop = '38px';
+  const arenaEl = $('fightbox').querySelector('.arena');
+  if (arenaEl) {   // walka niżej o tyle, żeby pod licznikiem DMG / TURN zmieścił się rząd debuffów (36 px) – nic nie nachodzi na przeciwnika
+    const lw = $('logwrap'); arenaEl.style.paddingTop = '38px';
+    if (lw && lw.parentElement === FIGHTBOX && lw.offsetHeight) arenaEl.style.paddingTop = Math.max(38, lw.offsetTop + lw.offsetHeight + 4 + 36 + 2 - arenaEl.offsetTop) + 'px';
+  }
   if (m) {
     const fmEl = $('fm');
     if (fmEl) {
