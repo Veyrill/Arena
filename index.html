@@ -30,7 +30,7 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 /* Questy: wszystkie zrobione – lekko wyszarzone okienko z samym przyciskiem Reroll (aktywny po upływie czasu) */
 .qempty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border:1px dashed var(--bd);border-radius:8px;opacity:.75;text-align:center}.qempty small{color:var(--mut)}
 .qreroll{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12px}.qreroll img{width:16px;height:16px;image-rendering:pixelated}.qreroll:disabled img{filter:grayscale(1)}
-/* ARTIFACTS: 3 sloty (po jednym na rodzinę: Fortune – złoto, War – czerwień, Time – turkus), pod nimi przycisk Redeem (na razie bez działania) */
+/* ARTIFACTS: 3 sloty (po jednym na rodzinę: Seal – złoto (bogactwo), Sigil – czerwień (walka), Rune – turkus (czas)), pod nimi przycisk Redeem (na razie bez działania) */
 .artslots{display:flex;justify-content:center;gap:32px;margin:26px 0 20px}
 .artslot{display:flex;flex-direction:column;align-items:center;gap:8px}
 .artslot small{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--fc)}
@@ -443,7 +443,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 </div>
 <div>
 <div class="card" id="v-exp"><h2>Expedition</h2><div id="body-exp"></div></div>
-<div class="card" id="v-art" hidden><h2>Artifacts</h2><div id="body-art"><div class="artslots"><div class="artslot" style="--fc:#d6a84f"><small>Fortune</small><div class="artcell" data-fam="fortune"></div></div><div class="artslot" style="--fc:#d94b4b"><small>War</small><div class="artcell" data-fam="war"></div></div><div class="artslot" style="--fc:#55b8b0"><small>Time</small><div class="artcell" data-fam="time"></div></div></div><button class="bkac artredeem" type="button">Redeem</button></div></div>
+<div class="card" id="v-art" hidden><h2>Artifacts</h2><div id="body-art"><div class="artslots"><div class="artslot" style="--fc:#d6a84f"><small>Seal</small><div class="artcell" data-fam="seal"></div></div><div class="artslot" style="--fc:#d94b4b"><small>Sigil</small><div class="artcell" data-fam="sigil"></div></div><div class="artslot" style="--fc:#55b8b0"><small>Rune</small><div class="artcell" data-fam="rune"></div></div></div><button class="bkac artredeem" type="button">Redeem</button></div></div>
 <div class="card" id="v-upg" hidden><span id="skillresetw" style="position:absolute;top:6px;right:8px;display:inline-flex"><button id="skillreset" style="font-size:22px;line-height:1;padding:2px 8px;font-weight:700">↺</button></span><h2>Passives</h2><small style="color:var(--mut)">Mouse wheel: zoom · drag: pan the board</small><div id="body-upg" style="margin-top:6px"></div></div>
 <div class="card" id="v-abil" hidden><h2>Abilities</h2><div id="body-abil" style="margin-top:6px"></div></div>
 <div class="card" id="v-set" hidden><h2>Settings</h2><div id="body-set" style="margin-top:6px"></div></div>
