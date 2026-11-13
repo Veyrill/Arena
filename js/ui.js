@@ -1,6 +1,6 @@
 import { DEV, SL, NAMES, RAR, ST, LOCS, ACTS, ALL_LOCS, ACT_START, DUN, DUNS, UPG, upgBranch, upgPos, SKILL_ICON_CENTER, MATS, FISH, FISH_LOCKED, R, I, P, UNIQUES, makeUnique, FIXED_ITEMS, makeFixed, FISH_SETS, GEAR_SETS, namesFor, devFlag, DEV_TIME, PANEL_KEY, setTimeOff } from './data.js';
 import { me, eq1, eq2, inv, G, up, upgTree, fishing, upgradeItem, equipPage, currentZoom, panX, panY, panMoved, panDrag, view, eloc, esel, dloc, dprog, busy, cdEnd, sellMode, drag, lastMob, showInfo, showDunUnlockMsg, dunMsgClosed, showNoRodMsg, buffStrEnd, lastMouseE, setEquipPage, setView, setEloc, setEsel, setDloc, setDprog, setBusy, setSellMode, setLastMouseE, setDrag, setPanDrag, setPanMoved, setPanX, setPanY, setCurrentZoom, setShowInfo, setLastMob, setShowDunUnlockMsg, setDunMsgClosed, setShowNoRodMsg, setCdEnd, setBuffStrEnd, buffDexEnd, setBuffDexEnd, foodBuff, setUpgradeItem, eact, actsUnlocked, setEact, setActsUnlocked, locUnlocked, setLocUnlocked, gear, der, ub, mstats, HP_MUL, ENEMY_HP, CRIT_K, CRIT_C, CRIT_CAP } from './state.js';
-import { hasRod, buyRod, upgradeRod, upgradeGear, upgradeCost, makeRod, makeHook, isRod, isUpgradable, gearLevel, gearMaxLevel, previewGear, fishPower, canFish, ROD_TIERS, HOOK_TIERS } from './fishing.js';
+import { hasRod, upgradeRod, upgradeGear, upgradeCost, makeRod, makeHook, isRod, isUpgradable, gearLevel, gearMaxLevel, previewGear, fishPower, canFish, ROD_TIERS, HOOK_TIERS } from './fishing.js';
 import { hit, armorRed, ARMOR_K } from './combat.js';
 import { loadGame, saveGame, resetSave, startAutosave, SAVE_KEY } from './save.js';
 
@@ -86,7 +86,6 @@ window.setEquipPage = p => { if (busy) return; setEquipPage(p); render(); };
 window.closeDunMsg = () => { setDunMsgClosed(true); render(); };
 window.closeQuestMsg = () => { me.questMsgClosed = 1; render(); };   // popup „Quests unlocked!” (od 5 poziomu) – zamknięcie zapisane w postaci
 window.closeNoRodMsg = () => { setShowNoRodMsg(false); render(); };
-window.buyRod = () => { buyRod(render, t => say(t)); };
 window.upgradeRod = () => { upgradeRod(render, t => say(t)); };
 // ulepszenie wędki albo haczyka ze slotu ulepszania (zakładka Tackle Upgrade)
 window.upgradeGear = () => { upgradeGear(render, (t, c) => say(t, c)); };
@@ -1574,35 +1573,13 @@ function loreTick() {
   el.firstChild.textContent = L.slice(0, n); el.lastChild.textContent = L.slice(n);
 }
 // LEWY PANEL LOCHU: special dropy (jak u ryb: „?” do pierwszego zdobycia, potem grafika; DEV – wszystko odkryte), losowy przedmiot wg rzadkości, XP i złoto
-// ===== SKLEP =====
-// 6 losowych przedmiotów (dowolny slot ekwipunku) z poziomu gracza w chwili odświeżenia; RZADKOŚĆ każdego przedmiotu losowana
-// z tymi samymi szansami co drop z najdalej pokonanego przeciwnika na wyprawie (lochy się nie liczą), np. najdalej Sphinx →
-// 51% szare / 49% zielone. Nic jeszcze nie pokonane → same szare. Odświeżenie co 20 h (me.shop.t = czas następnego odświeżenia).
-// Cena kupna = 4 × wartość sprzedaży z chwili odświeżenia. Kupiony przedmiot znika do następnego odświeżenia („Sold”).
-const SHOP_REFRESH = 20 * 3600e3, SHOP_N = 6, SHOP_MUL = 4;
-function shopTierNow() {
-  if (me.shopTier === undefined) {   // stary zapis: rzadkość z lokacji, których bossowie są już pokonani
-    let t = 0; ALL_LOCS.slice(0, locUnlocked).forEach(l => l.mobs.forEach(m => { if (m.drop && m.drop.length) t = Math.max(t, Math.min(4, Math.max(...m.drop))); }));
-    me.shopTier = t;
-  }
-  return me.shopTier;
-}
+// (SKLEP usunięty z gry – zakładkę zastąpił Hideout; wędki na razie nie da się zdobyć)
 // najdalej pokonany przeciwnik wyprawy: ostatnia lokacja z postępem (me.eprog) → ostatni pokonany w niej przeciwnik
 function bestBeatenMob() {
   const ep = me.eprog || {};
   for (let li = ALL_LOCS.length - 1; li >= 0; li--) { const n = Math.min(ep[li] || 0, ALL_LOCS[li].mobs.length); if (n > 0) return ALL_LOCS[li].mobs[n - 1]; }
   return null;
 }
-function shopPool() {   // tablica rzadkości jak mob.drop (losowanie P() = te same procenty); brak / pusty drop → same szare
-  const m = bestBeatenMob();
-  return m && m.drop && m.drop.length ? m.drop : [0];
-}
-function genShop() {
-  const pool = shopPool();   // każdy przedmiot losuje rzadkość osobno
-  const items = Array.from({ length: SHOP_N }, () => { const it = mk(pool, undefined, undefined, shopAct()); it.cost = priceBase(it) * SHOP_MUL; return it; });
-  me.shop = { t: Date.now() + SHOP_REFRESH, items };
-}
-function ensureShop() { if (!me.shop || !me.shop.items || Date.now() >= me.shop.t) genShop(); }
 
 // ===== QUESTY =====
 // Co 30 min można wylosować nową pulę: 3 losowe z 6 rodzajów. Po upływie czasu w nagłówku pojawia się przycisk Reset –
@@ -1667,17 +1644,6 @@ function renderQuestSide() {
   }).join('');
   $('body-quest-side').innerHTML = rows || '<small style="color:var(--mut)">No quests. New quests after the reset.</small>';
 }
-window.refreshShop = () => { genShop(); render(); };   // tylko DEV
-window.buyShop = (n, equipIt) => {   // equipIt = przeciągnięty prosto na postać: kup i od razu załóż (jeśli poziom pozwala)
-  const it = me.shop && me.shop.items[n];
-  if (!it || busy || window.G_GLOBAL < it.cost) return;
-  window.G_GLOBAL -= it.cost;
-  const o = Object.assign({}, it); delete o.cost; o.fresh = 1; inv.push(o);
-  me.shop.items[n] = null;
-  say(`Bought: <b class="t${o.r}">${o.name}</b> for ${it.cost} gold`);
-  if (equipIt) { delete o.fresh; swapIn(inv.length - 1, eq1, o); return; }   // swapIn sprawdza wymagany poziom i odświeża
-  render();
-};
 // przycisk Fight pod Special drops: aktywny dla wybranego przeciwnika (pokonanego albo kolejnego niepokonanego), z licznikiem przerwy po wygranej
 function dunFightBtn(i) {
   const ok = dsel === i && dsel >= 0, cd = ok ? dunCd(i) : 0;   // przycisk zawsze na dole panelu dropów (margin-top:auto), w tym samym miejscu dla każdego przeciwnika
@@ -1720,7 +1686,6 @@ function wpnDmg(lvl) { const avg = (5 + lvl * 1.5) * 1.3 * 0.9 * R(0.8, 1.2),   
 const ARM_TIER = [1, 1.8, 2.8, 4.2, 5.9];   // mnożnik pancerza za rzadkość: common, uncommon, rare, epic, legendary
 // AKT PRZEDMIOTU (tylko wygląd): akt lokacji przeciwnika; przeciwnik spoza wyprawy (loch) / brak → akt najlepszego pokonanego przeciwnika
 const actOfMob = m => { const li = m ? ALL_LOCS.findIndex(l => l.mobs.includes(m)) : -1; return li < 0 ? (m === bestBeatenMob() ? 0 : actOfMob(bestBeatenMob())) : ACT_START.filter(s => s <= li).length - 1; };
-const shopAct = () => actOfMob(bestBeatenMob());   // sklep i nagrody z questów bez przeciwnika: akt najdalszego pokonanego przeciwnika
 function mk(pool, fSl, fBase, act) {   // fSl / fBase = wymuszony slot i nazwa bazowa (spawn po ID w panelu DEV); act = akt (0 = akt 1) – decyduje o nazwie i grafice
   let r = Math.min(4, P(pool)), sl = fSl || P(Object.keys(SL));   // losowe przedmioty: maks. legendarne – mityczne są tylko unikaty
   const onlyCommon = pool.length === 1 && pool[0] === 0;
@@ -1818,7 +1783,8 @@ const slotIco = i => sizeIco(i, 64);
 const invIco = i => sizeIco(i, 48);
 // czerwona kropka „nowy” w plecaku: mniejsza i wewnątrz kafelka (nie wychodzi na sąsiednie)
 document.head.insertAdjacentHTML('beforeend', '<style>#lvl{display:inline-block;transform-origin:left center}#lvl.lvlpop{animation:lvlpop 1.3s ease-out}@keyframes lvlpop{0%{transform:scale(1)}15%{transform:scale(1.18);color:#f2c200;text-shadow:0 0 10px #f2c200aa}55%{transform:scale(1.05);color:#f2c200;text-shadow:0 0 6px #f2c20077}100%{transform:scale(1)}}</style>');
-document.head.insertAdjacentHTML('beforeend', '<style>.shopwrap{display:grid;grid-template-columns:auto 1fr auto;gap:12px 16px;align-items:start}.shopgrid{display:grid;grid-template-columns:repeat(3,84px);gap:10px}.shopslot{display:flex;flex-direction:column;align-items:center;gap:4px}.shopslot .cell{width:84px;height:84px}.shopslot button{width:84px;padding:3px 0;font-size:12px;font-weight:700}.shopsold{border-style:dashed!important;color:var(--mut);font-size:12px;cursor:default!important}.shopmid{grid-column:1/-1;grid-row:1;text-align:center;white-space:nowrap}.shopgrid{grid-column:1;grid-row:2}.shopoffer{grid-column:3;grid-row:2}.shoptimer{font-size:12px;font-weight:700;color:var(--mut);letter-spacing:.04em}.shoptimer b{color:var(--ac);font-size:14px}.shopoffer{display:flex;flex-direction:column;align-items:center;gap:6px;width:170px;padding:12px;border:2px solid var(--ac);border-radius:12px;text-align:center}.shopoffer .cell{display:flex;align-items:center;justify-content:center}.shopoffer button{width:100%;font-weight:700}.shopofflbl{font-size:11px;font-weight:800;color:var(--ac);text-transform:uppercase;letter-spacing:.08em}@media(max-width:700px){.shopwrap{grid-template-columns:1fr}.shopoffer{width:auto}.shopgrid,.shopoffer{grid-column:1;grid-row:auto}}</style>');
+// HIDEOUT: baza bohatera (na razie pusta) – kafelek „Coming soon”
+document.head.insertAdjacentHTML('beforeend', '<style>.hideout-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:220px;color:var(--mut);text-align:center}.hideout-empty b{font-size:16px;color:var(--tx)}</style>');
 document.head.insertAdjacentHTML('beforeend', '<style>.cell.new::after{top:3px;right:3px;width:8px;height:8px}</style>');
 // poziom przeciwnika w prawym górnym rogu kafelka (wyprawa, loch) i panelu przeciwnika w oknie walki; boss – czerwony
 document.head.insertAdjacentHTML('beforeend', '<style>.tile{position:relative}.arena>div:last-child{position:relative}.mlvl{position:absolute;top:4px;right:6px;font-size:11px;font-weight:700;color:var(--mut);line-height:1}.mlvl.b{color:#e0524a}.tile.mlock{filter:grayscale(1);opacity:.45;cursor:default}.mwin{position:absolute;bottom:4px;right:6px;font-size:11px;font-weight:800;line-height:1}.arena .mlvl{top:-2px;right:0}.dunwrap{display:flex;gap:12px;align-items:stretch;margin-top:8px}.dundrops{flex:1;min-width:0;border:1px solid var(--bd);border-radius:10px;padding:10px 12px;min-height:200px;display:flex;flex-direction:column}.dunlore{margin:12px 0 10px;padding-top:10px;border-top:1px solid var(--bd);font-size:13px;line-height:1.5;font-style:italic;color:#b08d57}.bkac{background:var(--ac);color:var(--on-ac);border-color:var(--ac);font-weight:700}.dunmobs{display:flex;flex-direction:column;gap:8px;width:190px;flex:none}.tile.dmob{min-height:96px}.tile.dmob .ic{font-size:40px}.tile.dmob.dlock{filter:grayscale(1);opacity:.45}.tile.dmob.dcool{opacity:.7}.tile.dmob.dcool small{color:var(--ac);font-weight:700}.cell.noreq::before{content:"";position:absolute;inset:0;border-radius:6px;background:rgba(217,75,75,.38);box-shadow:inset 0 0 10px rgba(217,75,75,.8);pointer-events:none;z-index:1}.dfbtn{display:block;margin:auto auto 0;flex:none;min-width:96px;padding:5px 14px;font-weight:800;font-size:13px;background:var(--ac);color:var(--on-ac);border-color:var(--ac)}.dfbtn:disabled{opacity:.55}#dunfight-slot{margin-top:8px}#dunfight-slot #fightbox{border:0;box-shadow:none;padding:0;margin:0;background:none}.dunline{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-top:1px solid var(--bd);font-size:13px}@media(max-width:600px){.dunwrap{flex-direction:column}.dunmobs{width:100%}}</style>');
@@ -1892,7 +1858,7 @@ window.buyNode = id => {
   render();
 };
 
-const NAV = [['exp', 'Expedition'], ['shop', 'Shop'], ['craft', 'Crafting'], ['upg', 'Passives'], ['abil', 'Abilities'], ['dun', 'Dungeons'], ['raid', 'Raids'], ['fish', 'Fishing'], ['upgrade', 'Tackle Upgrade'], ['cook', 'Cooking'], ['set', 'Settings']];   // Tackle = sprzęt wędkarski (wędka + haczyk)
+const NAV = [['exp', 'Expedition'], ['hideout', 'Hideout'], ['craft', 'Crafting'], ['upg', 'Passives'], ['abil', 'Abilities'], ['dun', 'Dungeons'], ['raid', 'Raids'], ['fish', 'Fishing'], ['upgrade', 'Tackle Upgrade'], ['cook', 'Cooking'], ['set', 'Settings']];   // Tackle = sprzęt wędkarski (wędka + haczyk)
 // spDot: czerwona kropka przy zakładce Skills, gdy są skill pointy do wydania. Znika po najechaniu myszką,
 // wraca, gdy gracz dostanie nowe skill pointy (awans, reset skilli).
 let spDot = false;
@@ -2062,7 +2028,7 @@ function render() {
     btn.disabled = busy || (fishing.active && btn.dataset.v === 'exp');
   });
 
-  ['exp', 'shop', 'upg', 'abil', 'upgrade', 'dun', 'raid', 'craft', 'fish', 'cook', 'set'].forEach(k => {
+  ['exp', 'hideout', 'upg', 'abil', 'upgrade', 'dun', 'raid', 'craft', 'fish', 'cook', 'set'].forEach(k => {
     const el = $('v-' + k);
     if (el) el.style.display = (k === view) ? 'block' : 'none';
   });
@@ -2135,7 +2101,6 @@ function render() {
   const meatCount = (inv.find(x => x.mat && x.sl == 'meat') || {}).qty || 0;
   const clawCount = (inv.find(x => x.mat && x.sl === 'claw') || {}).qty || 0;
   const canCraft = meatCount >= 2 && clawCount >= 1 && window.G_GLOBAL >= 200;
-  const alreadyOwnedRod = hasRod();
 
   // koszt ulepszenia wędki / haczyka (materiał i ilość z upgradeCost, liczone od poziomu przedmiotu w slocie)
   const upLvl = isUpgradable(upgradeItem) ? gearLevel(upgradeItem) : 0;
@@ -2143,15 +2108,6 @@ function render() {
   const carpCount = (inv.find(x => x.mat && x.sl === upCost.mat) || {}).qty || 0;
   const canUpgradeRod = isUpgradable(upgradeItem) && carpCount >= requiredFish;
 
-  // SKLEP: u góry wyśrodkowany licznik do odświeżenia, pod nim po lewej 6 przedmiotów (3 kolumny × 2 rzędy), po prawej „Special offer” (wędka)
-  ensureShop();
-  const shopCells = me.shop.items.map((it, n) => it
-    ? `<div class="shopslot"><div class="cell r${it.r}" data-it="shopi:${n}" draggable="true" style="cursor:grab">${sizeIco(it, 64)}</div><button onclick="window.buyShop(${n})"${window.G_GLOBAL < it.cost || busy ? ' disabled' : ''}>${goldIco(16)} ${it.cost}</button></div>`
-    : `<div class="shopslot"><div class="cell shopsold"></div><button disabled style="visibility:hidden">·</button></div>`).join('');   // kupiony: pusty kafelek bez napisów (ukryty przycisk trzyma układ)
-  $('body-shop').innerHTML = `<div class="shopwrap"><div class="shopgrid">${shopCells}</div>`
-    + `<div class="shopmid"><div class="shoptimer">SHOP REFRESHES IN <b data-shopcd>${fmtCd(me.shop.t - Date.now())}</b></div>${DEV ? `<button onclick="window.refreshShop()" style="margin-top:8px">↻ Refresh (DEV)</button>` : ''}</div>`
-    + `<div class="shopoffer"><div class="cell r0" data-it="shop:rod" style="width:88px;height:88px">${sizeIco(makeRod(), 64)}</div><b class="t0">${makeRod().name}</b><small style="color:var(--mut)">Lets you catch Crucian Carp</small>`
-    + `<button onclick="window.buyRod()"${alreadyOwnedRod || window.G_GLOBAL < 500 || busy ? ' disabled' : ''}>${alreadyOwnedRod ? 'Owned' : goldIco(16) + ' 500'}</button><div class="shopofflbl">Special offer</div></div></div>`;
   // WYTWARZANIE – zakładki: Scrolls i Fishing Gear (Pierścień i Amulet, po 25 FP)
   // zwój: wynik + materiały + złoto (wiersz recipeRow)
   const scrollRecipeOf = k => { const dd = SCROLLS[k]; return recipeRow({ compact: 1, key: 'scroll:' + k, r: 2, ico: scrollIco(k, 48), it: 'craft:scroll_' + k, name: dd.name,
@@ -2363,7 +2319,8 @@ function render() {
   // DYMEK SKILLA w stylu WoW: większa nazwa, szara ranga, opis działania na złoto,
   // wyraźnie oddzielona sekcja "Next rank:", koszt na zielono (tylko gdy można jeszcze dokupić)
   const tipOf = n => {
-    if (n.ph) return lockTip;
+    // łącznik między ścieżkami (placeholder): „Locked” + wymaganie – oba sąsiednie skille wymaksowane
+    if (n.ph) return n.reqN === 2 && n.reqAny ? lockTip + `<br><br>Requires: ${n.reqAny.map(id => (P0[id] || {}).n).join(' and ')} (max rank)` : lockTip;
     const r = rankOf(n.id), mx = n.max || 1, big = n.k === 'b';
     // etykieta w prawym górnym rogu dymka: "Debuff" (fioletowa – Sunder, Withering, Curse of the Void) albo "Buff" (zielona – Terror)
     const lab = n.debuff ? ['Debuff', '#c58bff'] : n.buff ? ['Buff', '#5fcf70'] : null;
@@ -3394,8 +3351,6 @@ $('go').onclick = async ev => {
       setTimeout(() => flyReward(rewardGold, gainXp), 60);   // animacja: złoto do panelu Gold, XP do paska doświadczenia (po odświeżeniu ekranu)
       while (me.lvl < MAX_LVL && me.xp >= xpNeed(me.lvl)) { me.xp -= xpNeed(me.lvl); me.lvl++; me.str += 1; me.dex += 1; me.con += 1; me.sp++;   /* awans: +1 do każdej statystyki (było +2) */ spDot = true; say(`<b>Level up: ${me.lvl}!</b> +1 skill point`, 'crit'); }
       if (me.lvl >= 10 && !showDunUnlockMsg) setShowDunUnlockMsg(true);
-      // SKLEP: pokonanie przeciwnika, który może dać rzadkość X, odblokowuje X w sklepie (od następnego odświeżenia wszystkie przedmioty w tej rzadkości)
-      if (mob.drop && mob.drop.length) { const mr = Math.min(4, Math.max(...mob.drop)); if (mr > (me.shopTier || 0)) me.shopTier = mr; }
       // poniżej 10 poziomu: +10 pkt proc. szansy, że łup z walki to broń (dodatkowe losowanie przed zwykłym wyborem slotu)
       if (mob.drop && mob.drop.length) { const it = mk(mob.drop, me.lvl < 10 && Math.random() < 0.10 ? 'weapon' : undefined, undefined, actOfMob(mob)); it.fresh = 1; if (view == 'exp') loot.push(it); else inv.push(it); say(`Loot: <b class="t${it.r}">${it.name}</b>`); }   // wyprawa: do plecaka dopiero po Collect   // Akty 2 i 3: na razie bez dropów
       for (const [k, ch] of mob.mats || []) if (Math.random() < ch) {
@@ -3476,8 +3431,6 @@ function updateTip(x, y, target) {
     else if (it === 'upgprev') i = isUpgradable(upgradeItem) ? previewGear(upgradeItem) : null;
     else if (it.startsWith('fixed:')) i = makeFixed(it.split(':')[1]);
     else if (it.startsWith('dish:')) i = makeDish(it.split(':')[1]);   // danie w zakładce Cooking   // przepisy craftingu sprzętu: Seasoned Angler, Sea Raider (wynik i składnik)
-    else if (it === 'shop:rod') i = makeRod();
-    else if (it.startsWith('shopi:')) i = (me.shop && me.shop.items[+it.slice(6)]) || null;
     else if (it === 'craft:ring' || it === 'craft:amulet') i = makeCraftFish(it.split(':')[1]);
     else if (it.startsWith('craft:scroll_')) { const k = it.split('_')[1]; i = { isScroll: true, kind: k, name: SCROLLS[k].name, val: 0, noSell: true, qty: 1 }; }
     else if (it.startsWith('mat:')) {
@@ -3501,7 +3454,7 @@ function updateTip(x, y, target) {
   if (!i) { tipEl.style.display = 'none'; return; }
   if (i.fresh && t.dataset.it.startsWith('inv:')) { delete i.fresh; t.classList.remove('new'); }   // czerwona kropka znika po najechaniu
   // plecak, sklep, dropy: porównanie z założonym – tylko z wciśniętym Shift; bez Shift zwykły dymek z podpowiedzią
-  const cmp = t && /^(inv|shopi|dsd|sdrop|fixed|loot):/.test(t.dataset.it) ? cmpCard(i) : null;   // loot: łup pod przyciskiem Collect
+  const cmp = t && /^(inv|dsd|sdrop|fixed|loot):/.test(t.dataset.it) ? cmpCard(i) : null;   // loot: łup pod przyciskiem Collect
   tipEl.style.borderColor = 'var(--c0)';
   const qh = '';
   if (cmp && shiftDown) { tipEl.innerHTML = qh + cmp.left; if (cmp.right) { tip2.innerHTML = cmp.right; placeTip2(x, y); } else placeTip(x, y); }
@@ -3587,8 +3540,7 @@ document.addEventListener('dragstart', e => {
   e.dataTransfer.setData('text/plain', t.dataset.it);
 
   const parts = t.dataset.it.split(':');
-  const item = parts[0] === 'inv' ? inv[+parts[1]] : parts[0] === 'upgrade' ? upgradeItem : parts[0] === 'shopi' ? me.shop && me.shop.items[+parts[1]] : (equipPage === 1 ? eq1 : eq2)[parts[1]];
-  if (parts[0] === 'shopi' && equipPage === 2) { setEquipPage(1); renderSlots(); dragPageSwitch = true; }   // przedmiot ze sklepu: pokaż ekwipunek bojowy
+  const item = parts[0] === 'inv' ? inv[+parts[1]] : parts[0] === 'upgrade' ? upgradeItem : (equipPage === 1 ? eq1 : eq2)[parts[1]];
   // PODNIESIENIE sprzętu wędkarskiego (z plecaka albo ze slotu ulepszania) na stronie 1 → ekwipunek przełącza się na stronę 2,
   // żeby od razu było widać sloty, do których pasuje. Przebudowujemy tylko sloty (renderSlots), plecak zostaje nietknięty.
   if (item && item.isFishGear && equipPage === 1 && !busy && (parts[0] === 'inv' || parts[0] === 'upgrade')) {
@@ -3621,13 +3573,6 @@ document.addEventListener('dragover', e => {
 
 document.addEventListener('drop', e => {
   e.preventDefault();
-  // SKLEP: przeciągnięcie przedmiotu na pasujący slot postaci = kup i załóż; na plecak = kup do plecaka
-  if (drag && drag.startsWith('shopi:')) {
-    const n = +drag.split(':')[1], it = me.shop && me.shop.items[n], sl = e.target.closest('.slot[data-slot]');
-    if (it && sl && sl.dataset.slot === it.sl && equipPage === 1) window.buyShop(n, true);
-    else if (it && e.target.closest('#invcard')) window.buyShop(n);
-    setDrag(null); return;
-  }
   // PLECAK: przeciągnięcie przedmiotu na inną komórkę plecaka = zamiana miejsc (na pustą część plecaka – nic się nie dzieje)
   const invCell = e.target.closest('#inv .cell[data-n]');
   if (invCell && drag && drag.startsWith('inv:')) {
@@ -4030,12 +3975,6 @@ setInterval(() => {
   if (Date.now() >= me.quests.t) { if (!e.querySelector('.qreset')) e.innerHTML = questHead(); return; }
   e.textContent = fmtCd(me.quests.t - Date.now());
 }, 1000);
-// SKLEP: co sekundę licznik do odświeżenia; po czasie – nowe przedmioty
-setInterval(() => {
-  if (!me.shop) return;
-  if (Date.now() >= me.shop.t) { if (view == 'shop' && !busy) render(); return; }   // render() → ensureShop() losuje nowy towar
-  const e = document.querySelector('#body-shop [data-shopcd]'); if (e) e.textContent = fmtCd(me.shop.t - Date.now());
-}, 1000);
 // LOCH: co sekundę odliczanie przerw na kafelkach i przycisku walki; po końcu przerwy – pełne odświeżenie
 setInterval(() => {
   if (view != 'dun' || dloc == null || busy) return;
@@ -4059,8 +3998,7 @@ buildNav();
 const upgH = document.querySelector('#v-upgrade h2'); if (upgH) upgH.textContent = 'Tackle Upgrade';
 // panel łowienia bez nagłówka „Fishing” (nazwa jest już w zakładce w lewym menu)
 const fishH = document.querySelector('#v-fish h2'); if (fishH) fishH.remove();
-// sklep bez nagłówka „Shop”
-const shopH = document.querySelector('#v-shop h2'); if (shopH) shopH.remove();
+delete me.shop; delete me.shopTier;   // stary zapis: dane usuniętego sklepu
 // ===== POSTĘP OFFLINE =====
 // Po powrocie do gry: jeśli przy zapisie trwało łowienie i jest AFK Fishing, liczymy brania od zapisu do teraz (maks. 1–3 h, zależnie od rangi) – z dropami, Fishpedią itd.
 // Wynik w oknie „While you were away”; rzadkie dropy (epic+) dostają baner po kliknięciu Collect. Krótka nieobecność (< 1 min) – bez okna.

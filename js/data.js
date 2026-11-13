@@ -476,6 +476,18 @@ export const UPG = [
 });
 UPG.filter(n => ['ag', 'dj', 'lj'].includes(n.id)).forEach(n => { n.x = Math.sign(n.x) * 1230; });
 
+// ŁĄCZNIKI MIĘDZY ŚCIEŻKAMI (wszystkie 3 gałęzie): nowy duży node między dwoma sąsiednimi skillami tej samej kolumny
+// (kolumna 1. skilla ścieżek x 520 i kolumna 3. skilla x 810), lekko w prawo od nich (+80 px), w połowie wysokości między ścieżkami.
+// Linie od obu skilli; kupno wymaga wymaksowania OBU (reqAny + reqN: 2). Na razie placeholdery (ph: dymek „Locked”, nie do kupienia).
+// ID: jk1–jk4 (Warlock), jd1–jd4 (Warrior), jl1–jl4 (Mage); kolejno: kolumna 520 góra / dół, kolumna 810 góra / dół.
+[['jk', [['su', 'cr'], ['cr', 'la'], ['ex', 'te'], ['te', 'fe']]],
+ ['jd', [['d0_3', 'd1_3'], ['d1_3', 'd2_3'], ['d0_7', 'd1_7'], ['d1_7', 'd2_7']]],
+ ['jl', [['l0_3', 'l1_3'], ['l1_3', 'l2_3'], ['l0_7', 'l1_7'], ['l1_7', 'l2_7']]]
+].forEach(([pre, pairs]) => pairs.forEach(([a, b], i) => {
+  const A = UPG.find(n => n.id === a), B = UPG.find(n => n.id === b), sg = Math.sign(A.x);
+  UPG.push({ id: pre + (i + 1), from: a, fromX: [b], req: a, reqAny: [a, b], reqN: 2, vis: null, x: sg * (Math.abs(A.x) + 80), y: (A.y + B.y) / 2, k: 'b', ph: 1, n: 'Locked', d: SOON, eff: {}, max: 3 });
+}));
+
 // UNIKATY: zawsze te same statystyki (nie losowane). Każdy przedmiot mityczny ma cytat (quote) pokazywany w dymku. img = własna grafika w assets/unique/ (nie jest jednym z losowych sprite'ów hełmów).
 // Abyssal Lure Hood – hełm do łowienia (strona 2 ekwipunku), mityczny, 50 FP; special drop z Lewiatana (1%, jednorazowo)
 export const UNIQUES = {
@@ -653,9 +665,11 @@ export const makeFixed = k => { const u = FIXED_ITEMS[k]; const o = { sl: u.sl, 
 // GAŁĘZIE KLAS w drzewku Passives: prawy górny róg = Warlock (klątwy), prawy dolny = Warrior (Determination), lewy dolny = Mage (żywioły).
 // Gracz widzi tylko gałąź swojej klasy, ułożoną poziomo w prawo od środka: 3 małe nody pnia w linii prostej, środkowy tor na wysokości środka.
 export const upgBranch = n => n.x < 0 ? 'mage' : n.y < 0 ? 'warlock' : 'warrior';
+const UPG_ROW = 170;   // odstęp między ścieżkami drzewka Passives (px)
 const UPG_TRUNK = ['v1', 'v2', 'v3', 'w1', 'w2', 'w3', 'lw1', 'lw2', 'lw3'];
 export const upgPos = n => {
   const b = upgBranch(n), x = Math.abs(n.x);
   if (UPG_TRUNK.includes(n.id)) return { x, y: 0 };
-  return { x, y: b === 'warlock' ? n.y + 225 : n.y - 225 };
+  // odstęp między ścieżkami: 170 px (było 120) – miejsce na łączniki między ścieżkami (w połowie wysokości)
+  return { x, y: Math.round((b === 'warlock' ? n.y + 225 : n.y - 225) * UPG_ROW / 120) };
 };
