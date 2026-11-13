@@ -1585,7 +1585,7 @@ function bestBeatenMob() {
 // 5 kafelków w rzędzie: nazwa, poziom, efekt teraz → po ulepszeniu, przycisk z kosztem („1T”). Kupno zabiera tokeny z plecaka.
 // Zapis: me.tup = { plunder, lore, bounty, couriers, medic: poziom }. Efekty:
 //   Plunder +5% złota z wypraw / poz., Battle Lore +5% XP z wypraw / poz., Bounty Board +1 quest w puli / poz.,
-//   Swift Couriers −3 min odnowienia questów / poz., Field Medic −10% przerwy po walce w lochu / poz.
+//   Swift Couriers −3 min odnowienia questów / poz., Dungeon Explorer −10% przerwy po walce w lochu / poz.
 const tupLvl = k => (me.tup && me.tup[k]) || 0;
 const tupVal = k => { const u = TOKEN_UPG.find(x => x.k === k); return u ? u.per * tupLvl(k) : 0; };   // suma efektu (np. 15 = +15%)
 const artTokens = () => (inv.find(x => x.mat && x.sl === 'upgrade_token') || {}).qty || 0;
@@ -3418,7 +3418,7 @@ $('go').onclick = async ev => {
       }
       if (view == 'dun') {
         const di = curDun().mobs.indexOf(mob), dd = dloc ?? 0;
-        if (!DEV || devFlag('dcd', false)) { me.dcd = me.dcd || {}; me.dcd[dKey(di)] = Date.now() + DUN_CD * (1 - tupVal('medic') / 100); }   // przerwa 1 h (Field Medic: −10% / poziom) dla tego przeciwnika (DEV: bez przerwy)
+        if (!DEV || devFlag('dcd', false)) { me.dcd = me.dcd || {}; me.dcd[dKey(di)] = Date.now() + DUN_CD * (1 - tupVal('medic') / 100); }   // przerwa 1 h (Dungeon Explorer: −10% / poziom) dla tego przeciwnika (DEV: bez przerwy)
         if (di === dProgOf(dd)) { setDProgOf(dd, di + 1); dJustBeat = true; }   // pierwszy raz pokonany → następny zostanie wybrany po Back
       }
       // postęp w lokacji: pokonanie kolejnego przeciwnika odblokowuje następnego w tej samej lokacji

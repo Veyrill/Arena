@@ -497,7 +497,7 @@ export const TOKEN_UPG = [
   { k: 'lore', n: 'Battle Lore', d: 'XP from expeditions', per: 5, unit: '%', sign: '+', max: 10, cost: [1, 1, 2, 2, 3, 3, 4, 4, 5, 5] },
   { k: 'bounty', n: 'Bounty Board', d: 'Quests at once', per: 1, unit: '', sign: '+', max: 2, cost: [1, 4] },
   { k: 'couriers', n: 'Swift Couriers', d: 'Quest timer', per: 3, unit: ' min', sign: '-', max: 5, cost: [1, 2, 3, 4, 5] },
-  { k: 'medic', n: 'Field Medic', d: 'Dungeon cooldown', per: 10, unit: '%', sign: '-', max: 5, cost: [1, 2, 3, 4, 5] }
+  { k: 'medic', n: 'Dungeon Explorer', d: 'Dungeon cooldown', per: 10, unit: '%', sign: '-', max: 5, cost: [1, 2, 3, 4, 5] }
 ];
 
 // UNIKATY: zawsze te same statystyki (nie losowane). Każdy przedmiot mityczny ma cytat (quote) pokazywany w dymku. img = własna grafika w assets/unique/ (nie jest jednym z losowych sprite'ów hełmów).
