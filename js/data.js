@@ -490,14 +490,14 @@ UPG.filter(n => ['ag', 'dj', 'lj'].includes(n.id)).forEach(n => { n.x = Math.sig
 
 // ===== ULEPSZENIA ZA UPGRADE TOKEN (zakładka Artifacts) =====
 // 5 kafelków; każdy poziom kupuje się za Upgrade Token (koszt rośnie z poziomem, cost[i] = koszt poziomu i+1).
-// per = efekt jednego poziomu, max = maks. poziom. Na razie bez ikon (grafiki później).
+// per = efekt jednego poziomu, max = maks. poziom. img = ikona kafelka (assets/ui/tup_*.png, 32×32 pokazana ×2 = 64 px).
 // Dawne artefakty (ID 7001–7210, 7301–7315) usunięte z gry – ID zarezerwowane.
 export const TOKEN_UPG = [
-  { k: 'plunder', n: 'Plunder', d: 'Gold from expeditions', per: 5, unit: '%', sign: '+', max: 10, cost: [1, 1, 2, 2, 3, 3, 4, 4, 5, 5] },
-  { k: 'lore', n: 'Battle Lore', d: 'XP from expeditions', per: 5, unit: '%', sign: '+', max: 10, cost: [1, 1, 2, 2, 3, 3, 4, 4, 5, 5] },
-  { k: 'bounty', n: 'Bounty Board', d: 'Quests at once', per: 1, unit: '', sign: '+', max: 2, cost: [1, 4] },
-  { k: 'couriers', n: 'Swift Couriers', d: 'Quest timer', per: 3, unit: ' min', sign: '-', max: 5, cost: [1, 2, 3, 4, 5] },
-  { k: 'medic', n: 'Dungeon Explorer', d: 'Dungeon cooldown', per: 10, unit: '%', sign: '-', max: 5, cost: [1, 2, 3, 4, 5] }
+  { k: 'plunder', img: 'ui/tup_plunder.png', n: 'Plunder', d: 'Gold from expeditions', per: 5, unit: '%', sign: '+', max: 10, cost: [1, 1, 2, 2, 3, 3, 4, 4, 5, 5] },
+  { k: 'lore', img: 'ui/tup_lore.png', n: 'Battle Lore', d: 'XP from expeditions', per: 5, unit: '%', sign: '+', max: 10, cost: [1, 1, 2, 2, 3, 3, 4, 4, 5, 5] },
+  { k: 'bounty', img: 'ui/tup_bounty.png', n: 'Bounty Board', d: 'Quests at once', per: 1, unit: '', sign: '+', max: 2, cost: [1, 4] },
+  { k: 'couriers', img: 'ui/tup_couriers.png', n: 'Swift Couriers', d: 'Quest timer', per: 3, unit: ' min', sign: '-', max: 5, cost: [1, 2, 3, 4, 5] },
+  { k: 'medic', img: 'ui/tup_explorer.png', n: 'Dungeon Explorer', d: 'Dungeon cooldown', per: 10, unit: '%', sign: '-', max: 5, cost: [1, 2, 3, 4, 5] }
 ];
 
 // UNIKATY: zawsze te same statystyki (nie losowane). Każdy przedmiot mityczny ma cytat (quote) pokazywany w dymku. img = własna grafika w assets/unique/ (nie jest jednym z losowych sprite'ów hełmów).

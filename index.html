@@ -30,12 +30,13 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 /* Questy: wszystkie zrobione – lekko wyszarzone okienko z samym przyciskiem Reroll (aktywny po upływie czasu) */
 .qempty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border:1px dashed var(--bd);border-radius:8px;opacity:.75;text-align:center}.qempty small{color:var(--mut)}
 .qreroll{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12px}.qreroll img{width:16px;height:16px;image-rendering:pixelated}.qreroll:disabled img{filter:grayscale(1)}
-/* ARTIFACTS: 5 kafelków ulepszeń za Upgrade Token w jednym rzędzie (na razie bez ikon – puste pole na grafikę) */
+/* ARTIFACTS: 5 kafelków ulepszeń za Upgrade Token w jednym rzędzie (ikony assets/ui/tup_*.png) */
 .tuptok{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin:-26px 0 12px;font-size:13px;color:var(--mut)}.tuptok b{font-size:15px;color:var(--tx)}
 .tuprow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 .tupc{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border:2px solid var(--bd);border-radius:10px;text-align:center}
 .tupc.max{border-color:#f2c200}
-.tupico{width:64px;height:64px;border:2px solid var(--bd);border-radius:8px;background:color-mix(in srgb,var(--bd) 18%,transparent)}
+.tupico{width:72px;height:72px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bd);border-radius:8px;background:color-mix(in srgb,var(--bd) 18%,transparent)}
+.tupico img{display:block;width:64px;height:64px;image-rendering:pixelated}   /* ikona 32×32 ×2 */
 .tupn{font-size:12px;line-height:1.25;min-height:2.5em;display:flex;align-items:center}
 .tupl{font-size:12px;font-weight:800;color:var(--ac)}
 .tupd{font-size:11px;color:var(--mut);min-height:2.6em}

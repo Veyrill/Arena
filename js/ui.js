@@ -1594,7 +1594,7 @@ function renderArt() {
   const body = $('body-art'); if (!body) return;
   const tok = artTokens();
   const tiles = TOKEN_UPG.map(u => { const l = tupLvl(u.k), mx = l >= u.max, c = mx ? 0 : u.cost[l];
-    return `<div class="tupc${mx ? ' max' : ''}"><div class="tupico"></div><b class="tupn">${u.n}</b><span class="tupl">${l} / ${u.max}</span>`
+    return `<div class="tupc${mx ? ' max' : ''}"><div class="tupico"><img src="${ASSETS_DIR}/${u.img}" alt="" onerror="this.remove()"></div><b class="tupn">${u.n}</b><span class="tupl">${l} / ${u.max}</span>`
       + `<div class="tupd">${u.d}</div><div class="tupe">${l ? tupFmt(u, l) : '–'}${mx ? '' : ` <span>→</span> <em>${tupFmt(u, l + 1)}</em>`}</div>`
       + `<button class="bkac tupbtn" onclick="window.tupBuy('${u.k}')"${mx || tok < c || busy ? ' disabled' : ''}>${mx ? 'MAX' : c + 'T'}</button></div>`; }).join('');
   body.innerHTML = `<div class="tuptok">${matIco('upgrade_token', 24, 20)}<b>${tok}</b> Upgrade Tokens</div><div class="tuprow">${tiles}</div>`;
