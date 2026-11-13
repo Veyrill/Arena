@@ -30,33 +30,36 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 /* Questy: wszystkie zrobione – lekko wyszarzone okienko z samym przyciskiem Reroll (aktywny po upływie czasu) */
 .qempty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border:1px dashed var(--bd);border-radius:8px;opacity:.75;text-align:center}.qempty small{color:var(--mut)}
 .qreroll{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12px}.qreroll img{width:16px;height:16px;image-rendering:pixelated}.qreroll:disabled img{filter:grayscale(1)}
-/* ARTIFACTS (układ C): lewa kolumna – 3 sloty rodzin (Seal złoto, Sigil czerwień, Rune turkus) + Active Bonuses; prawa – skrzynia Artifact Cache
-   (Redeem: 1 Upgrade Token = 1 skrzynia) i kolekcja z zakładkami All / Seal / Sigil / Rune */
-.artsplit{display:grid;grid-template-columns:230px 1fr;gap:16px;margin-top:4px}
-.artleft{display:flex;flex-direction:column;gap:10px}
-.artrow{display:flex;align-items:center;gap:10px}
-.artrow small{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--fc)}
-.artcell{width:64px;height:64px;flex:none;display:flex;align-items:center;justify-content:center;font-size:34px;border:2px dashed var(--fc);border-radius:10px;background:color-mix(in srgb,var(--fc) 10%,transparent)}
-.artcell.full{border:2px solid var(--fc);background:color-mix(in srgb,var(--fc) 22%,var(--card));box-shadow:0 0 10px color-mix(in srgb,var(--fc) 50%,transparent);cursor:pointer}
-.arteff{font-size:12px;line-height:1.3;color:var(--mut)}.arteff b{font-size:12px}
-.artbonus{margin-top:4px;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;font-size:11px;display:flex;flex-direction:column;gap:3px;color:var(--mut)}
-.artbonus b{font-size:10px;letter-spacing:.12em;color:var(--ac)}
-.artcache{display:flex;align-items:center;gap:14px;padding:10px 12px;border:2px solid var(--ac);border-radius:10px;background:color-mix(in srgb,var(--ac) 8%,var(--card))}
-.artchestico{width:64px;height:64px;flex:none;display:flex;align-items:center;justify-content:center;font-size:36px;border:2px solid #1a0e08;border-radius:8px;background:linear-gradient(#8a5a2a,#5a3618)}
-.artcinfo{flex:1;min-width:0}.artcinfo b{font-size:14px}
-.artodds{font-size:10px;line-height:1.5;color:var(--mut);margin-top:3px}
-.artcbtn{display:flex;flex-direction:column;align-items:center;gap:5px}
-.artredeem{min-width:120px;padding:7px 14px}
-.arttok{display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:13px}
-.arttabs{display:flex;align-items:center;gap:6px;margin:12px 0 8px}
-.arttabs button{padding:4px 10px;font-size:11px;font-weight:700}.arttabs button.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac)}
-.artfound{margin-left:6px;font-size:12px;font-weight:700;color:var(--mut)}
-.artgrid{display:grid;grid-template-columns:repeat(10,38px);gap:6px 4px}   /* 10 kolumn: w widoku All każda rodzina to jeden rząd */
-.artmini{position:relative;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:21px;border:2px solid;border-radius:8px;background:var(--card);cursor:pointer}
-.artmini:hover:not(.q){transform:translateY(-2px)}
+/* ARTIFACTS (układ A): po lewej 3 karty slotów (Seal złoto, Sigil czerwień, Rune turkus) i panel zakładek z posiadanymi artefaktami;
+   po prawej kolumna Collection (wszystkie artefakty, niezdobyte jako „?”) z przyciskiem Redeem na dole */
+.artA{display:grid;grid-template-columns:1fr 196px;gap:12px;margin-top:4px}
+.artmain{display:flex;flex-direction:column;gap:12px;min-width:0}
+.artcards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.artcard{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:230px;padding:10px;border:2px solid var(--fc);border-radius:10px}
+.artcard.empty{border-style:dashed}
+.artfam{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fc)}
+.artbigslot{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:58px;border:3px solid;border-radius:8px;background:color-mix(in srgb,var(--fc) 14%,var(--card));cursor:pointer}
+.artcard.empty .artbigslot{border:2px dashed var(--fc);background:color-mix(in srgb,var(--fc) 8%,transparent);cursor:default}
+.artname{font-size:12px;text-align:center;color:var(--mut)}b.artname{font-weight:800}
+.arteffect{align-self:stretch;margin-top:auto;padding-top:6px;border-top:1px solid var(--bd);font-size:11px;color:var(--tx)}
+.arteffect small{display:block;font-weight:800;letter-spacing:.1em;color:var(--mut)}
+.artown{display:flex;flex-direction:column;gap:10px;min-height:120px;padding:8px 10px;border:1px solid var(--bd);border-radius:10px}
+.artown small{color:var(--mut)}
+.arttabs{display:flex;gap:4px}
+.arttabs button{padding:4px 12px;font-size:11px;font-weight:700}.arttabs button.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac)}
+.artowngrid{display:flex;flex-wrap:wrap;gap:8px}
+.artcoll{display:flex;flex-direction:column;gap:8px;padding:10px;border:1px solid var(--bd);border-radius:10px}
+.artcollh{font-size:11px;letter-spacing:.14em;color:var(--ac);text-align:center}
+.artcollrow{display:grid;grid-template-columns:repeat(5,30px);gap:5px;justify-content:center}
+.artmini{position:relative;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:21px;border:2px solid;border-radius:8px;background:var(--card);cursor:pointer;box-sizing:border-box}
+.artmini:hover:not(.q):not(.sm){transform:translateY(-2px)}
+.artmini.sm{width:30px;height:30px;font-size:16px;border-radius:6px;cursor:default}
 .artmini.eq{box-shadow:0 0 0 2px var(--ac),0 0 8px var(--ac)}
-.artmini.q{border:2px dashed var(--fc);opacity:.45;color:var(--mut);font-size:14px;font-weight:800;cursor:default}
+.artmini.q{border:2px dashed var(--fc);opacity:.45;color:var(--mut);font-size:12px;font-weight:800}
 .artmini i{position:absolute;right:-5px;bottom:-6px;font-style:normal;font-size:10px;font-weight:800;line-height:1;padding:2px 4px;border-radius:5px;background:var(--ac);color:#fff}
+.artredeemw{margin-top:auto;padding-top:8px;display:flex;flex-direction:column;align-items:center;gap:5px}
+.artredeem{width:100%;padding:7px 10px}
+.arttok{display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:13px}
 /* OTWIERANIE SKRZYNI: ekran przyciemniony, skrzynia drży ~1 s, rozbłysk, potem karta z artefaktem (poświata w kolorze rzadkości) */
 #artfx{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(10,6,3,.78);animation:artdim .35s ease-out}
 @keyframes artdim{from{background:rgba(10,6,3,0)}}

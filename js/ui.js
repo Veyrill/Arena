@@ -1581,37 +1581,45 @@ function bestBeatenMob() {
   return null;
 }
 
-// ===== ARTIFACTS (układ C) =====
-// Lewa kolumna: 3 sloty (po jednym na rodzinę Seal / Sigil / Rune) + ramka Active Bonuses. Prawa: skrzynia „Artifact Cache”
-// (Redeem = 1 Upgrade Token = 1 skrzynia) i kolekcja z zakładkami All / Seal / Sigil / Rune.
+// ===== ARTIFACTS (układ A) =====
+// Lewa strona: 3 karty slotów (Seal / Sigil / Rune): duży obrazek, nazwa, sekcja EFFECT; pod nimi panel z zakładkami Seals / Sigils / Runes
+// – posiadane artefakty wybranej rodziny (kliknięcie = włożenie do slotu). Prawa kolumna: Collection – wszystkie artefakty
+// (niezdobyte jako „?”), na dole Redeem (1 Upgrade Token = 1 skrzynia) i licznik tokenów.
 // Zapis: me.arts = { klucz artefaktu: ile sztuk zdobyto }, me.artSlots = { seal / sigil / rune: klucz artefaktu w slocie }.
-// Kliknięcie zdobytego artefaktu w kolekcji = włożenie do slotu jego rodziny; kliknięcie slotu = wyjęcie. Na razie bez statystyk.
-let artTab = 'all';
+let artTab = 'seal';
 const ART_GLOW = ['#a39880', '#5fcf70', '#6aa5ff', '#c685f5', '#f2c200'];   // kolor poświaty / ramki przy odkryciu: Common … Legendary
 const artTokens = () => (inv.find(x => x.mat && x.sl === 'upgrade_token') || {}).qty || 0;
 const artOf = k => ARTIFACTS.find(a => a.k === k);
 const artTip = a => `${a.n}\n${RAR[a.r][0]} ${ART_FAMS[a.fam].n}`;
-function artState() { if (!me.arts) me.arts = {}; if (!me.artSlots) me.artSlots = {}; }
+function artState() {   // stary zapis: artefakty usunięte z gry (lista 10 → 5 na rodzinę) znikają z kolekcji i slotów
+  if (!me.arts) me.arts = {}; if (!me.artSlots) me.artSlots = {};
+  for (const k in me.arts) if (!artOf(k)) delete me.arts[k];
+  for (const f in me.artSlots) if (!artOf(me.artSlots[f])) delete me.artSlots[f];
+}
 function renderArt() {
   const body = $('body-art'); if (!body) return;
   artState();
+  if (!ART_FAMS[artTab]) artTab = 'seal';
   const tok = artTokens(), found = ARTIFACTS.filter(a => me.arts[a.k]).length;
-  // lewa kolumna: sloty rodzin (kolor rodziny, emoji artefaktu albo pusto) + aktywne bonusy
-  const slots = Object.entries(ART_FAMS).map(([f, F]) => { const a = artOf(me.artSlots[f]);
-    return `<div class="artrow" style="--fc:${F.c}"><div class="artcell${a ? ' full r' + a.r : ''}"${a ? ` onclick="window.artUnequip('${f}')" title="${artTip(a)}\nClick to remove"` : ''}>${a ? a.e : ''}</div>`
-      + `<div><small>${F.n}</small><div class="arteff">${a ? `<b class="t${a.r}">${a.n}</b>` : 'Empty slot'}</div></div></div>`; }).join('');
-  const bonus = `<div class="artbonus"><b>ACTIVE BONUSES</b><span>No bonuses yet (artifact stats coming soon)</span></div>`;
-  // skrzynia: grafika, szanse, przycisk Redeem i liczba tokenów
-  const odds = ART_ODDS.map((o, r) => `<span class="t${r}">${RAR[r][0]} ${o}%</span>`).join(' · ');
-  const cache = `<div class="artcache"><div class="artchestico">🎁</div><div class="artcinfo"><b>Artifact Cache</b><div class="artodds">${odds}</div></div>`
-    + `<div class="artcbtn"><button class="bkac artredeem" onclick="window.artRedeem()"${tok < 1 || busy ? ' disabled' : ''}>Redeem</button><div class="arttok">${matIco('upgrade_token', 20, 16)}1 / ${tok}</div></div></div>`;
-  // kolekcja: zakładki + siatka (zdobyte – emoji w ramce rzadkości i licznik sztuk; niezdobyte – „?” w kolorze rodziny)
-  const tabs = [['all', 'All'], ...Object.entries(ART_FAMS).map(([f, F]) => [f, F.n])].map(([k, n]) => `<button class="${artTab === k ? 'on' : ''}" onclick="window.artSetTab('${k}')">${n}</button>`).join('')
-    + `<span class="artfound">${found} / ${ARTIFACTS.length} found</span>`;
-  const grid = ARTIFACTS.filter(a => artTab === 'all' || a.fam === artTab).map(a => { const n = me.arts[a.k] || 0, eq = me.artSlots[a.fam] === a.k;
-    return n ? `<div class="artmini r${a.r}${eq ? ' eq' : ''}" style="--fc:${ART_FAMS[a.fam].c}" onclick="window.artEquip('${a.k}')" title="${artTip(a)}\n${eq ? 'Equipped' : 'Click to equip'}">${a.e}${n > 1 ? `<i>${n}</i>` : ''}</div>`
-      : `<div class="artmini q" style="--fc:${ART_FAMS[a.fam].c}" title="Unknown ${ART_FAMS[a.fam].n}">?</div>`; }).join('');
-  body.innerHTML = `<div class="artsplit"><div class="artleft">${slots}${bonus}</div><div>${cache}<div class="arttabs">${tabs}</div><div class="artgrid">${grid}</div></div></div>`;
+  // karty slotów: nazwa rodziny, duży slot (ramka w kolorze rzadkości), nazwa artefaktu, EFFECT
+  const cards = Object.entries(ART_FAMS).map(([f, F]) => { const a = artOf(me.artSlots[f]);
+    return `<div class="artcard${a ? '' : ' empty'}" style="--fc:${F.c}"><b class="artfam">${F.n}</b>`
+      + `<div class="artbigslot${a ? ' r' + a.r : ''}"${a ? ` onclick="window.artUnequip('${f}')" title="${artTip(a)}\nClick to remove"` : ''}>${a ? a.e : ''}</div>`
+      + (a ? `<b class="artname t${a.r}">${a.n}</b>` : '<span class="artname">Empty slot</span>')
+      + `<div class="arteffect"><small>EFFECT</small>${a ? 'No stats yet' : '–'}</div></div>`; }).join('');
+  // panel zakładek: posiadane artefakty wybranej rodziny
+  const tabs = Object.entries(ART_FAMS).map(([f, F]) => `<button class="${artTab === f ? 'on' : ''}" onclick="window.artSetTab('${f}')">${F.n}s</button>`).join('');
+  const own = ARTIFACTS.filter(a => a.fam === artTab && me.arts[a.k]).map(a => { const n = me.arts[a.k], eq = me.artSlots[a.fam] === a.k;
+    return `<div class="artmini r${a.r}${eq ? ' eq' : ''}" onclick="window.artEquip('${a.k}')" title="${artTip(a)}\n${eq ? 'Equipped' : 'Click to equip'}">${a.e}${n > 1 ? `<i>${n}</i>` : ''}</div>`; }).join('');
+  const F = ART_FAMS[artTab];
+  const owned = `<div class="artown"><div class="arttabs">${tabs}</div>`
+    + (own ? `<div class="artowngrid">${own}</div><small>Click an artifact to put it in the ${F.n} slot</small>` : `<small>No ${F.n}s yet. Open an Artifact Cache to find one.</small>`) + `</div>`;
+  // kolekcja: każda rodzina w rzędzie po 5 (zdobyte – emoji w ramce rzadkości, niezdobyte – „?” w kolorze rodziny), na dole Redeem
+  const coll = Object.entries(ART_FAMS).map(([f, Fm]) => `<div class="artcollrow" style="--fc:${Fm.c}">` + ARTIFACTS.filter(a => a.fam === f).map(a => me.arts[a.k]
+    ? `<div class="artmini sm r${a.r}" title="${artTip(a)}">${a.e}</div>` : `<div class="artmini sm q" title="Unknown ${Fm.n}">?</div>`).join('') + `</div>`).join('');
+  const redeem = `<div class="artredeemw"><button class="bkac artredeem" onclick="window.artRedeem()"${tok < 1 || busy ? ' disabled' : ''}>🎁 Redeem</button><div class="arttok">${matIco('upgrade_token', 20, 16)}1 / ${tok}</div></div>`;
+  body.innerHTML = `<div class="artA"><div class="artmain"><div class="artcards">${cards}</div>${owned}</div>`
+    + `<div class="artcoll"><b class="artcollh">COLLECTION · ${found}/${ARTIFACTS.length}</b>${coll}${redeem}</div></div>`;
 }
 window.artSetTab = t => { artTab = t; renderArt(); };
 window.artEquip = k => { const a = artOf(k); artState(); if (!a || !me.arts[k] || busy) return; me.artSlots[a.fam] = k; saveGame(); renderArt(); };

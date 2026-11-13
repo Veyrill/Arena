@@ -268,32 +268,32 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | ID | Nazwa |
 |---|---|
 | 7001 | Merchant Seal (Seal, Common) |
-| 7002 | Lucky Seal (Seal, Common) |
-| 7003 | Charter Seal (Seal, Common) |
+| 7002 | ~~Lucky Seal~~ (usunięty, ID zarezerwowane) |
+| 7003 | ~~Charter Seal~~ (usunięty, ID zarezerwowane) |
 | 7004 | Trade Seal (Seal, Uncommon) |
-| 7005 | Vault Seal (Seal, Uncommon) |
-| 7006 | Seal of the Tomb (Seal, Uncommon) |
+| 7005 | ~~Vault Seal~~ (usunięty, ID zarezerwowane) |
+| 7006 | ~~Seal of the Tomb~~ (usunięty, ID zarezerwowane) |
 | 7007 | Jeweler Seal (Seal, Rare) |
-| 7008 | Seal of Plenty (Seal, Rare) |
+| 7008 | ~~Seal of Plenty~~ (usunięty, ID zarezerwowane) |
 | 7009 | Royal Seal (Seal, Epic) |
 | 7010 | Dragon Hoard Seal (Seal, Legendary) |
 | 7101 | Sigil of the Blade (Sigil, Common) |
-| 7102 | Sigil of the Bulwark (Sigil, Common) |
-| 7103 | Hunter Sigil (Sigil, Common) |
-| 7104 | Sigil of the Axe (Sigil, Uncommon) |
+| 7102 | ~~Sigil of the Bulwark~~ (usunięty, ID zarezerwowane) |
+| 7103 | ~~Hunter Sigil~~ (usunięty, ID zarezerwowane) |
+| 7104 | ~~Sigil of the Axe~~ (usunięty, ID zarezerwowane) |
 | 7105 | Wolf Sigil (Sigil, Uncommon) |
-| 7106 | Sigil of the Eagle (Sigil, Uncommon) |
+| 7106 | ~~Sigil of the Eagle~~ (usunięty, ID zarezerwowane) |
 | 7107 | Blood Sigil (Sigil, Rare) |
-| 7108 | Sigil of Fury (Sigil, Rare) |
+| 7108 | ~~Sigil of Fury~~ (usunięty, ID zarezerwowane) |
 | 7109 | Death Sigil (Sigil, Epic) |
 | 7110 | Sigil of War (Sigil, Legendary) |
 | 7201 | Candle Rune (Rune, Common) |
-| 7202 | Rune of Growth (Rune, Common) |
-| 7203 | Tide Rune (Rune, Common) |
-| 7204 | Frost Rune (Rune, Uncommon) |
+| 7202 | ~~Rune of Growth~~ (usunięty, ID zarezerwowane) |
+| 7203 | ~~Tide Rune~~ (usunięty, ID zarezerwowane) |
+| 7204 | ~~Frost Rune~~ (usunięty, ID zarezerwowane) |
 | 7205 | Moon Rune (Rune, Uncommon) |
-| 7206 | Sun Rune (Rune, Uncommon) |
+| 7206 | ~~Sun Rune~~ (usunięty, ID zarezerwowane) |
 | 7207 | Rune of Haste (Rune, Rare) |
-| 7208 | Storm Rune (Rune, Rare) |
+| 7208 | ~~Storm Rune~~ (usunięty, ID zarezerwowane) |
 | 7209 | Rune of Echoes (Rune, Epic) |
 | 7210 | Star Rune (Rune, Legendary) |
