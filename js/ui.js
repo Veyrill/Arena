@@ -1612,7 +1612,8 @@ function renderArt() {
   // kolekcja: 15 artefaktów w 5 rzędach po 3 (każdy rząd = jedna rzadkość); niezdobyte – „?”
   const coll = ARTIFACTS.map(a => me.arts[a.k] ? `<div class="artmini sm r${a.r}" title="${artTip(a)}">${a.e}</div>` : `<div class="artmini sm q r${a.r}" title="Unknown ${RAR[a.r][0]} artifact">?</div>`).join('');
   const redeem = `<div class="artredeemw"><button class="bkac artredeem" onclick="window.artRedeem()"${tok < 1 || busy ? ' disabled' : ''}>🎁 Redeem</button><div class="arttok">${matIco('upgrade_token', 20, 16)}1 / ${tok}</div></div>`;
-  body.innerHTML = `<div class="artA"><div class="artmain"><div class="artcards">${cards}</div><div class="artown"><div class="artowngrid">${own}</div></div></div>`
+  // u góry 3 duże sloty na całą szerokość; pod nimi panel posiadanych artefaktów (lewo) i kolekcja z Redeem (prawo)
+  body.innerHTML = `<div class="artcards">${cards}</div><div class="artA"><div class="artown"><div class="artowngrid">${own}</div></div>`
     + `<div class="artcoll"><b class="artcollh">COLLECTION · ${found}/${ARTIFACTS.length}</b><div class="artcollgrid">${coll}</div>${redeem}</div></div>`;
 }
 // kliknięcie posiadanego artefaktu: założony → zdjęcie; inaczej pierwszy wolny slot, a gdy brak – podmiana slotów po kolei (1, 2, 3, 1…)

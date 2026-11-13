@@ -32,20 +32,19 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 .qreroll{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12px}.qreroll img{width:16px;height:16px;image-rendering:pixelated}.qreroll:disabled img{filter:grayscale(1)}
 /* ARTIFACTS (układ A, bez rodzin): po lewej 3 jednakowe karty slotów i panel z posiadanymi artefaktami; po prawej kolumna Collection
    (15 artefaktów, rzędy wg rzadkości, niezdobyte jako „?”) z przyciskiem Redeem na dole. Bez przerywanych ramek. */
-.artA{display:grid;grid-template-columns:1fr 196px;gap:12px;margin-top:4px}
-.artmain{display:flex;flex-direction:column;gap:12px;min-width:0}
-.artcards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.artcard{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:230px;padding:10px 4px;min-width:0;border:2px solid var(--ac);border-radius:10px}
-.artcard.empty{border-color:var(--bd)}
-/* SLOT ARTEFAKTU: grafika assets/ui/art_slot.png (64×64 z PixelLab, ramka ze smokami jak licznik obrażeń) pokazana ×2 = 128 px;
-   artefakt na środku ciemnego pola, rzadkość = poświata za ikoną (--rg) */
-.artbigslot{width:128px;height:128px;flex:none;display:flex;align-items:center;justify-content:center;padding-top:6px;box-sizing:border-box;font-size:42px;background:url(assets/ui/art_slot.png) 0 0/128px 128px no-repeat;image-rendering:pixelated;cursor:pointer}
-.artbigslot span{line-height:1;filter:drop-shadow(0 0 6px var(--rg)) drop-shadow(0 0 2px var(--rg))}
-.artcard.empty .artbigslot{cursor:default}.artcard.empty .artbigslot span{font-size:34px;font-weight:800;color:#d6a84f;opacity:.55;filter:none}   /* pusty slot: złoty znak zapytania na środku ramki */
-.artname{font-size:12px;text-align:center;font-weight:800}
-.arteffect{align-self:stretch;margin:auto 6px 0;padding-top:6px;border-top:1px solid var(--bd);font-size:11px;color:var(--tx)}
+.artA{display:grid;grid-template-columns:1fr 196px;gap:12px;margin-top:14px;align-items:start}
+/* 3 DUŻE SLOTY u góry, na całą szerokość karty, bez ramek kart: grafika slotu + nazwa + EFFECT */
+.artcards{display:grid;grid-template-columns:repeat(3,192px);justify-content:space-around;gap:12px;margin-top:4px}
+.artcard{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
+/* SLOT ARTEFAKTU: grafika assets/ui/art_slot.png (64×64 z PixelLab, ramka ze smokami jak licznik obrażeń) pokazana ×3 = 192 px
+   (×4 = 256 px nie mieści 3 slotów obok siebie); artefakt na środku ciemnego pola, rzadkość = poświata za ikoną (--rg) */
+.artbigslot{width:192px;height:192px;flex:none;display:flex;align-items:center;justify-content:center;padding-top:3px;box-sizing:border-box;font-size:62px;background:url(assets/ui/art_slot.png) 0 0/192px 192px no-repeat;image-rendering:pixelated;cursor:pointer}
+.artbigslot span{line-height:1;filter:drop-shadow(0 0 9px var(--rg)) drop-shadow(0 0 3px var(--rg))}
+.artcard.empty .artbigslot{cursor:default}.artcard.empty .artbigslot span{font-size:50px;font-weight:800;color:#d6a84f;opacity:.55;filter:none}   /* pusty slot: złoty znak zapytania na środku ramki */
+.artname{font-size:13px;text-align:center;font-weight:800}
+.arteffect{align-self:stretch;margin:0 10px;padding-top:6px;border-top:1px solid var(--bd);font-size:11px;color:var(--tx)}
 .arteffect small{display:block;font-weight:800;letter-spacing:.1em;color:var(--mut)}
-.artown{min-height:76px;padding:10px;border:1px solid var(--bd);border-radius:10px}
+.artown{padding:10px;border:1px solid var(--bd);border-radius:10px}
 .artowngrid{display:flex;flex-wrap:wrap;gap:8px}
 .artcoll{display:flex;flex-direction:column;gap:10px;padding:10px;border:1px solid var(--bd);border-radius:10px}
 .artcollh{font-size:11px;letter-spacing:.14em;color:var(--ac);text-align:center}
