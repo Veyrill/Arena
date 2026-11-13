@@ -1634,16 +1634,20 @@ function renderQuestSide() {
   side.hidden = view !== 'exp' || me.lvl < QUEST_LVL; if (side.hidden) return;   // od 5 poziomu
   ensureQuests();
   placeQuestSide();
-  const Q = me.quests, cd = side.querySelector('[data-questcd]'); if (cd) cd.innerHTML = questHead();
-  // wiersz: opis, pasek postępu, licznik; po prawej nagroda (Upgrade Token, dymek jak materiał) albo ✓ po ukończeniu
-  const rows = Q.list.map(q => {
-    const K = QUEST_KINDS[q.k]; if (!K) return '';
-    const done = q.got >= q.need;
-    return `<div class="qrow${done ? ' done' : ''}"><div class="qtx"><b>${K.t(q.need, q)}</b><div class="qbar"><i style="width:${q.got / q.need * 100}%"></i></div><small>${q.got}/${q.need}</small></div>`
-      + (done ? '<span style="color:#3fdc3f;font-weight:700;font-size:18px">✓</span>' : `<div class="qic" data-it="mat:upgrade_token">${matIco('upgrade_token', 32, 24)}</div>`) + `</div>`;
+  const Q = me.quests, cd = side.querySelector('[data-questcd]'), left = questsLeft();
+  if (cd) cd.innerHTML = left.length ? questHead() : '';   // wszystko zrobione – licznik / Reroll tylko w okienku niżej
+  // wiersz: opis, pasek postępu, licznik; po prawej nagroda (Upgrade Token, dymek jak materiał). Ukończone questy znikają od razu.
+  const rows = left.map(q => {
+    const K = QUEST_KINDS[q.k];
+    return `<div class="qrow"><div class="qtx"><b>${K.t(q.need, q)}</b><div class="qbar"><i style="width:${q.got / q.need * 100}%"></i></div><small>${q.got}/${q.need}</small></div>`
+      + `<div class="qic" data-it="mat:upgrade_token">${matIco('upgrade_token', 32, 24)}</div></div>`;
   }).join('');
-  $('body-quest-side').innerHTML = rows || '<small style="color:var(--mut)">No quests. New quests after the reset.</small>';
+  // brak questów do zrobienia: lekko wyszarzone okienko z samym przyciskiem Reroll (aktywny dopiero po upływie czasu, wcześniej odlicza)
+  $('body-quest-side').innerHTML = rows || `<div class="qempty"><small>All quests completed</small>${qRerollBtn()}</div>`;
 }
+const questsLeft = () => me.quests.list.filter(q => QUEST_KINDS[q.k] && q.got < q.need);
+const qRerollBtn = () => { const rdy = Date.now() >= me.quests.t;
+  return `<button class="qreroll" onclick="window.resetQuests()"${rdy ? '' : ' disabled'}><img src="${ASSETS_DIR}/ui/ui_reset.png" alt=""><span data-qrr>${rdy ? 'Reroll' : fmtCd(me.quests.t - Date.now())}</span></button>`; };
 // przycisk Fight pod Special drops: aktywny dla wybranego przeciwnika (pokonanego albo kolejnego niepokonanego), z licznikiem przerwy po wygranej
 function dunFightBtn(i) {
   const ok = dsel === i && dsel >= 0, cd = ok ? dunCd(i) : 0;   // przycisk zawsze na dole panelu dropów (margin-top:auto), w tym samym miejscu dla każdego przeciwnika
@@ -3971,6 +3975,8 @@ setInterval(() => { if (fishTick()) { render(); playFx(); } }, 100);
 // QUESTY: co sekundę licznik do resetu; po czasie – przycisk Reset w nagłówku (nowa pula dopiero po kliknięciu)
 setInterval(() => {
   if (!me.quests || !me.quests.t) return;
+  const rr = document.querySelector('#quest-side .qreroll');   // okienko „All quests completed”: odliczanie na przycisku, po czasie – aktywny Reroll
+  if (rr) { if (Date.now() >= me.quests.t) { if (rr.disabled) renderQuestSide(); } else rr.querySelector('[data-qrr]').textContent = fmtCd(me.quests.t - Date.now()); return; }
   const e = document.querySelector('#quest-side [data-questcd]'); if (!e) return;
   if (Date.now() >= me.quests.t) { if (!e.querySelector('.qreset')) e.innerHTML = questHead(); return; }
   e.textContent = fmtCd(me.quests.t - Date.now());
