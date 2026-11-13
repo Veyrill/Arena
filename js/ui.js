@@ -1573,7 +1573,7 @@ function loreTick() {
   el.firstChild.textContent = L.slice(0, n); el.lastChild.textContent = L.slice(n);
 }
 // LEWY PANEL LOCHU: special dropy (jak u ryb: „?” do pierwszego zdobycia, potem grafika; DEV – wszystko odkryte), losowy przedmiot wg rzadkości, XP i złoto
-// (SKLEP usunięty z gry – zakładkę zastąpił Hideout; wędki na razie nie da się zdobyć)
+// (SKLEP usunięty z gry – zakładkę zastąpiła zakładka Artifacts; wędki na razie nie da się zdobyć)
 // najdalej pokonany przeciwnik wyprawy: ostatnia lokacja z postępem (me.eprog) → ostatni pokonany w niej przeciwnik
 function bestBeatenMob() {
   const ep = me.eprog || {};
@@ -1787,8 +1787,6 @@ const slotIco = i => sizeIco(i, 64);
 const invIco = i => sizeIco(i, 48);
 // czerwona kropka „nowy” w plecaku: mniejsza i wewnątrz kafelka (nie wychodzi na sąsiednie)
 document.head.insertAdjacentHTML('beforeend', '<style>#lvl{display:inline-block;transform-origin:left center}#lvl.lvlpop{animation:lvlpop 1.3s ease-out}@keyframes lvlpop{0%{transform:scale(1)}15%{transform:scale(1.18);color:#f2c200;text-shadow:0 0 10px #f2c200aa}55%{transform:scale(1.05);color:#f2c200;text-shadow:0 0 6px #f2c20077}100%{transform:scale(1)}}</style>');
-// HIDEOUT: baza bohatera (na razie pusta) – kafelek „Coming soon”
-document.head.insertAdjacentHTML('beforeend', '<style>.hideout-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:220px;color:var(--mut);text-align:center}.hideout-empty b{font-size:16px;color:var(--tx)}</style>');
 document.head.insertAdjacentHTML('beforeend', '<style>.cell.new::after{top:3px;right:3px;width:8px;height:8px}</style>');
 // poziom przeciwnika w prawym górnym rogu kafelka (wyprawa, loch) i panelu przeciwnika w oknie walki; boss – czerwony
 document.head.insertAdjacentHTML('beforeend', '<style>.tile{position:relative}.arena>div:last-child{position:relative}.mlvl{position:absolute;top:4px;right:6px;font-size:11px;font-weight:700;color:var(--mut);line-height:1}.mlvl.b{color:#e0524a}.tile.mlock{filter:grayscale(1);opacity:.45;cursor:default}.mwin{position:absolute;bottom:4px;right:6px;font-size:11px;font-weight:800;line-height:1}.arena .mlvl{top:-2px;right:0}.dunwrap{display:flex;gap:12px;align-items:stretch;margin-top:8px}.dundrops{flex:1;min-width:0;border:1px solid var(--bd);border-radius:10px;padding:10px 12px;min-height:200px;display:flex;flex-direction:column}.dunlore{margin:12px 0 10px;padding-top:10px;border-top:1px solid var(--bd);font-size:13px;line-height:1.5;font-style:italic;color:#b08d57}.bkac{background:var(--ac);color:var(--on-ac);border-color:var(--ac);font-weight:700}.dunmobs{display:flex;flex-direction:column;gap:8px;width:190px;flex:none}.tile.dmob{min-height:96px}.tile.dmob .ic{font-size:40px}.tile.dmob.dlock{filter:grayscale(1);opacity:.45}.tile.dmob.dcool{opacity:.7}.tile.dmob.dcool small{color:var(--ac);font-weight:700}.cell.noreq::before{content:"";position:absolute;inset:0;border-radius:6px;background:rgba(217,75,75,.38);box-shadow:inset 0 0 10px rgba(217,75,75,.8);pointer-events:none;z-index:1}.dfbtn{display:block;margin:auto auto 0;flex:none;min-width:96px;padding:5px 14px;font-weight:800;font-size:13px;background:var(--ac);color:var(--on-ac);border-color:var(--ac)}.dfbtn:disabled{opacity:.55}#dunfight-slot{margin-top:8px}#dunfight-slot #fightbox{border:0;box-shadow:none;padding:0;margin:0;background:none}.dunline{display:flex;justify-content:space-between;gap:8px;padding:4px 0;border-top:1px solid var(--bd);font-size:13px}@media(max-width:600px){.dunwrap{flex-direction:column}.dunmobs{width:100%}}</style>');
@@ -1862,7 +1860,7 @@ window.buyNode = id => {
   render();
 };
 
-const NAV = [['exp', 'Expedition'], ['hideout', 'Hideout'], ['craft', 'Crafting'], ['upg', 'Passives'], ['abil', 'Abilities'], ['dun', 'Dungeons'], ['raid', 'Raids'], ['fish', 'Fishing'], ['upgrade', 'Tackle Upgrade'], ['cook', 'Cooking'], ['set', 'Settings']];   // Tackle = sprzęt wędkarski (wędka + haczyk)
+const NAV = [['exp', 'Expedition'], ['art', 'Artifacts'], ['craft', 'Crafting'], ['upg', 'Passives'], ['abil', 'Abilities'], ['dun', 'Dungeons'], ['raid', 'Raids'], ['fish', 'Fishing'], ['upgrade', 'Tackle Upgrade'], ['cook', 'Cooking'], ['set', 'Settings']];   // Tackle = sprzęt wędkarski (wędka + haczyk)
 // spDot: czerwona kropka przy zakładce Skills, gdy są skill pointy do wydania. Znika po najechaniu myszką,
 // wraca, gdy gracz dostanie nowe skill pointy (awans, reset skilli).
 let spDot = false;
@@ -2032,7 +2030,7 @@ function render() {
     btn.disabled = busy || (fishing.active && btn.dataset.v === 'exp');
   });
 
-  ['exp', 'hideout', 'upg', 'abil', 'upgrade', 'dun', 'raid', 'craft', 'fish', 'cook', 'set'].forEach(k => {
+  ['exp', 'art', 'upg', 'abil', 'upgrade', 'dun', 'raid', 'craft', 'fish', 'cook', 'set'].forEach(k => {
     const el = $('v-' + k);
     if (el) el.style.display = (k === view) ? 'block' : 'none';
   });
