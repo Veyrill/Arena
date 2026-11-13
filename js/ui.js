@@ -1611,9 +1611,8 @@ function renderArt() {
   const tabs = Object.entries(ART_FAMS).map(([f, F]) => `<button class="${artTab === f ? 'on' : ''}" onclick="window.artSetTab('${f}')">${F.n}s</button>`).join('');
   const own = ARTIFACTS.filter(a => a.fam === artTab && me.arts[a.k]).map(a => { const n = me.arts[a.k], eq = me.artSlots[a.fam] === a.k;
     return `<div class="artmini r${a.r}${eq ? ' eq' : ''}" onclick="window.artEquip('${a.k}')" title="${artTip(a)}\n${eq ? 'Equipped' : 'Click to equip'}">${a.e}${n > 1 ? `<i>${n}</i>` : ''}</div>`; }).join('');
-  const F = ART_FAMS[artTab];
   const owned = `<div class="artown"><div class="arttabs">${tabs}</div>`
-    + (own ? `<div class="artowngrid">${own}</div><small>Click an artifact to put it in the ${F.n} slot</small>` : `<small>No ${F.n}s yet. Open an Artifact Cache to find one.</small>`) + `</div>`;
+    + `<div class="artowngrid">${own}</div></div>`;   // bez podpowiedzi i komunikatu o braku artefaktów
   // kolekcja: każda rodzina w rzędzie po 5 (zdobyte – emoji w ramce rzadkości, niezdobyte – „?” w kolorze rodziny), na dole Redeem
   const coll = Object.entries(ART_FAMS).map(([f, Fm]) => `<div class="artcollrow" style="--fc:${Fm.c}">` + ARTIFACTS.filter(a => a.fam === f).map(a => me.arts[a.k]
     ? `<div class="artmini sm r${a.r}" title="${artTip(a)}">${a.e}</div>` : `<div class="artmini sm q" title="Unknown ${Fm.n}">?</div>`).join('') + `</div>`).join('');

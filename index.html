@@ -36,10 +36,10 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 .artmain{display:flex;flex-direction:column;gap:12px;min-width:0}
 .artcards{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .artcard{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:230px;padding:10px;border:2px solid var(--fc);border-radius:10px}
-.artcard.empty{border-style:dashed}
+.artcard.empty{border-color:color-mix(in srgb,var(--fc) 55%,transparent)}   /* pusty slot: ciągła, przygaszona ramka (bez przerywanych kresek) */
 .artfam{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fc)}
 .artbigslot{width:100%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:58px;border:3px solid;border-radius:8px;background:color-mix(in srgb,var(--fc) 14%,var(--card));cursor:pointer}
-.artcard.empty .artbigslot{border:2px dashed var(--fc);background:color-mix(in srgb,var(--fc) 8%,transparent);cursor:default}
+.artcard.empty .artbigslot{border:2px solid color-mix(in srgb,var(--fc) 55%,transparent);background:color-mix(in srgb,var(--fc) 8%,transparent);cursor:default}
 .artname{font-size:12px;text-align:center;color:var(--mut)}b.artname{font-weight:800}
 .arteffect{align-self:stretch;margin-top:auto;padding-top:6px;border-top:1px solid var(--bd);font-size:11px;color:var(--tx)}
 .arteffect small{display:block;font-weight:800;letter-spacing:.1em;color:var(--mut)}
@@ -55,7 +55,7 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 .artmini:hover:not(.q):not(.sm){transform:translateY(-2px)}
 .artmini.sm{width:30px;height:30px;font-size:16px;border-radius:6px;cursor:default}
 .artmini.eq{box-shadow:0 0 0 2px var(--ac),0 0 8px var(--ac)}
-.artmini.q{border:2px dashed var(--fc);opacity:.45;color:var(--mut);font-size:12px;font-weight:800}
+.artmini.q{border:2px solid var(--fc);opacity:.4;color:var(--mut);font-size:12px;font-weight:800}
 .artmini i{position:absolute;right:-5px;bottom:-6px;font-style:normal;font-size:10px;font-weight:800;line-height:1;padding:2px 4px;border-radius:5px;background:var(--ac);color:#fff}
 .artredeemw{margin-top:auto;padding-top:8px;display:flex;flex-direction:column;align-items:center;gap:5px}
 .artredeem{width:100%;padding:7px 10px}
