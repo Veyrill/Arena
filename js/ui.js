@@ -1604,9 +1604,8 @@ function renderArt() {
   // karty slotów: nazwa rodziny, duży slot (ramka w kolorze rzadkości), nazwa artefaktu, EFFECT
   const cards = Object.entries(ART_FAMS).map(([f, F]) => { const a = artOf(me.artSlots[f]);
     return `<div class="artcard${a ? '' : ' empty'}" style="--fc:${F.c}"><b class="artfam">${F.n}</b>`
-      + `<div class="artbigslot${a ? ' r' + a.r : ''}"${a ? ` onclick="window.artUnequip('${f}')" title="${artTip(a)}\nClick to remove"` : ''}>${a ? a.e : ''}</div>`
-      + (a ? `<b class="artname t${a.r}">${a.n}</b>` : '<span class="artname">Empty slot</span>')
-      + `<div class="arteffect"><small>EFFECT</small>${a ? 'No stats yet' : '–'}</div></div>`; }).join('');
+      + `<div class="artbigslot${a ? ' r' + a.r : ''}"${a ? ` onclick="window.artUnequip('${f}')" title="${artTip(a)}\nClick to remove"` : ''}>${a ? a.e : '?'}</div>`   // pusty slot: znak zapytania na środku
+      + (a ? `<b class="artname t${a.r}">${a.n}</b><div class="arteffect"><small>EFFECT</small>No stats yet</div>` : '') + `</div>`; }).join('');   // nazwa i EFFECT tylko, gdy coś jest założone
   // panel zakładek: posiadane artefakty wybranej rodziny
   const tabs = Object.entries(ART_FAMS).map(([f, F]) => `<button class="${artTab === f ? 'on' : ''}" onclick="window.artSetTab('${f}')">${F.n}s</button>`).join('');
   const own = ARTIFACTS.filter(a => a.fam === artTab && me.arts[a.k]).map(a => { const n = me.arts[a.k], eq = me.artSlots[a.fam] === a.k;
