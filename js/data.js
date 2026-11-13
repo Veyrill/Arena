@@ -489,23 +489,16 @@ UPG.filter(n => ['ag', 'dj', 'lj'].includes(n.id)).forEach(n => { n.x = Math.sig
 }));
 
 // ===== ARTEFAKTY (zakładka Artifacts) =====
-// 15 artefaktów, bez rodzin – 3 jednakowe sloty, każdy artefakt pasuje do każdego slotu. Po 3 artefakty każdej rzadkości
-// (Common, Uncommon, Rare, Epic, Legendary). Na razie bez statystyk – tylko emoji, nazwa i rzadkość.
-// Zdobywane ze skrzyni: 1 Upgrade Token = 1 skrzynia (Redeem). ID bez zmian (usunięte ID z dawnej listy są zarezerwowane).
-// szansa na rzadkość przy otwarciu skrzyni (%): Common 50, Uncommon 30, Rare 14, Epic 5, Legendary 1 – potem losowy artefakt tej rzadkości
-export const ART_ODDS = [50, 30, 14, 5, 1];
+// 15 artefaktów, bez rodzin i bez rzadkości – 3 jednakowe sloty, każdy artefakt pasuje do każdego slotu.
+// Na razie bez statystyk – tylko emoji i nazwa (docelowo grafiki assets/artifacts/art_<klucz>.png – prompty: claude/artifact_icon_prompts.md).
+// Zdobywane ze skrzyni: 1 Upgrade Token = 1 skrzynia (Redeem), każdy artefakt z równą szansą (1/15). ID bez zmian (usunięte ID są zarezerwowane).
 export const ARTIFACTS = [
-  // Common
-  [7001, 'merchant_seal', 'Merchant Seal', '🪙', 0], [7101, 'blade_sigil', 'Sigil of the Blade', '🗡️', 0], [7201, 'candle_rune', 'Candle Rune', '🕯️', 0],
-  // Uncommon
-  [7004, 'trade_seal', 'Trade Seal', '⚖️', 1], [7105, 'wolf_sigil', 'Wolf Sigil', '🐺', 1], [7205, 'moon_rune', 'Moon Rune', '🌙', 1],
-  // Rare
-  [7007, 'jeweler_seal', 'Jeweler Seal', '💎', 2], [7107, 'blood_sigil', 'Blood Sigil', '🩸', 2], [7207, 'haste_rune', 'Rune of Haste', '⏳', 2],
-  // Epic
-  [7009, 'royal_seal', 'Royal Seal', '👑', 3], [7109, 'death_sigil', 'Death Sigil', '💀', 3], [7209, 'echo_rune', 'Rune of Echoes', '🌀', 3],
-  // Legendary
-  [7010, 'hoard_seal', 'Dragon Hoard Seal', '🐉', 4], [7110, 'war_sigil', 'Sigil of War', '⚔️', 4], [7210, 'star_rune', 'Star Rune', '✨', 4]
-].map(([id, k, n, e, r]) => ({ k, id, n, e, r }));
+  [7001, 'merchant_seal', 'Merchant Seal', '🪙'], [7101, 'blade_sigil', 'Sigil of the Blade', '🗡️'], [7201, 'candle_rune', 'Candle Rune', '🕯️'],
+  [7004, 'trade_seal', 'Trade Seal', '⚖️'], [7105, 'wolf_sigil', 'Wolf Sigil', '🐺'], [7205, 'moon_rune', 'Moon Rune', '🌙'],
+  [7007, 'jeweler_seal', 'Jeweler Seal', '💎'], [7107, 'blood_sigil', 'Blood Sigil', '🩸'], [7207, 'haste_rune', 'Rune of Haste', '⏳'],
+  [7009, 'royal_seal', 'Royal Seal', '👑'], [7109, 'death_sigil', 'Death Sigil', '💀'], [7209, 'echo_rune', 'Rune of Echoes', '🌀'],
+  [7010, 'hoard_seal', 'Dragon Hoard Seal', '🐉'], [7110, 'war_sigil', 'Sigil of War', '⚔️'], [7210, 'star_rune', 'Star Rune', '✨']
+].map(([id, k, n, e]) => ({ k, id, n, e }));
 
 // UNIKATY: zawsze te same statystyki (nie losowane). Każdy przedmiot mityczny ma cytat (quote) pokazywany w dymku. img = własna grafika w assets/unique/ (nie jest jednym z losowych sprite'ów hełmów).
 // Abyssal Lure Hood – hełm do łowienia (strona 2 ekwipunku), mityczny, 50 FP; special drop z Lewiatana (1%, jednorazowo)

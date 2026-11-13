@@ -1,4 +1,4 @@
-import { ARTIFACTS, ART_ODDS, DEV, SL, NAMES, RAR, ST, LOCS, ACTS, ALL_LOCS, ACT_START, DUN, DUNS, UPG, upgBranch, upgPos, SKILL_ICON_CENTER, MATS, FISH, FISH_LOCKED, R, I, P, UNIQUES, makeUnique, FIXED_ITEMS, makeFixed, FISH_SETS, GEAR_SETS, namesFor, devFlag, DEV_TIME, PANEL_KEY, setTimeOff } from './data.js';
+import { ARTIFACTS, DEV, SL, NAMES, RAR, ST, LOCS, ACTS, ALL_LOCS, ACT_START, DUN, DUNS, UPG, upgBranch, upgPos, SKILL_ICON_CENTER, MATS, FISH, FISH_LOCKED, R, I, P, UNIQUES, makeUnique, FIXED_ITEMS, makeFixed, FISH_SETS, GEAR_SETS, namesFor, devFlag, DEV_TIME, PANEL_KEY, setTimeOff } from './data.js';
 import { me, eq1, eq2, inv, G, up, upgTree, fishing, upgradeItem, equipPage, currentZoom, panX, panY, panMoved, panDrag, view, eloc, esel, dloc, dprog, busy, cdEnd, sellMode, drag, lastMob, showInfo, showDunUnlockMsg, dunMsgClosed, showNoRodMsg, buffStrEnd, lastMouseE, setEquipPage, setView, setEloc, setEsel, setDloc, setDprog, setBusy, setSellMode, setLastMouseE, setDrag, setPanDrag, setPanMoved, setPanX, setPanY, setCurrentZoom, setShowInfo, setLastMob, setShowDunUnlockMsg, setDunMsgClosed, setShowNoRodMsg, setCdEnd, setBuffStrEnd, buffDexEnd, setBuffDexEnd, foodBuff, setUpgradeItem, eact, actsUnlocked, setEact, setActsUnlocked, locUnlocked, setLocUnlocked, gear, der, ub, mstats, HP_MUL, ENEMY_HP, CRIT_K, CRIT_C, CRIT_CAP } from './state.js';
 import { hasRod, upgradeRod, upgradeGear, upgradeCost, makeRod, makeHook, isRod, isUpgradable, gearLevel, gearMaxLevel, previewGear, fishPower, canFish, ROD_TIERS, HOOK_TIERS } from './fishing.js';
 import { hit, armorRed, ARMOR_K } from './combat.js';
@@ -1584,14 +1584,14 @@ function bestBeatenMob() {
 // ===== ARTIFACTS (układ A, bez rodzin) =====
 // Lewa strona: 3 jednakowe karty slotów (duży obrazek; nazwa i EFFECT dopiero po założeniu), pod nimi panel z posiadanymi artefaktami
 // (kliknięcie = założenie do pierwszego wolnego slotu, a gdy wszystkie zajęte – po kolei w miejsce slotu 1, 2, 3; kliknięcie założonego = zdjęcie).
-// Prawa kolumna: Collection – 15 artefaktów (rzędy wg rzadkości, niezdobyte jako „?”), na dole Redeem (1 Upgrade Token = 1 skrzynia).
+// Prawa kolumna: Collection – 15 artefaktów (niezdobyte jako „?”), na dole Redeem (1 Upgrade Token = 1 skrzynia).
 // Zapis: me.arts = { klucz artefaktu: ile sztuk zdobyto }, me.artSlots = [klucz | null, klucz | null, klucz | null].
 const ART_SLOTS = 3;
 let artNext = 0;   // który slot podmienić, gdy wszystkie są zajęte (po kolei)
-const ART_GLOW = ['#a39880', '#5fcf70', '#6aa5ff', '#c685f5', '#f2c200'];   // kolor poświaty / ramki przy odkryciu: Common … Legendary
+const ART_GLOW = '#ffd36b';   // poświata za artefaktem (w slocie i przy odkryciu) – jedna, złota (artefakty nie mają rzadkości)
 const artTokens = () => (inv.find(x => x.mat && x.sl === 'upgrade_token') || {}).qty || 0;
 const artOf = k => ARTIFACTS.find(a => a.k === k);
-const artTip = a => `${a.n}\n${RAR[a.r][0]}`;
+const artTip = a => a.n;
 function artState() {
   if (!me.arts) me.arts = {};
   if (!Array.isArray(me.artSlots)) me.artSlots = Object.values(me.artSlots || {});   // stary zapis: sloty rodzin { seal, sigil, rune } → 3 zwykłe sloty
@@ -1602,15 +1602,15 @@ function renderArt() {
   const body = $('body-art'); if (!body) return;
   artState();
   const tok = artTokens(), found = ARTIFACTS.filter(a => me.arts[a.k]).length;
-  // karty slotów: grafika slotu (ramka ze smokami) z artefaktem w środku (poświata w kolorze rzadkości) albo „?”; nazwa i EFFECT tylko, gdy coś jest założone
+  // karty slotów: grafika slotu (ramka ze smokami) z artefaktem w środku (złota poświata) albo „?”; nazwa i EFFECT tylko, gdy coś jest założone
   const cards = me.artSlots.map((k, i) => { const a = artOf(k);
-    return `<div class="artcard${a ? '' : ' empty'}"><div class="artbigslot"${a ? ` style="--rg:${ART_GLOW[a.r]}" onclick="window.artUnequip(${i})" title="${artTip(a)}\nClick to remove"` : ''}><span>${a ? a.e : '?'}</span></div>`   // ramka slotu: assets/ui/art_slot.png; rzadkość = poświata za ikoną
-      + (a ? `<b class="artname t${a.r}">${a.n}</b><div class="arteffect"><small>EFFECT</small>No stats yet</div>` : '') + `</div>`; }).join('');
-  // panel pod kartami: wszystkie posiadane artefakty (od Common do Legendary), założone – podświetlone
+    return `<div class="artcard${a ? '' : ' empty'}"><div class="artbigslot"${a ? ` style="--rg:${ART_GLOW}" onclick="window.artUnequip(${i})" title="${artTip(a)}\nClick to remove"` : ''}><span>${a ? a.e : '?'}</span></div>`   // ramka slotu: assets/ui/art_slot.png; rzadkość = poświata za ikoną
+      + (a ? `<b class="artname">${a.n}</b><div class="arteffect"><small>EFFECT</small>No stats yet</div>` : '') + `</div>`; }).join('');
+  // panel pod kartami: wszystkie posiadane artefakty, założone – podświetlone
   const own = ARTIFACTS.filter(a => me.arts[a.k]).map(a => { const n = me.arts[a.k], eq = me.artSlots.includes(a.k);
-    return `<div class="artmini r${a.r}${eq ? ' eq' : ''}" onclick="window.artEquip('${a.k}')" title="${artTip(a)}\n${eq ? 'Click to remove' : 'Click to equip'}">${a.e}${n > 1 ? `<i>${n}</i>` : ''}</div>`; }).join('');
-  // kolekcja: 15 artefaktów w 5 rzędach po 3 (każdy rząd = jedna rzadkość); niezdobyte – „?”
-  const coll = ARTIFACTS.map(a => me.arts[a.k] ? `<div class="artmini sm r${a.r}" title="${artTip(a)}">${a.e}</div>` : `<div class="artmini sm q r${a.r}" title="Unknown ${RAR[a.r][0]} artifact">?</div>`).join('');
+    return `<div class="artmini${eq ? ' eq' : ''}" onclick="window.artEquip('${a.k}')" title="${artTip(a)}\n${eq ? 'Click to remove' : 'Click to equip'}">${a.e}${n > 1 ? `<i>${n}</i>` : ''}</div>`; }).join('');
+  // kolekcja: 15 artefaktów (3 kolumny × 5 rzędów); niezdobyte – „?”
+  const coll = ARTIFACTS.map(a => me.arts[a.k] ? `<div class="artmini sm" title="${artTip(a)}">${a.e}</div>` : `<div class="artmini sm q" title="Unknown artifact">?</div>`).join('');
   const redeem = `<div class="artredeemw"><button class="bkac artredeem" onclick="window.artRedeem()"${tok < 1 || busy ? ' disabled' : ''}>🎁 Redeem</button><div class="arttok">${matIco('upgrade_token', 20, 16)}1 / ${tok}</div></div>`;
   // u góry 3 duże sloty na całą szerokość; pod nimi panel posiadanych artefaktów (lewo) i kolekcja z Redeem (prawo)
   body.innerHTML = `<div class="artcards">${cards}</div><div class="artA"><div class="artown"><div class="artowngrid">${own}</div></div>`
@@ -1623,9 +1623,8 @@ window.artEquip = k => { artState(); if (!artOf(k) || !me.arts[k] || busy) retur
   else { let i = me.artSlots.indexOf(null); if (i < 0) { i = artNext; artNext = (artNext + 1) % ART_SLOTS; } me.artSlots[i] = k; }
   saveGame(); renderArt(); };
 window.artUnequip = i => { artState(); if (busy) return; me.artSlots[i] = null; saveGame(); renderArt(); };
-// losowanie: rzadkość wg ART_ODDS, potem losowy artefakt tej rzadkości (dowolna rodzina)
-function artRoll() { let x = Math.random() * 100, r = 0; for (; r < ART_ODDS.length - 1; r++) { if (x < ART_ODDS[r]) break; x -= ART_ODDS[r]; }
-  return P(ARTIFACTS.filter(a => a.r === r)); }
+// losowanie: każdy z 15 artefaktów z równą szansą
+const artRoll = () => P(ARTIFACTS);
 // REDEEM: zabiera 1 Upgrade Token, losuje artefakt i pokazuje animację skrzyni (ekran przyciemniony → skrzynia drży → otwarcie → artefakt)
 window.artRedeem = () => {
   if (busy || document.getElementById('artfx')) return;
@@ -1640,9 +1639,9 @@ window.artRedeem = () => {
   setTimeout(() => fx.classList.add('opening'), 950);   // skrzynia „pęka”: rozbłysk
   setTimeout(() => {   // zawartość skrzyni
     const left = artTokens();
-    fx.style.setProperty('--glow', ART_GLOW[a.r]);
-    fx.querySelector('.artstage').innerHTML = `<div class="artrev"><div class="artrevcell r${a.r}">${a.e}</div><b class="t${a.r}">${a.n}</b>`
-      + `<small>${RAR[a.r][0]}</small><div class="artnew">${n === 1 ? 'NEW!' : 'Duplicate · owned ×' + n}</div>`
+    fx.style.setProperty('--glow', ART_GLOW);
+    fx.querySelector('.artstage').innerHTML = `<div class="artrev"><div class="artrevcell">${a.e}</div><b>${a.n}</b>`
+      + `<div class="artnew">${n === 1 ? 'NEW!' : 'Duplicate · owned ×' + n}</div>`
       + `<div class="artrevbtns"><button class="bkac" onclick="window.artCloseFx()">Collect</button>${left ? `<button onclick="window.artCloseFx(1)">Open another (${left})</button>` : ''}</div></div>`;
     fx.classList.add('shown');
   }, 1250);

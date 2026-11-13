@@ -31,13 +31,13 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 .qempty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border:1px dashed var(--bd);border-radius:8px;opacity:.75;text-align:center}.qempty small{color:var(--mut)}
 .qreroll{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12px}.qreroll img{width:16px;height:16px;image-rendering:pixelated}.qreroll:disabled img{filter:grayscale(1)}
 /* ARTIFACTS (układ A, bez rodzin): po lewej 3 jednakowe karty slotów i panel z posiadanymi artefaktami; po prawej kolumna Collection
-   (15 artefaktów, rzędy wg rzadkości, niezdobyte jako „?”) z przyciskiem Redeem na dole. Bez przerywanych ramek. */
+   (15 artefaktów, niezdobyte jako „?”) z przyciskiem Redeem na dole. Bez przerywanych ramek. */
 .artA{display:grid;grid-template-columns:1fr 196px;gap:12px;margin-top:14px;align-items:start}
 /* 3 DUŻE SLOTY u góry, na całą szerokość karty, bez ramek kart: grafika slotu + nazwa + EFFECT */
 .artcards{display:grid;grid-template-columns:repeat(3,192px);justify-content:space-around;gap:12px;margin-top:4px}
 .artcard{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
 /* SLOT ARTEFAKTU: grafika assets/ui/art_slot.png (64×64 z PixelLab, ramka ze smokami jak licznik obrażeń) pokazana ×3 = 192 px
-   (×4 = 256 px nie mieści 3 slotów obok siebie); artefakt na środku ciemnego pola, rzadkość = poświata za ikoną (--rg) */
+   (×4 = 256 px nie mieści 3 slotów obok siebie); artefakt na środku ciemnego pola, złota poświata za ikoną (--rg) */
 .artbigslot{width:192px;height:192px;flex:none;display:flex;align-items:center;justify-content:center;padding-top:3px;box-sizing:border-box;font-size:62px;background:url(assets/ui/art_slot.png) 0 0/192px 192px no-repeat;image-rendering:pixelated;cursor:pointer}
 .artbigslot span{line-height:1;filter:drop-shadow(0 0 9px var(--rg)) drop-shadow(0 0 3px var(--rg))}
 .artcard.empty .artbigslot{cursor:default}.artcard.empty .artbigslot span{font-size:50px;font-weight:800;color:#d6a84f;opacity:.55;filter:none}   /* pusty slot: złoty znak zapytania na środku ramki */
@@ -48,12 +48,12 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 .artowngrid{display:flex;flex-wrap:wrap;gap:8px}
 .artcoll{display:flex;flex-direction:column;gap:10px;padding:10px;border:1px solid var(--bd);border-radius:10px}
 .artcollh{font-size:11px;letter-spacing:.14em;color:var(--ac);text-align:center}
-.artcollgrid{display:grid;grid-template-columns:repeat(3,40px);gap:8px;justify-content:center}   /* 3 kolumny: każdy rząd = jedna rzadkość (Common … Legendary) */
-.artmini{position:relative;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:21px;border:2px solid;border-radius:8px;background:var(--card);cursor:pointer;box-sizing:border-box}
+.artcollgrid{display:grid;grid-template-columns:repeat(3,40px);gap:8px;justify-content:center}
+.artmini{position:relative;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:21px;border:2px solid var(--bd);border-radius:8px;background:var(--card);cursor:pointer;box-sizing:border-box}
 .artmini:hover:not(.sm){transform:translateY(-2px)}
 .artmini.sm{width:40px;height:40px;font-size:22px;cursor:default}
 .artmini.eq{box-shadow:0 0 0 2px var(--ac),0 0 8px var(--ac)}
-.artmini.q{opacity:.35;color:var(--mut);font-size:14px;font-weight:800}   /* niezdobyty: ciągła ramka w kolorze rzadkości, przygaszony */
+.artmini.q{opacity:.4;color:var(--mut);font-size:14px;font-weight:800}   /* niezdobyty: przygaszony „?” */
 .artmini i{position:absolute;right:-5px;bottom:-6px;font-style:normal;font-size:10px;font-weight:800;line-height:1;padding:2px 4px;border-radius:5px;background:var(--ac);color:#fff}
 .artredeemw{margin-top:auto;padding-top:8px;display:flex;flex-direction:column;align-items:center;gap:5px}
 .artredeem{width:100%;padding:7px 10px}
@@ -68,7 +68,7 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 @keyframes artpop{to{transform:scale(1.6);opacity:0;filter:drop-shadow(0 0 40px #fff) brightness(3)}}
 .artrev{display:flex;flex-direction:column;align-items:center;gap:8px;padding:22px 30px;min-width:260px;background:var(--card);border:2px solid var(--glow);border-radius:12px;box-shadow:0 0 40px var(--glow);text-align:center;animation:artrev .45s cubic-bezier(.2,1.6,.4,1)}
 @keyframes artrev{from{transform:scale(.4);opacity:0}}
-.artrevcell{width:110px;height:110px;display:flex;align-items:center;justify-content:center;font-size:64px;border:3px solid;border-radius:12px;background:var(--bg);box-shadow:0 0 22px var(--glow)}
+.artrevcell{width:110px;height:110px;display:flex;align-items:center;justify-content:center;font-size:64px;border:3px solid var(--glow);border-radius:12px;background:var(--bg);box-shadow:0 0 22px var(--glow)}
 .artrev b{font-size:18px}.artrev small{font-size:12px;color:var(--mut)}
 .artnew{font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--ac)}
 .artrevbtns{display:flex;gap:8px;margin-top:6px}
