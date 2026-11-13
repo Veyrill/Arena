@@ -2100,6 +2100,8 @@ function render() {
   $('inv').innerHTML = inv.map((i, n) => `<div class="cell r${i.r || 0}${i.fresh ? ' new' : ''}${i.req && me.lvl < i.req ? ' noreq' : ''}" draggable="true" data-n="${n}" data-it="inv:${n}">${invIco(i)}${(i.qty && i.qty > 1) || (i.isScroll && i.qty > 1) ? `<span class="qty">${i.qty}</span>` : ''}</div>`).join('');
   $('sellbtn').classList.toggle('on', sellMode);$('sellbtn').innerHTML = goldIco(16) + (sellMode ? ' Click an item' : ' Sell');
 
+  // ARTIFACTS: licznik Upgrade Token obok przycisku Redeem (ikona tokena + liczba sztuk w plecaku)
+  { const at = $('art-tok'); if (at) at.innerHTML = matIco('upgrade_token', 24, 20) + ((inv.find(x => x.mat && x.sl === 'upgrade_token') || {}).qty || 0); }
   const meatCount = (inv.find(x => x.mat && x.sl == 'meat') || {}).qty || 0;
   const clawCount = (inv.find(x => x.mat && x.sl === 'claw') || {}).qty || 0;
   const canCraft = meatCount >= 2 && clawCount >= 1 && window.G_GLOBAL >= 200;
