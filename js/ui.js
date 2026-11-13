@@ -1,4 +1,4 @@
-import { ARTIFACTS, ART_FAMS, ART_ODDS, DEV, SL, NAMES, RAR, ST, LOCS, ACTS, ALL_LOCS, ACT_START, DUN, DUNS, UPG, upgBranch, upgPos, SKILL_ICON_CENTER, MATS, FISH, FISH_LOCKED, R, I, P, UNIQUES, makeUnique, FIXED_ITEMS, makeFixed, FISH_SETS, GEAR_SETS, namesFor, devFlag, DEV_TIME, PANEL_KEY, setTimeOff } from './data.js';
+import { ARTIFACTS, ART_ODDS, DEV, SL, NAMES, RAR, ST, LOCS, ACTS, ALL_LOCS, ACT_START, DUN, DUNS, UPG, upgBranch, upgPos, SKILL_ICON_CENTER, MATS, FISH, FISH_LOCKED, R, I, P, UNIQUES, makeUnique, FIXED_ITEMS, makeFixed, FISH_SETS, GEAR_SETS, namesFor, devFlag, DEV_TIME, PANEL_KEY, setTimeOff } from './data.js';
 import { me, eq1, eq2, inv, G, up, upgTree, fishing, upgradeItem, equipPage, currentZoom, panX, panY, panMoved, panDrag, view, eloc, esel, dloc, dprog, busy, cdEnd, sellMode, drag, lastMob, showInfo, showDunUnlockMsg, dunMsgClosed, showNoRodMsg, buffStrEnd, lastMouseE, setEquipPage, setView, setEloc, setEsel, setDloc, setDprog, setBusy, setSellMode, setLastMouseE, setDrag, setPanDrag, setPanMoved, setPanX, setPanY, setCurrentZoom, setShowInfo, setLastMob, setShowDunUnlockMsg, setDunMsgClosed, setShowNoRodMsg, setCdEnd, setBuffStrEnd, buffDexEnd, setBuffDexEnd, foodBuff, setUpgradeItem, eact, actsUnlocked, setEact, setActsUnlocked, locUnlocked, setLocUnlocked, gear, der, ub, mstats, HP_MUL, ENEMY_HP, CRIT_K, CRIT_C, CRIT_CAP } from './state.js';
 import { hasRod, upgradeRod, upgradeGear, upgradeCost, makeRod, makeHook, isRod, isUpgradable, gearLevel, gearMaxLevel, previewGear, fishPower, canFish, ROD_TIERS, HOOK_TIERS } from './fishing.js';
 import { hit, armorRed, ARMOR_K } from './combat.js';
@@ -1581,47 +1581,47 @@ function bestBeatenMob() {
   return null;
 }
 
-// ===== ARTIFACTS (układ A) =====
-// Lewa strona: 3 karty slotów (Seal / Sigil / Rune): duży obrazek, nazwa, sekcja EFFECT; pod nimi panel z zakładkami Seals / Sigils / Runes
-// – posiadane artefakty wybranej rodziny (kliknięcie = włożenie do slotu). Prawa kolumna: Collection – wszystkie artefakty
-// (niezdobyte jako „?”), na dole Redeem (1 Upgrade Token = 1 skrzynia) i licznik tokenów.
-// Zapis: me.arts = { klucz artefaktu: ile sztuk zdobyto }, me.artSlots = { seal / sigil / rune: klucz artefaktu w slocie }.
-let artTab = 'seal';
+// ===== ARTIFACTS (układ A, bez rodzin) =====
+// Lewa strona: 3 jednakowe karty slotów (duży obrazek; nazwa i EFFECT dopiero po założeniu), pod nimi panel z posiadanymi artefaktami
+// (kliknięcie = założenie do pierwszego wolnego slotu, a gdy wszystkie zajęte – po kolei w miejsce slotu 1, 2, 3; kliknięcie założonego = zdjęcie).
+// Prawa kolumna: Collection – 15 artefaktów (rzędy wg rzadkości, niezdobyte jako „?”), na dole Redeem (1 Upgrade Token = 1 skrzynia).
+// Zapis: me.arts = { klucz artefaktu: ile sztuk zdobyto }, me.artSlots = [klucz | null, klucz | null, klucz | null].
+const ART_SLOTS = 3;
+let artNext = 0;   // który slot podmienić, gdy wszystkie są zajęte (po kolei)
 const ART_GLOW = ['#a39880', '#5fcf70', '#6aa5ff', '#c685f5', '#f2c200'];   // kolor poświaty / ramki przy odkryciu: Common … Legendary
 const artTokens = () => (inv.find(x => x.mat && x.sl === 'upgrade_token') || {}).qty || 0;
 const artOf = k => ARTIFACTS.find(a => a.k === k);
-const artTip = a => `${a.n}\n${RAR[a.r][0]} ${ART_FAMS[a.fam].n}`;
-function artState() {   // stary zapis: artefakty usunięte z gry (lista 10 → 5 na rodzinę) znikają z kolekcji i slotów
-  if (!me.arts) me.arts = {}; if (!me.artSlots) me.artSlots = {};
-  for (const k in me.arts) if (!artOf(k)) delete me.arts[k];
-  for (const f in me.artSlots) if (!artOf(me.artSlots[f])) delete me.artSlots[f];
+const artTip = a => `${a.n}\n${RAR[a.r][0]}`;
+function artState() {
+  if (!me.arts) me.arts = {};
+  if (!Array.isArray(me.artSlots)) me.artSlots = Object.values(me.artSlots || {});   // stary zapis: sloty rodzin { seal, sigil, rune } → 3 zwykłe sloty
+  me.artSlots = Array.from({ length: ART_SLOTS }, (_, i) => artOf(me.artSlots[i]) ? me.artSlots[i] : null);
+  for (const k in me.arts) if (!artOf(k)) delete me.arts[k];   // artefakty usunięte z gry
 }
 function renderArt() {
   const body = $('body-art'); if (!body) return;
   artState();
-  if (!ART_FAMS[artTab]) artTab = 'seal';
   const tok = artTokens(), found = ARTIFACTS.filter(a => me.arts[a.k]).length;
-  // karty slotów: nazwa rodziny, duży slot (ramka w kolorze rzadkości), nazwa artefaktu, EFFECT
-  const cards = Object.entries(ART_FAMS).map(([f, F]) => { const a = artOf(me.artSlots[f]);
-    return `<div class="artcard${a ? '' : ' empty'}" style="--fc:${F.c}"><b class="artfam">${F.n}</b>`
-      + `<div class="artbigslot${a ? ' r' + a.r : ''}"${a ? ` onclick="window.artUnequip('${f}')" title="${artTip(a)}\nClick to remove"` : ''}>${a ? a.e : '?'}</div>`   // pusty slot: znak zapytania na środku
-      + (a ? `<b class="artname t${a.r}">${a.n}</b><div class="arteffect"><small>EFFECT</small>No stats yet</div>` : '') + `</div>`; }).join('');   // nazwa i EFFECT tylko, gdy coś jest założone
-  // panel zakładek: posiadane artefakty wybranej rodziny
-  const tabs = Object.entries(ART_FAMS).map(([f, F]) => `<button class="${artTab === f ? 'on' : ''}" onclick="window.artSetTab('${f}')">${F.n}s</button>`).join('');
-  const own = ARTIFACTS.filter(a => a.fam === artTab && me.arts[a.k]).map(a => { const n = me.arts[a.k], eq = me.artSlots[a.fam] === a.k;
-    return `<div class="artmini r${a.r}${eq ? ' eq' : ''}" onclick="window.artEquip('${a.k}')" title="${artTip(a)}\n${eq ? 'Equipped' : 'Click to equip'}">${a.e}${n > 1 ? `<i>${n}</i>` : ''}</div>`; }).join('');
-  const owned = `<div class="artown"><div class="arttabs">${tabs}</div>`
-    + `<div class="artowngrid">${own}</div></div>`;   // bez podpowiedzi i komunikatu o braku artefaktów
-  // kolekcja: każda rodzina w rzędzie po 5 (zdobyte – emoji w ramce rzadkości, niezdobyte – „?” w kolorze rodziny), na dole Redeem
-  const coll = Object.entries(ART_FAMS).map(([f, Fm]) => `<div class="artcollrow" style="--fc:${Fm.c}">` + ARTIFACTS.filter(a => a.fam === f).map(a => me.arts[a.k]
-    ? `<div class="artmini sm r${a.r}" title="${artTip(a)}">${a.e}</div>` : `<div class="artmini sm q" title="Unknown ${Fm.n}">?</div>`).join('') + `</div>`).join('');
+  // karty slotów: duży obrazek (ramka w kolorze rzadkości) albo „?”; nazwa i EFFECT tylko, gdy coś jest założone
+  const cards = me.artSlots.map((k, i) => { const a = artOf(k);
+    return `<div class="artcard${a ? '' : ' empty'}"><div class="artbigslot${a ? ' r' + a.r : ''}"${a ? ` onclick="window.artUnequip(${i})" title="${artTip(a)}\nClick to remove"` : ''}>${a ? a.e : '?'}</div>`
+      + (a ? `<b class="artname t${a.r}">${a.n}</b><div class="arteffect"><small>EFFECT</small>No stats yet</div>` : '') + `</div>`; }).join('');
+  // panel pod kartami: wszystkie posiadane artefakty (od Common do Legendary), założone – podświetlone
+  const own = ARTIFACTS.filter(a => me.arts[a.k]).map(a => { const n = me.arts[a.k], eq = me.artSlots.includes(a.k);
+    return `<div class="artmini r${a.r}${eq ? ' eq' : ''}" onclick="window.artEquip('${a.k}')" title="${artTip(a)}\n${eq ? 'Click to remove' : 'Click to equip'}">${a.e}${n > 1 ? `<i>${n}</i>` : ''}</div>`; }).join('');
+  // kolekcja: 15 artefaktów w 5 rzędach po 3 (każdy rząd = jedna rzadkość); niezdobyte – „?”
+  const coll = ARTIFACTS.map(a => me.arts[a.k] ? `<div class="artmini sm r${a.r}" title="${artTip(a)}">${a.e}</div>` : `<div class="artmini sm q r${a.r}" title="Unknown ${RAR[a.r][0]} artifact">?</div>`).join('');
   const redeem = `<div class="artredeemw"><button class="bkac artredeem" onclick="window.artRedeem()"${tok < 1 || busy ? ' disabled' : ''}>🎁 Redeem</button><div class="arttok">${matIco('upgrade_token', 20, 16)}1 / ${tok}</div></div>`;
-  body.innerHTML = `<div class="artA"><div class="artmain"><div class="artcards">${cards}</div>${owned}</div>`
-    + `<div class="artcoll"><b class="artcollh">COLLECTION · ${found}/${ARTIFACTS.length}</b>${coll}${redeem}</div></div>`;
+  body.innerHTML = `<div class="artA"><div class="artmain"><div class="artcards">${cards}</div><div class="artown"><div class="artowngrid">${own}</div></div></div>`
+    + `<div class="artcoll"><b class="artcollh">COLLECTION · ${found}/${ARTIFACTS.length}</b><div class="artcollgrid">${coll}</div>${redeem}</div></div>`;
 }
-window.artSetTab = t => { artTab = t; renderArt(); };
-window.artEquip = k => { const a = artOf(k); artState(); if (!a || !me.arts[k] || busy) return; me.artSlots[a.fam] = k; saveGame(); renderArt(); };
-window.artUnequip = f => { artState(); if (busy) return; delete me.artSlots[f]; saveGame(); renderArt(); };
+// kliknięcie posiadanego artefaktu: założony → zdjęcie; inaczej pierwszy wolny slot, a gdy brak – podmiana slotów po kolei (1, 2, 3, 1…)
+window.artEquip = k => { artState(); if (!artOf(k) || !me.arts[k] || busy) return;
+  const at = me.artSlots.indexOf(k);
+  if (at >= 0) me.artSlots[at] = null;
+  else { let i = me.artSlots.indexOf(null); if (i < 0) { i = artNext; artNext = (artNext + 1) % ART_SLOTS; } me.artSlots[i] = k; }
+  saveGame(); renderArt(); };
+window.artUnequip = i => { artState(); if (busy) return; me.artSlots[i] = null; saveGame(); renderArt(); };
 // losowanie: rzadkość wg ART_ODDS, potem losowy artefakt tej rzadkości (dowolna rodzina)
 function artRoll() { let x = Math.random() * 100, r = 0; for (; r < ART_ODDS.length - 1; r++) { if (x < ART_ODDS[r]) break; x -= ART_ODDS[r]; }
   return P(ARTIFACTS.filter(a => a.r === r)); }
@@ -1638,10 +1638,10 @@ window.artRedeem = () => {
   document.body.appendChild(fx);
   setTimeout(() => fx.classList.add('opening'), 950);   // skrzynia „pęka”: rozbłysk
   setTimeout(() => {   // zawartość skrzyni
-    const left = artTokens(), F = ART_FAMS[a.fam];
+    const left = artTokens();
     fx.style.setProperty('--glow', ART_GLOW[a.r]);
     fx.querySelector('.artstage').innerHTML = `<div class="artrev"><div class="artrevcell r${a.r}">${a.e}</div><b class="t${a.r}">${a.n}</b>`
-      + `<small>${RAR[a.r][0]} · <span style="color:${F.c}">${F.n}</span></small><div class="artnew">${n === 1 ? 'NEW!' : 'Duplicate · owned ×' + n}</div>`
+      + `<small>${RAR[a.r][0]}</small><div class="artnew">${n === 1 ? 'NEW!' : 'Duplicate · owned ×' + n}</div>`
       + `<div class="artrevbtns"><button class="bkac" onclick="window.artCloseFx()">Collect</button>${left ? `<button onclick="window.artCloseFx(1)">Open another (${left})</button>` : ''}</div></div>`;
     fx.classList.add('shown');
   }, 1250);
@@ -1927,7 +1927,7 @@ window.buyNode = id => {
   render();
 };
 
-const NAV = [['exp', 'Expedition'], ['art', 'Artifacts'], ['craft', 'Crafting'], ['upg', 'Passives'], ['abil', 'Abilities'], ['dun', 'Dungeons'], ['raid', 'Raids'], ['fish', 'Fishing'], ['upgrade', 'Tackle Upgrade'], ['cook', 'Cooking'], ['set', 'Settings']];   // Tackle = sprzęt wędkarski (wędka + haczyk)
+const NAV = [['exp', 'Expedition'], ['art', 'Artifacts'], ['craft', 'Crafting'], ['upg', 'Passives'], ['abil', 'Abilities'], ['dun', 'Dungeons'], ['fish', 'Fishing'], ['upgrade', 'Tackle Upgrade'], ['cook', 'Cooking'], ['set', 'Settings']];   // Tackle = sprzęt wędkarski (wędka + haczyk)
 // spDot: czerwona kropka przy zakładce Skills, gdy są skill pointy do wydania. Znika po najechaniu myszką,
 // wraca, gdy gracz dostanie nowe skill pointy (awans, reset skilli).
 let spDot = false;
@@ -2089,15 +2089,14 @@ function render() {
   const d = der(), g = gear(), r = Math.round;
 
   document.querySelectorAll('#nav button').forEach(btn => {
-    const inRaid = view === 'dun' && dloc != null && curDun().raid;   // otwarty raid = podświetlona zakładka Raids
-    btn.classList.toggle('on', inRaid ? btn.dataset.v === 'raid' : btn.dataset.v === view);
+    btn.classList.toggle('on', btn.dataset.v === view);   // (zakładka Raids usunięta z gry)
     if (btn.dataset.v === 'upg') btn.classList.toggle('new', spDot && me.sp > 0);
     if (btn.dataset.v === 'abil') btn.classList.toggle('new', abTrainable());   // ABILITIES: czerwona kropka, gdy jest umiejętność do wytrenowania (znika po Train)
     if (btn.dataset.v === 'fish') btn.classList.toggle('new', fishSpDot());   // Fishing Skill Points do wydania
     btn.disabled = busy || (fishing.active && btn.dataset.v === 'exp');
   });
 
-  ['exp', 'art', 'upg', 'abil', 'upgrade', 'dun', 'raid', 'craft', 'fish', 'cook', 'set'].forEach(k => {
+  ['exp', 'art', 'upg', 'abil', 'upgrade', 'dun', 'craft', 'fish', 'cook', 'set'].forEach(k => {
     const el = $('v-' + k);
     if (el) el.style.display = (k === view) ? 'block' : 'none';
   });
