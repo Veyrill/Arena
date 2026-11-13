@@ -1602,9 +1602,9 @@ function renderArt() {
   const body = $('body-art'); if (!body) return;
   artState();
   const tok = artTokens(), found = ARTIFACTS.filter(a => me.arts[a.k]).length;
-  // karty slotów: duży obrazek (ramka w kolorze rzadkości) albo „?”; nazwa i EFFECT tylko, gdy coś jest założone
+  // karty slotów: grafika slotu (ramka ze smokami) z artefaktem w środku (poświata w kolorze rzadkości) albo „?”; nazwa i EFFECT tylko, gdy coś jest założone
   const cards = me.artSlots.map((k, i) => { const a = artOf(k);
-    return `<div class="artcard${a ? '' : ' empty'}"><div class="artbigslot${a ? ' r' + a.r : ''}"${a ? ` onclick="window.artUnequip(${i})" title="${artTip(a)}\nClick to remove"` : ''}>${a ? a.e : '?'}</div>`
+    return `<div class="artcard${a ? '' : ' empty'}"><div class="artbigslot"${a ? ` style="--rg:${ART_GLOW[a.r]}" onclick="window.artUnequip(${i})" title="${artTip(a)}\nClick to remove"` : ''}><span>${a ? a.e : '?'}</span></div>`   // ramka slotu: assets/ui/art_slot.png; rzadkość = poświata za ikoną
       + (a ? `<b class="artname t${a.r}">${a.n}</b><div class="arteffect"><small>EFFECT</small>No stats yet</div>` : '') + `</div>`; }).join('');
   // panel pod kartami: wszystkie posiadane artefakty (od Common do Legendary), założone – podświetlone
   const own = ARTIFACTS.filter(a => me.arts[a.k]).map(a => { const n = me.arts[a.k], eq = me.artSlots.includes(a.k);
