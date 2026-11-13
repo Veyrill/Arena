@@ -1592,10 +1592,15 @@ const ART_GLOW = '#ffd36b';   // poświata za artefaktem (w slocie i przy odkryc
 const artTokens = () => (inv.find(x => x.mat && x.sl === 'upgrade_token') || {}).qty || 0;
 const artOf = k => ARTIFACTS.find(a => a.k === k);
 const artTip = a => a.n;
+// ikona artefaktu: grafika 64×64 (ostre piksele) w rozmiarze px; brak pliku → emoji
+const artIco = (a, px) => `<img class="artimg" src="${ASSETS_DIR}/${a.img}" alt="" style="width:${px}px;height:${px}px" onerror="this.outerHTML='${a.e}'">`;
 function artState() {
   if (!me.arts) me.arts = {};
   if (!Array.isArray(me.artSlots)) me.artSlots = Object.values(me.artSlots || {});   // stary zapis: sloty rodzin { seal, sigil, rune } → 3 zwykłe sloty
+  me.artSlots = me.artSlots.map(k => (ARTIFACTS.find(a => a.old === k) || {}).k || k);   // stary zapis: dawne artefakty z emoji → nowe medaliony
   me.artSlots = Array.from({ length: ART_SLOTS }, (_, i) => artOf(me.artSlots[i]) ? me.artSlots[i] : null);
+  // stary zapis: dawne artefakty z emoji przechodzą na nowe medaliony (te same ilości)
+  for (const a of ARTIFACTS) if (me.arts[a.old]) { me.arts[a.k] = (me.arts[a.k] || 0) + me.arts[a.old]; delete me.arts[a.old]; }
   for (const k in me.arts) if (!artOf(k)) delete me.arts[k];   // artefakty usunięte z gry
 }
 function renderArt() {
@@ -1604,13 +1609,13 @@ function renderArt() {
   const tok = artTokens(), found = ARTIFACTS.filter(a => me.arts[a.k]).length;
   // karty slotów: grafika slotu (ramka ze smokami) z artefaktem w środku (złota poświata) albo „?”; nazwa i EFFECT tylko, gdy coś jest założone
   const cards = me.artSlots.map((k, i) => { const a = artOf(k);
-    return `<div class="artcard${a ? '' : ' empty'}"><div class="artbigslot"${a ? ` style="--rg:${ART_GLOW}" onclick="window.artUnequip(${i})" title="${artTip(a)}\nClick to remove"` : ''}><span>${a ? a.e : '?'}</span></div>`   // ramka slotu: assets/ui/art_slot.png; rzadkość = poświata za ikoną
+    return `<div class="artcard${a ? '' : ' empty'}"><div class="artbigslot"${a ? ` style="--rg:${ART_GLOW}" onclick="window.artUnequip(${i})" title="${artTip(a)}\nClick to remove"` : ''}><span>${a ? artIco(a, 64) : '?'}</span></div>`   // ramka slotu: assets/ui/art_slot.png; rzadkość = poświata za ikoną
       + (a ? `<b class="artname">${a.n}</b><div class="arteffect"><small>EFFECT</small>No stats yet</div>` : '') + `</div>`; }).join('');
   // panel pod kartami: wszystkie posiadane artefakty, założone – podświetlone
   const own = ARTIFACTS.filter(a => me.arts[a.k]).map(a => { const n = me.arts[a.k], eq = me.artSlots.includes(a.k);
-    return `<div class="artmini${eq ? ' eq' : ''}" onclick="window.artEquip('${a.k}')" title="${artTip(a)}\n${eq ? 'Click to remove' : 'Click to equip'}">${a.e}${n > 1 ? `<i>${n}</i>` : ''}</div>`; }).join('');
+    return `<div class="artmini${eq ? ' eq' : ''}" onclick="window.artEquip('${a.k}')" title="${artTip(a)}\n${eq ? 'Click to remove' : 'Click to equip'}">${artIco(a, 32)}${n > 1 ? `<i>${n}</i>` : ''}</div>`; }).join('');
   // kolekcja: 15 artefaktów (3 kolumny × 5 rzędów); niezdobyte – „?”
-  const coll = ARTIFACTS.map(a => me.arts[a.k] ? `<div class="artmini sm" title="${artTip(a)}">${a.e}</div>` : `<div class="artmini sm q" title="Unknown artifact">?</div>`).join('');
+  const coll = ARTIFACTS.map(a => me.arts[a.k] ? `<div class="artmini sm" title="${artTip(a)}">${artIco(a, 32)}</div>` : `<div class="artmini sm q" title="Unknown artifact">?</div>`).join('');
   const redeem = `<div class="artredeemw"><button class="bkac artredeem" onclick="window.artRedeem()"${tok < 1 || busy ? ' disabled' : ''}>🎁 Redeem</button><div class="arttok">${matIco('upgrade_token', 20, 16)}1 / ${tok}</div></div>`;
   // u góry 3 duże sloty na całą szerokość; pod nimi panel posiadanych artefaktów (lewo) i kolekcja z Redeem (prawo)
   body.innerHTML = `<div class="artcards">${cards}</div><div class="artA"><div class="artown"><div class="artowngrid">${own}</div></div>`
@@ -1640,7 +1645,7 @@ window.artRedeem = () => {
   setTimeout(() => {   // zawartość skrzyni
     const left = artTokens();
     fx.style.setProperty('--glow', ART_GLOW);
-    fx.querySelector('.artstage').innerHTML = `<div class="artrev"><div class="artrevcell">${a.e}</div><b>${a.n}</b>`
+    fx.querySelector('.artstage').innerHTML = `<div class="artrev"><div class="artrevcell">${artIco(a, 64)}</div><b>${a.n}</b>`
       + `<div class="artnew">${n === 1 ? 'NEW!' : 'Duplicate · owned ×' + n}</div>`
       + `<div class="artrevbtns"><button class="bkac" onclick="window.artCloseFx()">Collect</button>${left ? `<button onclick="window.artCloseFx(1)">Open another (${left})</button>` : ''}</div></div>`;
     fx.classList.add('shown');

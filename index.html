@@ -40,6 +40,7 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
    (×4 = 256 px nie mieści 3 slotów obok siebie); artefakt na środku ciemnego pola (natywnie x 19–44, y 23–50 → środek 32, 37 → padding-top 30 px),
    złota poświata za ikoną (--rg) */
 .artbigslot{width:192px;height:192px;flex:none;display:flex;align-items:center;justify-content:center;padding-top:30px;box-sizing:border-box;font-size:62px;background:url(assets/ui/art_slot.png) 0 0/192px 192px no-repeat;image-rendering:pixelated;cursor:pointer}
+.artimg{display:block;image-rendering:pixelated}   /* ikony artefaktów (64×64): w slocie 64 px, w panelu i kolekcji 32 px, na karcie odkrycia 64 px */
 .artbigslot span{line-height:1;filter:drop-shadow(0 0 9px var(--rg)) drop-shadow(0 0 3px var(--rg))}
 .artcard.empty .artbigslot{cursor:default}.artcard.empty .artbigslot span{font-size:50px;font-weight:800;color:#d6a84f;opacity:.55;filter:none}   /* pusty slot: złoty znak zapytania na środku ramki */
 .artname{font-size:13px;text-align:center;font-weight:800}

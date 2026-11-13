@@ -17,7 +17,7 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 5200–5299 | Materiały z ryb |
 | 5300–5399 | Tokeny (nagrody z questów) |
 | 6000–6999 | Przedmioty użytkowe (zwoje, jedzenie, przepisy, projekty, inne) |
-| 7000–7999 | Artefakty (zakładka Artifacts, 15 sztuk bez rodzin i rzadkości – nie trafiają do plecaka) |
+| 7000–7999 | Artefakty (zakładka Artifacts – nie trafiają do plecaka; aktualne: 7301–7315, medaliony ze smokiem) |
 
 
 ## Equipment
@@ -267,33 +267,48 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 
 | ID | Nazwa |
 |---|---|
-| 7001 | Merchant Seal |
+| 7001 | ~~Merchant Seal~~ (usunięty, ID zarezerwowane) |
 | 7002 | ~~Lucky Seal~~ (usunięty, ID zarezerwowane) |
 | 7003 | ~~Charter Seal~~ (usunięty, ID zarezerwowane) |
-| 7004 | Trade Seal |
+| 7004 | ~~Trade Seal~~ (usunięty, ID zarezerwowane) |
 | 7005 | ~~Vault Seal~~ (usunięty, ID zarezerwowane) |
 | 7006 | ~~Seal of the Tomb~~ (usunięty, ID zarezerwowane) |
-| 7007 | Jeweler Seal |
+| 7007 | ~~Jeweler Seal~~ (usunięty, ID zarezerwowane) |
 | 7008 | ~~Seal of Plenty~~ (usunięty, ID zarezerwowane) |
-| 7009 | Royal Seal |
-| 7010 | Dragon Hoard Seal |
-| 7101 | Sigil of the Blade |
+| 7009 | ~~Royal Seal~~ (usunięty, ID zarezerwowane) |
+| 7010 | ~~Dragon Hoard Seal~~ (usunięty, ID zarezerwowane) |
+| 7101 | ~~Sigil of the Blade~~ (usunięty, ID zarezerwowane) |
 | 7102 | ~~Sigil of the Bulwark~~ (usunięty, ID zarezerwowane) |
 | 7103 | ~~Hunter Sigil~~ (usunięty, ID zarezerwowane) |
 | 7104 | ~~Sigil of the Axe~~ (usunięty, ID zarezerwowane) |
-| 7105 | Wolf Sigil |
+| 7105 | ~~Wolf Sigil~~ (usunięty, ID zarezerwowane) |
 | 7106 | ~~Sigil of the Eagle~~ (usunięty, ID zarezerwowane) |
-| 7107 | Blood Sigil |
+| 7107 | ~~Blood Sigil~~ (usunięty, ID zarezerwowane) |
 | 7108 | ~~Sigil of Fury~~ (usunięty, ID zarezerwowane) |
-| 7109 | Death Sigil |
-| 7110 | Sigil of War |
-| 7201 | Candle Rune |
+| 7109 | ~~Death Sigil~~ (usunięty, ID zarezerwowane) |
+| 7110 | ~~Sigil of War~~ (usunięty, ID zarezerwowane) |
+| 7201 | ~~Candle Rune~~ (usunięty, ID zarezerwowane) |
 | 7202 | ~~Rune of Growth~~ (usunięty, ID zarezerwowane) |
 | 7203 | ~~Tide Rune~~ (usunięty, ID zarezerwowane) |
 | 7204 | ~~Frost Rune~~ (usunięty, ID zarezerwowane) |
-| 7205 | Moon Rune |
+| 7205 | ~~Moon Rune~~ (usunięty, ID zarezerwowane) |
 | 7206 | ~~Sun Rune~~ (usunięty, ID zarezerwowane) |
-| 7207 | Rune of Haste |
+| 7207 | ~~Rune of Haste~~ (usunięty, ID zarezerwowane) |
 | 7208 | ~~Storm Rune~~ (usunięty, ID zarezerwowane) |
-| 7209 | Rune of Echoes |
-| 7210 | Star Rune |
+| 7209 | ~~Rune of Echoes~~ (usunięty, ID zarezerwowane) |
+| 7210 | ~~Star Rune~~ (usunięty, ID zarezerwowane) |
+| 7301 | Coiled Dragon Coin |
+| 7302 | Ouroboros Coin |
+| 7303 | Dragonguard Crest |
+| 7304 | Bronze Wyrm Seal |
+| 7305 | Wyrm Tablet |
+| 7306 | Dragon Hoard Medallion |
+| 7307 | Blackscale Crest |
+| 7308 | Sunscale Seal |
+| 7309 | Serpent Ring Coin |
+| 7310 | Sunburst Wyrm |
+| 7311 | Wyrm Egg Cameo |
+| 7312 | Runed Dragon Disc |
+| 7313 | Blazing Sun Medallion |
+| 7314 | Elder Dragon Coin |
+| 7315 | Shadow Wyrm Coin |
