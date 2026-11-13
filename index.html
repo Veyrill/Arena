@@ -30,16 +30,47 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 /* Questy: wszystkie zrobione – lekko wyszarzone okienko z samym przyciskiem Reroll (aktywny po upływie czasu) */
 .qempty{display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;border:1px dashed var(--bd);border-radius:8px;opacity:.75;text-align:center}.qempty small{color:var(--mut)}
 .qreroll{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12px}.qreroll img{width:16px;height:16px;image-rendering:pixelated}.qreroll:disabled img{filter:grayscale(1)}
-/* ARTIFACTS (układ B – kolumny): każda rodzina w osobnej kolumnie z kolorowym paskiem u góry (Seal – złoto / bogactwo, Sigil – czerwień / walka,
-   Rune – turkus / czas): nazwa rodziny, slot, opis artefaktu w slocie. Na dole licznik Upgrade Token i przycisk Redeem (na razie bez działania). */
-.artcols{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:4px}
-.artcol{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 10px 14px;border:1px solid var(--bd);border-top:4px solid var(--fc);border-radius:8px}
-.artcol small{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--fc)}
-.artcell{width:96px;height:96px;border:2px dashed var(--fc);border-radius:10px;background:color-mix(in srgb,var(--fc) 10%,transparent)}
-.arteff{min-height:2.7em;font-size:12px;line-height:1.35;color:var(--mut);text-align:center}
-.artbar{display:flex;align-items:center;justify-content:center;gap:16px;margin:14px 0 4px}
-.arttok{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--bd);border-radius:8px;font-weight:800;font-size:14px}
-.artredeem{min-width:150px;padding:7px 18px}
+/* ARTIFACTS (układ C): lewa kolumna – 3 sloty rodzin (Seal złoto, Sigil czerwień, Rune turkus) + Active Bonuses; prawa – skrzynia Artifact Cache
+   (Redeem: 1 Upgrade Token = 1 skrzynia) i kolekcja z zakładkami All / Seal / Sigil / Rune */
+.artsplit{display:grid;grid-template-columns:230px 1fr;gap:16px;margin-top:4px}
+.artleft{display:flex;flex-direction:column;gap:10px}
+.artrow{display:flex;align-items:center;gap:10px}
+.artrow small{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--fc)}
+.artcell{width:64px;height:64px;flex:none;display:flex;align-items:center;justify-content:center;font-size:34px;border:2px dashed var(--fc);border-radius:10px;background:color-mix(in srgb,var(--fc) 10%,transparent)}
+.artcell.full{border:2px solid var(--fc);background:color-mix(in srgb,var(--fc) 22%,var(--card));box-shadow:0 0 10px color-mix(in srgb,var(--fc) 50%,transparent);cursor:pointer}
+.arteff{font-size:12px;line-height:1.3;color:var(--mut)}.arteff b{font-size:12px}
+.artbonus{margin-top:4px;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;font-size:11px;display:flex;flex-direction:column;gap:3px;color:var(--mut)}
+.artbonus b{font-size:10px;letter-spacing:.12em;color:var(--ac)}
+.artcache{display:flex;align-items:center;gap:14px;padding:10px 12px;border:2px solid var(--ac);border-radius:10px;background:color-mix(in srgb,var(--ac) 8%,var(--card))}
+.artchestico{width:64px;height:64px;flex:none;display:flex;align-items:center;justify-content:center;font-size:36px;border:2px solid #1a0e08;border-radius:8px;background:linear-gradient(#8a5a2a,#5a3618)}
+.artcinfo{flex:1;min-width:0}.artcinfo b{font-size:14px}
+.artodds{font-size:10px;line-height:1.5;color:var(--mut);margin-top:3px}
+.artcbtn{display:flex;flex-direction:column;align-items:center;gap:5px}
+.artredeem{min-width:120px;padding:7px 14px}
+.arttok{display:inline-flex;align-items:center;gap:5px;font-weight:800;font-size:13px}
+.arttabs{display:flex;align-items:center;gap:6px;margin:12px 0 8px}
+.arttabs button{padding:4px 10px;font-size:11px;font-weight:700}.arttabs button.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac)}
+.artfound{margin-left:6px;font-size:12px;font-weight:700;color:var(--mut)}
+.artgrid{display:grid;grid-template-columns:repeat(10,38px);gap:6px 4px}   /* 10 kolumn: w widoku All każda rodzina to jeden rząd */
+.artmini{position:relative;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-size:21px;border:2px solid;border-radius:8px;background:var(--card);cursor:pointer}
+.artmini:hover:not(.q){transform:translateY(-2px)}
+.artmini.eq{box-shadow:0 0 0 2px var(--ac),0 0 8px var(--ac)}
+.artmini.q{border:2px dashed var(--fc);opacity:.45;color:var(--mut);font-size:14px;font-weight:800;cursor:default}
+.artmini i{position:absolute;right:-5px;bottom:-6px;font-style:normal;font-size:10px;font-weight:800;line-height:1;padding:2px 4px;border-radius:5px;background:var(--ac);color:#fff}
+/* OTWIERANIE SKRZYNI: ekran przyciemniony, skrzynia drży ~1 s, rozbłysk, potem karta z artefaktem (poświata w kolorze rzadkości) */
+#artfx{position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;background:rgba(10,6,3,.78);animation:artdim .35s ease-out}
+@keyframes artdim{from{background:rgba(10,6,3,0)}}
+.artstage{display:flex;align-items:center;justify-content:center}
+.artbig{font-size:110px;line-height:1;animation:artshake .9s ease-in-out;filter:drop-shadow(0 0 18px #ffb34788)}
+@keyframes artshake{0%,100%{transform:rotate(0)}15%{transform:rotate(-8deg) scale(1.03)}30%{transform:rotate(8deg)}45%{transform:rotate(-10deg) scale(1.06)}60%{transform:rotate(10deg)}75%{transform:rotate(-6deg) scale(1.1)}90%{transform:rotate(4deg) scale(1.12)}}
+#artfx.opening .artbig{animation:artpop .3s ease-in forwards}
+@keyframes artpop{to{transform:scale(1.6);opacity:0;filter:drop-shadow(0 0 40px #fff) brightness(3)}}
+.artrev{display:flex;flex-direction:column;align-items:center;gap:8px;padding:22px 30px;min-width:260px;background:var(--card);border:2px solid var(--glow);border-radius:12px;box-shadow:0 0 40px var(--glow);text-align:center;animation:artrev .45s cubic-bezier(.2,1.6,.4,1)}
+@keyframes artrev{from{transform:scale(.4);opacity:0}}
+.artrevcell{width:110px;height:110px;display:flex;align-items:center;justify-content:center;font-size:64px;border:3px solid;border-radius:12px;background:var(--bg);box-shadow:0 0 22px var(--glow)}
+.artrev b{font-size:18px}.artrev small{font-size:12px;color:var(--mut)}
+.artnew{font-size:12px;font-weight:800;letter-spacing:.1em;color:var(--ac)}
+.artrevbtns{display:flex;gap:8px;margin-top:6px}
 .qbar{height:6px;background:var(--bd);border-radius:3px;overflow:hidden;margin:3px 0}.qbar i{display:block;height:100%;background:var(--ac)}
 #act-side .fish-list{gap:6px}
 @media(max-width:820px){.wrap{grid-template-columns:1fr}#fish-side,#act-side,#dps-side,#quest-side{position:static;width:auto;margin-left:0}}
@@ -447,7 +478,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 </div>
 <div>
 <div class="card" id="v-exp"><h2>Expedition</h2><div id="body-exp"></div></div>
-<div class="card" id="v-art" hidden><h2>Artifacts</h2><div id="body-art"><div class="artcols"><div class="artcol" style="--fc:#d6a84f"><small>Seal</small><div class="artcell" data-fam="seal"></div><div class="arteff">Empty slot</div></div><div class="artcol" style="--fc:#d94b4b"><small>Sigil</small><div class="artcell" data-fam="sigil"></div><div class="arteff">Empty slot</div></div><div class="artcol" style="--fc:#55b8b0"><small>Rune</small><div class="artcell" data-fam="rune"></div><div class="arteff">Empty slot</div></div></div><div class="artbar"><span class="arttok" id="art-tok" title="Upgrade Token"></span><button class="bkac artredeem" type="button">Redeem</button></div></div></div>
+<div class="card" id="v-art" hidden><h2>Artifacts</h2><div id="body-art"></div></div>
 <div class="card" id="v-upg" hidden><span id="skillresetw" style="position:absolute;top:6px;right:8px;display:inline-flex"><button id="skillreset" style="font-size:22px;line-height:1;padding:2px 8px;font-weight:700">↺</button></span><h2>Passives</h2><small style="color:var(--mut)">Mouse wheel: zoom · drag: pan the board</small><div id="body-upg" style="margin-top:6px"></div></div>
 <div class="card" id="v-abil" hidden><h2>Abilities</h2><div id="body-abil" style="margin-top:6px"></div></div>
 <div class="card" id="v-set" hidden><h2>Settings</h2><div id="body-set" style="margin-top:6px"></div></div>

@@ -1,4 +1,4 @@
-import { DEV, SL, NAMES, RAR, ST, LOCS, ACTS, ALL_LOCS, ACT_START, DUN, DUNS, UPG, upgBranch, upgPos, SKILL_ICON_CENTER, MATS, FISH, FISH_LOCKED, R, I, P, UNIQUES, makeUnique, FIXED_ITEMS, makeFixed, FISH_SETS, GEAR_SETS, namesFor, devFlag, DEV_TIME, PANEL_KEY, setTimeOff } from './data.js';
+import { ARTIFACTS, ART_FAMS, ART_ODDS, DEV, SL, NAMES, RAR, ST, LOCS, ACTS, ALL_LOCS, ACT_START, DUN, DUNS, UPG, upgBranch, upgPos, SKILL_ICON_CENTER, MATS, FISH, FISH_LOCKED, R, I, P, UNIQUES, makeUnique, FIXED_ITEMS, makeFixed, FISH_SETS, GEAR_SETS, namesFor, devFlag, DEV_TIME, PANEL_KEY, setTimeOff } from './data.js';
 import { me, eq1, eq2, inv, G, up, upgTree, fishing, upgradeItem, equipPage, currentZoom, panX, panY, panMoved, panDrag, view, eloc, esel, dloc, dprog, busy, cdEnd, sellMode, drag, lastMob, showInfo, showDunUnlockMsg, dunMsgClosed, showNoRodMsg, buffStrEnd, lastMouseE, setEquipPage, setView, setEloc, setEsel, setDloc, setDprog, setBusy, setSellMode, setLastMouseE, setDrag, setPanDrag, setPanMoved, setPanX, setPanY, setCurrentZoom, setShowInfo, setLastMob, setShowDunUnlockMsg, setDunMsgClosed, setShowNoRodMsg, setCdEnd, setBuffStrEnd, buffDexEnd, setBuffDexEnd, foodBuff, setUpgradeItem, eact, actsUnlocked, setEact, setActsUnlocked, locUnlocked, setLocUnlocked, gear, der, ub, mstats, HP_MUL, ENEMY_HP, CRIT_K, CRIT_C, CRIT_CAP } from './state.js';
 import { hasRod, upgradeRod, upgradeGear, upgradeCost, makeRod, makeHook, isRod, isUpgradable, gearLevel, gearMaxLevel, previewGear, fishPower, canFish, ROD_TIERS, HOOK_TIERS } from './fishing.js';
 import { hit, armorRed, ARMOR_K } from './combat.js';
@@ -1581,6 +1581,67 @@ function bestBeatenMob() {
   return null;
 }
 
+// ===== ARTIFACTS (układ C) =====
+// Lewa kolumna: 3 sloty (po jednym na rodzinę Seal / Sigil / Rune) + ramka Active Bonuses. Prawa: skrzynia „Artifact Cache”
+// (Redeem = 1 Upgrade Token = 1 skrzynia) i kolekcja z zakładkami All / Seal / Sigil / Rune.
+// Zapis: me.arts = { klucz artefaktu: ile sztuk zdobyto }, me.artSlots = { seal / sigil / rune: klucz artefaktu w slocie }.
+// Kliknięcie zdobytego artefaktu w kolekcji = włożenie do slotu jego rodziny; kliknięcie slotu = wyjęcie. Na razie bez statystyk.
+let artTab = 'all';
+const ART_GLOW = ['#a39880', '#5fcf70', '#6aa5ff', '#c685f5', '#f2c200'];   // kolor poświaty / ramki przy odkryciu: Common … Legendary
+const artTokens = () => (inv.find(x => x.mat && x.sl === 'upgrade_token') || {}).qty || 0;
+const artOf = k => ARTIFACTS.find(a => a.k === k);
+const artTip = a => `${a.n}\n${RAR[a.r][0]} ${ART_FAMS[a.fam].n}`;
+function artState() { if (!me.arts) me.arts = {}; if (!me.artSlots) me.artSlots = {}; }
+function renderArt() {
+  const body = $('body-art'); if (!body) return;
+  artState();
+  const tok = artTokens(), found = ARTIFACTS.filter(a => me.arts[a.k]).length;
+  // lewa kolumna: sloty rodzin (kolor rodziny, emoji artefaktu albo pusto) + aktywne bonusy
+  const slots = Object.entries(ART_FAMS).map(([f, F]) => { const a = artOf(me.artSlots[f]);
+    return `<div class="artrow" style="--fc:${F.c}"><div class="artcell${a ? ' full r' + a.r : ''}"${a ? ` onclick="window.artUnequip('${f}')" title="${artTip(a)}\nClick to remove"` : ''}>${a ? a.e : ''}</div>`
+      + `<div><small>${F.n}</small><div class="arteff">${a ? `<b class="t${a.r}">${a.n}</b>` : 'Empty slot'}</div></div></div>`; }).join('');
+  const bonus = `<div class="artbonus"><b>ACTIVE BONUSES</b><span>No bonuses yet (artifact stats coming soon)</span></div>`;
+  // skrzynia: grafika, szanse, przycisk Redeem i liczba tokenów
+  const odds = ART_ODDS.map((o, r) => `<span class="t${r}">${RAR[r][0]} ${o}%</span>`).join(' · ');
+  const cache = `<div class="artcache"><div class="artchestico">🎁</div><div class="artcinfo"><b>Artifact Cache</b><div class="artodds">${odds}</div></div>`
+    + `<div class="artcbtn"><button class="bkac artredeem" onclick="window.artRedeem()"${tok < 1 || busy ? ' disabled' : ''}>Redeem</button><div class="arttok">${matIco('upgrade_token', 20, 16)}1 / ${tok}</div></div></div>`;
+  // kolekcja: zakładki + siatka (zdobyte – emoji w ramce rzadkości i licznik sztuk; niezdobyte – „?” w kolorze rodziny)
+  const tabs = [['all', 'All'], ...Object.entries(ART_FAMS).map(([f, F]) => [f, F.n])].map(([k, n]) => `<button class="${artTab === k ? 'on' : ''}" onclick="window.artSetTab('${k}')">${n}</button>`).join('')
+    + `<span class="artfound">${found} / ${ARTIFACTS.length} found</span>`;
+  const grid = ARTIFACTS.filter(a => artTab === 'all' || a.fam === artTab).map(a => { const n = me.arts[a.k] || 0, eq = me.artSlots[a.fam] === a.k;
+    return n ? `<div class="artmini r${a.r}${eq ? ' eq' : ''}" style="--fc:${ART_FAMS[a.fam].c}" onclick="window.artEquip('${a.k}')" title="${artTip(a)}\n${eq ? 'Equipped' : 'Click to equip'}">${a.e}${n > 1 ? `<i>${n}</i>` : ''}</div>`
+      : `<div class="artmini q" style="--fc:${ART_FAMS[a.fam].c}" title="Unknown ${ART_FAMS[a.fam].n}">?</div>`; }).join('');
+  body.innerHTML = `<div class="artsplit"><div class="artleft">${slots}${bonus}</div><div>${cache}<div class="arttabs">${tabs}</div><div class="artgrid">${grid}</div></div></div>`;
+}
+window.artSetTab = t => { artTab = t; renderArt(); };
+window.artEquip = k => { const a = artOf(k); artState(); if (!a || !me.arts[k] || busy) return; me.artSlots[a.fam] = k; saveGame(); renderArt(); };
+window.artUnequip = f => { artState(); if (busy) return; delete me.artSlots[f]; saveGame(); renderArt(); };
+// losowanie: rzadkość wg ART_ODDS, potem losowy artefakt tej rzadkości (dowolna rodzina)
+function artRoll() { let x = Math.random() * 100, r = 0; for (; r < ART_ODDS.length - 1; r++) { if (x < ART_ODDS[r]) break; x -= ART_ODDS[r]; }
+  return P(ARTIFACTS.filter(a => a.r === r)); }
+// REDEEM: zabiera 1 Upgrade Token, losuje artefakt i pokazuje animację skrzyni (ekran przyciemniony → skrzynia drży → otwarcie → artefakt)
+window.artRedeem = () => {
+  if (busy || document.getElementById('artfx')) return;
+  const ti = inv.findIndex(x => x.mat && x.sl === 'upgrade_token'); if (ti < 0) return;
+  artState();
+  if (--inv[ti].qty <= 0) inv.splice(ti, 1);
+  const a = artRoll(), n = (me.arts[a.k] || 0) + 1; me.arts[a.k] = n;
+  saveGame(); render();
+  const fx = document.createElement('div'); fx.id = 'artfx';
+  fx.innerHTML = `<div class="artstage"><div class="artbig">🎁</div></div>`;
+  document.body.appendChild(fx);
+  setTimeout(() => fx.classList.add('opening'), 950);   // skrzynia „pęka”: rozbłysk
+  setTimeout(() => {   // zawartość skrzyni
+    const left = artTokens(), F = ART_FAMS[a.fam];
+    fx.style.setProperty('--glow', ART_GLOW[a.r]);
+    fx.querySelector('.artstage').innerHTML = `<div class="artrev"><div class="artrevcell r${a.r}">${a.e}</div><b class="t${a.r}">${a.n}</b>`
+      + `<small>${RAR[a.r][0]} · <span style="color:${F.c}">${F.n}</span></small><div class="artnew">${n === 1 ? 'NEW!' : 'Duplicate · owned ×' + n}</div>`
+      + `<div class="artrevbtns"><button class="bkac" onclick="window.artCloseFx()">Collect</button>${left ? `<button onclick="window.artCloseFx(1)">Open another (${left})</button>` : ''}</div></div>`;
+    fx.classList.add('shown');
+  }, 1250);
+};
+window.artCloseFx = again => { const fx = document.getElementById('artfx'); if (fx) fx.remove(); render(); if (again) window.artRedeem(); };
+
 // ===== QUESTY =====
 // Co 30 min można wylosować nową pulę: 3 losowe z 6 rodzajów. Po upływie czasu w nagłówku pojawia się przycisk Reset –
 // nowe questy dopiero po jego kliknięciu (do tego czasu stare dalej się liczą). Questów się NIE aktywuje – wszystkie 3 liczą się od razu, równolegle.
@@ -2100,8 +2161,7 @@ function render() {
   $('inv').innerHTML = inv.map((i, n) => `<div class="cell r${i.r || 0}${i.fresh ? ' new' : ''}${i.req && me.lvl < i.req ? ' noreq' : ''}" draggable="true" data-n="${n}" data-it="inv:${n}">${invIco(i)}${(i.qty && i.qty > 1) || (i.isScroll && i.qty > 1) ? `<span class="qty">${i.qty}</span>` : ''}</div>`).join('');
   $('sellbtn').classList.toggle('on', sellMode);$('sellbtn').innerHTML = goldIco(16) + (sellMode ? ' Click an item' : ' Sell');
 
-  // ARTIFACTS: licznik Upgrade Token obok przycisku Redeem (ikona tokena + liczba sztuk w plecaku)
-  { const at = $('art-tok'); if (at) at.innerHTML = matIco('upgrade_token', 24, 20) + ((inv.find(x => x.mat && x.sl === 'upgrade_token') || {}).qty || 0); }
+  if (view === 'art') renderArt();   // ARTIFACTS: sloty, skrzynia (Redeem) i kolekcja
   const meatCount = (inv.find(x => x.mat && x.sl == 'meat') || {}).qty || 0;
   const clawCount = (inv.find(x => x.mat && x.sl === 'claw') || {}).qty || 0;
   const canCraft = meatCount >= 2 && clawCount >= 1 && window.G_GLOBAL >= 200;
