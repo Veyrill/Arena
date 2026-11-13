@@ -488,18 +488,17 @@ UPG.filter(n => ['ag', 'dj', 'lj'].includes(n.id)).forEach(n => { n.x = Math.sig
   UPG.push({ id: pre + (i + 1), from: a, fromX: [b], req: a, reqAny: [a, b], reqN: 2, vis: null, x: sg * (Math.abs(A.x) + 80), y: (A.y + B.y) / 2, k: 'b', ph: 1, n: 'Locked', d: SOON, eff: {}, max: 3 });
 }));
 
-// ===== ARTEFAKTY (zakładka Artifacts) =====
-// 15 artefaktów – złote / brązowe medaliony ze smokiem (PixelLab, 64×64, grafiki assets/artifacts/art_<klucz>.png; brak pliku → emoji z „e”).
-// Bez rodzin i bez rzadkości – 3 jednakowe sloty, każdy artefakt pasuje do każdego slotu. Na razie bez statystyk.
-// Zdobywane ze skrzyni: 1 Upgrade Token = 1 skrzynia (Redeem), każdy artefakt z równą szansą (1/15).
-// ID 7301–7315 (dawne artefakty z emoji 7001–7210 usunięte, ID zarezerwowane). old = klucz dawnego artefaktu (stary zapis przechodzi na nowy).
-export const ARTIFACTS = [
-  [7301, 'coiled_coin', 'Coiled Dragon Coin', 'merchant_seal'], [7302, 'ouroboros_coin', 'Ouroboros Coin', 'blade_sigil'], [7303, 'dragonguard_crest', 'Dragonguard Crest', 'candle_rune'],
-  [7304, 'bronze_wyrm_seal', 'Bronze Wyrm Seal', 'trade_seal'], [7305, 'wyrm_tablet', 'Wyrm Tablet', 'wolf_sigil'], [7306, 'hoard_medallion', 'Dragon Hoard Medallion', 'moon_rune'],
-  [7307, 'blackscale_crest', 'Blackscale Crest', 'jeweler_seal'], [7308, 'sunscale_seal', 'Sunscale Seal', 'blood_sigil'], [7309, 'serpent_ring', 'Serpent Ring Coin', 'haste_rune'],
-  [7310, 'sunburst_wyrm', 'Sunburst Wyrm', 'royal_seal'], [7311, 'wyrm_cameo', 'Wyrm Egg Cameo', 'death_sigil'], [7312, 'runed_disc', 'Runed Dragon Disc', 'echo_rune'],
-  [7313, 'blazing_medallion', 'Blazing Sun Medallion', 'hoard_seal'], [7314, 'elder_coin', 'Elder Dragon Coin', 'war_sigil'], [7315, 'shadow_wyrm_coin', 'Shadow Wyrm Coin', 'star_rune']
-].map(([id, k, n, old]) => ({ k, id, n, old, e: '🐉', img: `artifacts/art_${k}.png` }));
+// ===== ULEPSZENIA ZA UPGRADE TOKEN (zakładka Artifacts) =====
+// 5 kafelków; każdy poziom kupuje się za Upgrade Token (koszt rośnie z poziomem, cost[i] = koszt poziomu i+1).
+// per = efekt jednego poziomu, max = maks. poziom. Na razie bez ikon (grafiki później).
+// Dawne artefakty (ID 7001–7210, 7301–7315) usunięte z gry – ID zarezerwowane.
+export const TOKEN_UPG = [
+  { k: 'plunder', n: 'Plunder', d: 'Gold from expeditions', per: 5, unit: '%', sign: '+', max: 10, cost: [1, 1, 2, 2, 3, 3, 4, 4, 5, 5] },
+  { k: 'lore', n: 'Battle Lore', d: 'XP from expeditions', per: 5, unit: '%', sign: '+', max: 10, cost: [1, 1, 2, 2, 3, 3, 4, 4, 5, 5] },
+  { k: 'bounty', n: 'Bounty Board', d: 'Quests at once', per: 1, unit: '', sign: '+', max: 2, cost: [1, 4] },
+  { k: 'couriers', n: 'Swift Couriers', d: 'Quest timer', per: 3, unit: ' min', sign: '-', max: 5, cost: [1, 2, 3, 4, 5] },
+  { k: 'medic', n: 'Field Medic', d: 'Dungeon cooldown', per: 10, unit: '%', sign: '-', max: 5, cost: [1, 2, 3, 4, 5] }
+];
 
 // UNIKATY: zawsze te same statystyki (nie losowane). Każdy przedmiot mityczny ma cytat (quote) pokazywany w dymku. img = własna grafika w assets/unique/ (nie jest jednym z losowych sprite'ów hełmów).
 // Abyssal Lure Hood – hełm do łowienia (strona 2 ekwipunku), mityczny, 50 FP; special drop z Lewiatana (1%, jednorazowo)

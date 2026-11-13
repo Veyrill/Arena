@@ -17,7 +17,7 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 5200–5299 | Materiały z ryb |
 | 5300–5399 | Tokeny (nagrody z questów) |
 | 6000–6999 | Przedmioty użytkowe (zwoje, jedzenie, przepisy, projekty, inne) |
-| 7000–7999 | Artefakty (zakładka Artifacts – nie trafiają do plecaka; aktualne: 7301–7315, medaliony ze smokiem) |
+| 7000–7999 | Artefakty (usunięte z gry – wszystkie ID zarezerwowane; zakładka Artifacts ma teraz ulepszenia za Upgrade Token) |
 
 
 ## Equipment
@@ -297,18 +297,18 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 7208 | ~~Storm Rune~~ (usunięty, ID zarezerwowane) |
 | 7209 | ~~Rune of Echoes~~ (usunięty, ID zarezerwowane) |
 | 7210 | ~~Star Rune~~ (usunięty, ID zarezerwowane) |
-| 7301 | Coiled Dragon Coin |
-| 7302 | Ouroboros Coin |
-| 7303 | Dragonguard Crest |
-| 7304 | Bronze Wyrm Seal |
-| 7305 | Wyrm Tablet |
-| 7306 | Dragon Hoard Medallion |
-| 7307 | Blackscale Crest |
-| 7308 | Sunscale Seal |
-| 7309 | Serpent Ring Coin |
-| 7310 | Sunburst Wyrm |
-| 7311 | Wyrm Egg Cameo |
-| 7312 | Runed Dragon Disc |
-| 7313 | Blazing Sun Medallion |
-| 7314 | Elder Dragon Coin |
-| 7315 | Shadow Wyrm Coin |
+| 7301 | ~~Coiled Dragon Coin~~ (usunięty, ID zarezerwowane) |
+| 7302 | ~~Ouroboros Coin~~ (usunięty, ID zarezerwowane) |
+| 7303 | ~~Dragonguard Crest~~ (usunięty, ID zarezerwowane) |
+| 7304 | ~~Bronze Wyrm Seal~~ (usunięty, ID zarezerwowane) |
+| 7305 | ~~Wyrm Tablet~~ (usunięty, ID zarezerwowane) |
+| 7306 | ~~Dragon Hoard Medallion~~ (usunięty, ID zarezerwowane) |
+| 7307 | ~~Blackscale Crest~~ (usunięty, ID zarezerwowane) |
+| 7308 | ~~Sunscale Seal~~ (usunięty, ID zarezerwowane) |
+| 7309 | ~~Serpent Ring Coin~~ (usunięty, ID zarezerwowane) |
+| 7310 | ~~Sunburst Wyrm~~ (usunięty, ID zarezerwowane) |
+| 7311 | ~~Wyrm Egg Cameo~~ (usunięty, ID zarezerwowane) |
+| 7312 | ~~Runed Dragon Disc~~ (usunięty, ID zarezerwowane) |
+| 7313 | ~~Blazing Sun Medallion~~ (usunięty, ID zarezerwowane) |
+| 7314 | ~~Elder Dragon Coin~~ (usunięty, ID zarezerwowane) |
+| 7315 | ~~Shadow Wyrm Coin~~ (usunięty, ID zarezerwowane) |

@@ -1,4 +1,4 @@
-import { ARTIFACTS, DEV, SL, NAMES, RAR, ST, LOCS, ACTS, ALL_LOCS, ACT_START, DUN, DUNS, UPG, upgBranch, upgPos, SKILL_ICON_CENTER, MATS, FISH, FISH_LOCKED, R, I, P, UNIQUES, makeUnique, FIXED_ITEMS, makeFixed, FISH_SETS, GEAR_SETS, namesFor, devFlag, DEV_TIME, PANEL_KEY, setTimeOff } from './data.js';
+import { TOKEN_UPG, DEV, SL, NAMES, RAR, ST, LOCS, ACTS, ALL_LOCS, ACT_START, DUN, DUNS, UPG, upgBranch, upgPos, SKILL_ICON_CENTER, MATS, FISH, FISH_LOCKED, R, I, P, UNIQUES, makeUnique, FIXED_ITEMS, makeFixed, FISH_SETS, GEAR_SETS, namesFor, devFlag, DEV_TIME, PANEL_KEY, setTimeOff } from './data.js';
 import { me, eq1, eq2, inv, G, up, upgTree, fishing, upgradeItem, equipPage, currentZoom, panX, panY, panMoved, panDrag, view, eloc, esel, dloc, dprog, busy, cdEnd, sellMode, drag, lastMob, showInfo, showDunUnlockMsg, dunMsgClosed, showNoRodMsg, buffStrEnd, lastMouseE, setEquipPage, setView, setEloc, setEsel, setDloc, setDprog, setBusy, setSellMode, setLastMouseE, setDrag, setPanDrag, setPanMoved, setPanX, setPanY, setCurrentZoom, setShowInfo, setLastMob, setShowDunUnlockMsg, setDunMsgClosed, setShowNoRodMsg, setCdEnd, setBuffStrEnd, buffDexEnd, setBuffDexEnd, foodBuff, setUpgradeItem, eact, actsUnlocked, setEact, setActsUnlocked, locUnlocked, setLocUnlocked, gear, der, ub, mstats, HP_MUL, ENEMY_HP, CRIT_K, CRIT_C, CRIT_CAP } from './state.js';
 import { hasRod, upgradeRod, upgradeGear, upgradeCost, makeRod, makeHook, isRod, isUpgradable, gearLevel, gearMaxLevel, previewGear, fishPower, canFish, ROD_TIERS, HOOK_TIERS } from './fishing.js';
 import { hit, armorRed, ARMOR_K } from './combat.js';
@@ -1581,77 +1581,38 @@ function bestBeatenMob() {
   return null;
 }
 
-// ===== ARTIFACTS (układ A, bez rodzin) =====
-// Lewa strona: 3 jednakowe karty slotów (duży obrazek; nazwa i EFFECT dopiero po założeniu), pod nimi panel z posiadanymi artefaktami
-// (kliknięcie = założenie do pierwszego wolnego slotu, a gdy wszystkie zajęte – po kolei w miejsce slotu 1, 2, 3; kliknięcie założonego = zdjęcie).
-// Prawa kolumna: Collection – 15 artefaktów (niezdobyte jako „?”), na dole Redeem (1 Upgrade Token = 1 skrzynia).
-// Zapis: me.arts = { klucz artefaktu: ile sztuk zdobyto }, me.artSlots = [klucz | null, klucz | null, klucz | null].
-const ART_SLOTS = 3;
-let artNext = 0;   // który slot podmienić, gdy wszystkie są zajęte (po kolei)
-const ART_GLOW = '#ffd36b';   // poświata za artefaktem (w slocie i przy odkryciu) – jedna, złota (artefakty nie mają rzadkości)
+// ===== ULEPSZENIA ZA UPGRADE TOKEN (zakładka Artifacts) =====
+// 5 kafelków w rzędzie: nazwa, poziom, efekt teraz → po ulepszeniu, przycisk z kosztem („1T”). Kupno zabiera tokeny z plecaka.
+// Zapis: me.tup = { plunder, lore, bounty, couriers, medic: poziom }. Efekty:
+//   Plunder +5% złota z wypraw / poz., Battle Lore +5% XP z wypraw / poz., Bounty Board +1 quest w puli / poz.,
+//   Swift Couriers −3 min odnowienia questów / poz., Field Medic −10% przerwy po walce w lochu / poz.
+const tupLvl = k => (me.tup && me.tup[k]) || 0;
+const tupVal = k => { const u = TOKEN_UPG.find(x => x.k === k); return u ? u.per * tupLvl(k) : 0; };   // suma efektu (np. 15 = +15%)
 const artTokens = () => (inv.find(x => x.mat && x.sl === 'upgrade_token') || {}).qty || 0;
-const artOf = k => ARTIFACTS.find(a => a.k === k);
-const artTip = a => a.n;
-// ikona artefaktu: grafika 64×64 (ostre piksele) w rozmiarze px; brak pliku → emoji
-const artIco = (a, px) => `<img class="artimg" src="${ASSETS_DIR}/${a.img}" alt="" style="width:${px}px;height:${px}px" onerror="this.outerHTML='${a.e}'">`;
-function artState() {
-  if (!me.arts) me.arts = {};
-  if (!Array.isArray(me.artSlots)) me.artSlots = Object.values(me.artSlots || {});   // stary zapis: sloty rodzin { seal, sigil, rune } → 3 zwykłe sloty
-  me.artSlots = me.artSlots.map(k => (ARTIFACTS.find(a => a.old === k) || {}).k || k);   // stary zapis: dawne artefakty z emoji → nowe medaliony
-  me.artSlots = Array.from({ length: ART_SLOTS }, (_, i) => artOf(me.artSlots[i]) ? me.artSlots[i] : null);
-  // stary zapis: dawne artefakty z emoji przechodzą na nowe medaliony (te same ilości)
-  for (const a of ARTIFACTS) if (me.arts[a.old]) { me.arts[a.k] = (me.arts[a.k] || 0) + me.arts[a.old]; delete me.arts[a.old]; }
-  for (const k in me.arts) if (!artOf(k)) delete me.arts[k];   // artefakty usunięte z gry
-}
+const tupFmt = (u, l) => `${u.sign}${u.per * l}${u.unit}`;
 function renderArt() {
   const body = $('body-art'); if (!body) return;
-  artState();
-  const tok = artTokens(), found = ARTIFACTS.filter(a => me.arts[a.k]).length;
-  // karty slotów: grafika slotu (ramka ze smokami) z artefaktem w środku (złota poświata) albo „?”; nazwa i EFFECT tylko, gdy coś jest założone
-  const cards = me.artSlots.map((k, i) => { const a = artOf(k);
-    return `<div class="artcard${a ? '' : ' empty'}"><div class="artbigslot"${a ? ` style="--rg:${ART_GLOW}" onclick="window.artUnequip(${i})" title="${artTip(a)}\nClick to remove"` : ''}><span>${a ? artIco(a, 64) : '?'}</span></div>`   // ramka slotu: assets/ui/art_slot.png; rzadkość = poświata za ikoną
-      + (a ? `<b class="artname">${a.n}</b><div class="arteffect"><small>EFFECT</small>No stats yet</div>` : '') + `</div>`; }).join('');
-  // panel pod kartami: wszystkie posiadane artefakty, założone – podświetlone
-  const own = ARTIFACTS.filter(a => me.arts[a.k]).map(a => { const n = me.arts[a.k], eq = me.artSlots.includes(a.k);
-    return `<div class="artmini${eq ? ' eq' : ''}" onclick="window.artEquip('${a.k}')" title="${artTip(a)}\n${eq ? 'Click to remove' : 'Click to equip'}">${artIco(a, 32)}${n > 1 ? `<i>${n}</i>` : ''}</div>`; }).join('');
-  // kolekcja: 15 artefaktów (3 kolumny × 5 rzędów); niezdobyte – „?”
-  const coll = ARTIFACTS.map(a => me.arts[a.k] ? `<div class="artmini sm" title="${artTip(a)}">${artIco(a, 32)}</div>` : `<div class="artmini sm q" title="Unknown artifact">?</div>`).join('');
-  const redeem = `<div class="artredeemw"><button class="bkac artredeem" onclick="window.artRedeem()"${tok < 1 || busy ? ' disabled' : ''}>🎁 Redeem</button><div class="arttok">${matIco('upgrade_token', 20, 16)}1 / ${tok}</div></div>`;
-  // u góry 3 duże sloty na całą szerokość; pod nimi panel posiadanych artefaktów (lewo) i kolekcja z Redeem (prawo)
-  body.innerHTML = `<div class="artcards">${cards}</div><div class="artA"><div class="artown"><div class="artowngrid">${own}</div></div>`
-    + `<div class="artcoll"><b class="artcollh">COLLECTION · ${found}/${ARTIFACTS.length}</b><div class="artcollgrid">${coll}</div>${redeem}</div></div>`;
+  const tok = artTokens();
+  const tiles = TOKEN_UPG.map(u => { const l = tupLvl(u.k), mx = l >= u.max, c = mx ? 0 : u.cost[l];
+    return `<div class="tupc${mx ? ' max' : ''}"><div class="tupico"></div><b class="tupn">${u.n}</b><span class="tupl">${l} / ${u.max}</span>`
+      + `<div class="tupd">${u.d}</div><div class="tupe">${l ? tupFmt(u, l) : '–'}${mx ? '' : ` <span>→</span> <em>${tupFmt(u, l + 1)}</em>`}</div>`
+      + `<button class="bkac tupbtn" onclick="window.tupBuy('${u.k}')"${mx || tok < c || busy ? ' disabled' : ''}>${mx ? 'MAX' : c + 'T'}</button></div>`; }).join('');
+  body.innerHTML = `<div class="tuptok">${matIco('upgrade_token', 24, 20)}<b>${tok}</b> Upgrade Tokens</div><div class="tuprow">${tiles}</div>`;
 }
-// kliknięcie posiadanego artefaktu: założony → zdjęcie; inaczej pierwszy wolny slot, a gdy brak – podmiana slotów po kolei (1, 2, 3, 1…)
-window.artEquip = k => { artState(); if (!artOf(k) || !me.arts[k] || busy) return;
-  const at = me.artSlots.indexOf(k);
-  if (at >= 0) me.artSlots[at] = null;
-  else { let i = me.artSlots.indexOf(null); if (i < 0) { i = artNext; artNext = (artNext + 1) % ART_SLOTS; } me.artSlots[i] = k; }
-  saveGame(); renderArt(); };
-window.artUnequip = i => { artState(); if (busy) return; me.artSlots[i] = null; saveGame(); renderArt(); };
-// losowanie: każdy z 15 artefaktów z równą szansą
-const artRoll = () => P(ARTIFACTS);
-// REDEEM: zabiera 1 Upgrade Token, losuje artefakt i pokazuje animację skrzyni (ekran przyciemniony → skrzynia drży → otwarcie → artefakt)
-window.artRedeem = () => {
-  if (busy || document.getElementById('artfx')) return;
-  const ti = inv.findIndex(x => x.mat && x.sl === 'upgrade_token'); if (ti < 0) return;
-  artState();
-  if (--inv[ti].qty <= 0) inv.splice(ti, 1);
-  const a = artRoll(), n = (me.arts[a.k] || 0) + 1; me.arts[a.k] = n;
+// kupno poziomu: zabiera koszt w Upgrade Token; Bounty Board od razu dokłada quest do puli, Swift Couriers skraca obecny licznik
+window.tupBuy = k => {
+  const u = TOKEN_UPG.find(x => x.k === k); if (!u || busy) return;
+  const l = tupLvl(k); if (l >= u.max) return;
+  const c = u.cost[l], ti = inv.findIndex(x => x.mat && x.sl === 'upgrade_token');
+  if (ti < 0 || inv[ti].qty < c) return;
+  if ((inv[ti].qty -= c) <= 0) inv.splice(ti, 1);
+  me.tup = me.tup || {}; me.tup[k] = l + 1;
+  if (k === 'bounty' && me.quests && me.quests.list) addQuest();
+  if (k === 'couriers' && me.quests && me.quests.t) me.quests.t -= u.per * 60e3;
+  say(`<b>${u.n}</b> upgraded to level ${l + 1}`);
   saveGame(); render();
-  const fx = document.createElement('div'); fx.id = 'artfx';
-  fx.innerHTML = `<div class="artstage"><div class="artbig">🎁</div></div>`;
-  document.body.appendChild(fx);
-  setTimeout(() => fx.classList.add('opening'), 950);   // skrzynia „pęka”: rozbłysk
-  setTimeout(() => {   // zawartość skrzyni
-    const left = artTokens();
-    fx.style.setProperty('--glow', ART_GLOW);
-    fx.querySelector('.artstage').innerHTML = `<div class="artrev"><div class="artrevcell">${artIco(a, 64)}</div><b>${a.n}</b>`
-      + `<div class="artnew">${n === 1 ? 'NEW!' : 'Duplicate · owned ×' + n}</div>`
-      + `<div class="artrevbtns"><button class="bkac" onclick="window.artCloseFx()">Collect</button>${left ? `<button onclick="window.artCloseFx(1)">Open another (${left})</button>` : ''}</div></div>`;
-    fx.classList.add('shown');
-  }, 1250);
 };
-window.artCloseFx = again => { const fx = document.getElementById('artfx'); if (fx) fx.remove(); render(); if (again) window.artRedeem(); };
+delete me.arts; delete me.artSlots;   // stary zapis: dane usuniętych artefaktów
 
 // ===== QUESTY =====
 // Co 30 min można wylosować nową pulę: 3 losowe z 6 rodzajów. Po upływie czasu w nagłówku pojawia się przycisk Reset –
@@ -1659,7 +1620,10 @@ window.artCloseFx = again => { const fx = document.getElementById('artfx'); if (
 // Nagroda: dokładnie 1 Upgrade Token (materiał, na razie bez zastosowania) – od razu do plecaka, gdy licznik dojdzie do celu.
 // Bez złota, XP i przedmiotów. Liczą się prawdziwe walki (wyprawa i loch, bez symulacji szans) oraz łowienie.
 // Reset kasuje nieukończone questy (postęp przepada). Ultimate: tylko gdy gracz ma wytrenowany Ultimate.
-const QUEST_RESET = 30 * 60e3, QUEST_LVL = 5, QUEST_N = 3;   // questy dostępne od 5 poziomu
+const QUEST_LVL = 5;   // questy dostępne od 5 poziomu
+// liczba questów w puli (3 + Bounty Board) i czas do nowej puli (30 min − Swift Couriers)
+const questN = () => 3 + tupVal('bounty');
+const questReset = () => (30 - tupVal('couriers')) * 60e3;
 const QUEST_KINDS = {
   safe: { r: [5, 7], t: n => `Win ${n} fights without dropping below 50% health` },
   crit: { r: [17, 27], t: n => `Land ${n} critical hits` },
@@ -1672,16 +1636,24 @@ function genQuests() {
   const kinds = Object.keys(QUEST_KINDS).filter(k => !QUEST_KINDS[k].ok || QUEST_KINDS[k].ok());
   for (let i = kinds.length - 1; i > 0; i--) { const j = I(0, i); [kinds[i], kinds[j]] = [kinds[j], kinds[i]]; }
   const caught = FISH.filter(f => fishing.caught && fishing.caught[f.id]).map(f => f.id);
-  me.quests = { v: 2, t: Date.now() + QUEST_RESET, list: kinds.slice(0, QUEST_N).map(k => {
-    const q = { k, need: I(...QUEST_KINDS[k].r), got: 0 };
-    if (k === 'fish') q.fish = caught.length ? caught[I(0, caught.length - 1)] : 'fish_carp';
-    return q; }) };
+  me.quests = { v: 2, t: Date.now() + questReset(), list: kinds.slice(0, questN()).map(k => newQuest(k, caught)) };
+}
+function newQuest(k, caught) {
+  const q = { k, need: I(...QUEST_KINDS[k].r), got: 0 };
+  if (k === 'fish') q.fish = caught.length ? caught[I(0, caught.length - 1)] : 'fish_carp';
+  return q;
+}
+// Bounty Board: dodatkowy quest od razu po kupnie (rodzaj, którego nie ma jeszcze w puli)
+function addQuest() {
+  const have = me.quests.list.map(q => q.k), caught = FISH.filter(f => fishing.caught && fishing.caught[f.id]).map(f => f.id);
+  const free = Object.keys(QUEST_KINDS).filter(k => !have.includes(k) && (!QUEST_KINDS[k].ok || QUEST_KINDS[k].ok()));
+  if (free.length) me.quests.list.push(newQuest(free[I(0, free.length - 1)], caught));
 }
 function ensureQuests() { if (!me.quests || me.quests.v !== 2 || !me.quests.list) genQuests(); }   // v: 2 – stary zapis (Kill X×) → nowa pula; po czasie NIE losuje sama (przycisk Reset)
 // RESET: dostępny dopiero po upływie 30 min (nie w trakcie walki) – nowa pula 3 questów
 window.resetQuests = () => { if (busy || !me.quests || Date.now() < me.quests.t) return; genQuests(); render(); };
 // nagłówek panelu: licznik do resetu albo (po czasie) przycisk z okrągłą strzałką (assets/ui/ui_reset.png)
-const questHead = () => Date.now() >= me.quests.t ? `<button class="qreset" onclick="window.resetQuests()" title="Reset quests – draw 3 new quests"><img src="${ASSETS_DIR}/ui/ui_reset.png" alt="Reset"></button>` : fmtCd(me.quests.t - Date.now());
+const questHead = () => Date.now() >= me.quests.t ? `<button class="qreset" onclick="window.resetQuests()" title="Reset quests – draw ${questN()} new quests"><img src="${ASSETS_DIR}/ui/ui_reset.png" alt="Reset"></button>` : fmtCd(me.quests.t - Date.now());
 // XP z nagrody (poza walką też): awanse jak po walce (+1 do statystyk, +1 skill point)
 function addXp(x) {
   if (me.lvl >= MAX_LVL) return 0;
@@ -2171,7 +2143,7 @@ function render() {
   $('inv').innerHTML = inv.map((i, n) => `<div class="cell r${i.r || 0}${i.fresh ? ' new' : ''}${i.req && me.lvl < i.req ? ' noreq' : ''}" draggable="true" data-n="${n}" data-it="inv:${n}">${invIco(i)}${(i.qty && i.qty > 1) || (i.isScroll && i.qty > 1) ? `<span class="qty">${i.qty}</span>` : ''}</div>`).join('');
   $('sellbtn').classList.toggle('on', sellMode);$('sellbtn').innerHTML = goldIco(16) + (sellMode ? ' Click an item' : ' Sell');
 
-  if (view === 'art') renderArt();   // ARTIFACTS: sloty, skrzynia (Redeem) i kolekcja
+  if (view === 'art') renderArt();   // ARTIFACTS: ulepszenia za Upgrade Token
   const meatCount = (inv.find(x => x.mat && x.sl == 'meat') || {}).qty || 0;
   const clawCount = (inv.find(x => x.mat && x.sl === 'claw') || {}).qty || 0;
   const canCraft = meatCount >= 2 && clawCount >= 1 && window.G_GLOBAL >= 200;
@@ -3417,7 +3389,8 @@ $('go').onclick = async ev => {
     const loot = [];   // łup tej walki (pokazywany pod przyciskiem Collect na wyprawie)
     let rwXp = 0, rwGold = 0;   // nagroda tej walki (napis pod łupem)
     if (ph > 0) {
-      const xp = xpOf(mob), rewardGold = Math.round(mob.l * 3);
+      const expB = view == 'exp';   // Plunder / Battle Lore: tylko wyprawy (nie lochy)
+      const xp = Math.round(xpOf(mob) * (1 + (expB ? tupVal('lore') : 0) / 100)), rewardGold = Math.round(mob.l * 3 * (1 + (expB ? tupVal('plunder') : 0) / 100));
       const gainXp = me.lvl >= MAX_LVL ? 0 : xp;   // na 80 poziomie XP już się nie zbiera
       holdGold = window.G_GLOBAL; holdXp = { lvl: me.lvl, xp: me.xp };   // panel Gold i pasek XP czekają na animację
       rwXp = gainXp; rwGold = rewardGold;
@@ -3445,7 +3418,7 @@ $('go').onclick = async ev => {
       }
       if (view == 'dun') {
         const di = curDun().mobs.indexOf(mob), dd = dloc ?? 0;
-        if (!DEV || devFlag('dcd', false)) { me.dcd = me.dcd || {}; me.dcd[dKey(di)] = Date.now() + DUN_CD; }   // przerwa 1 h dla tego przeciwnika (DEV: bez przerwy)
+        if (!DEV || devFlag('dcd', false)) { me.dcd = me.dcd || {}; me.dcd[dKey(di)] = Date.now() + DUN_CD * (1 - tupVal('medic') / 100); }   // przerwa 1 h (Field Medic: −10% / poziom) dla tego przeciwnika (DEV: bez przerwy)
         if (di === dProgOf(dd)) { setDProgOf(dd, di + 1); dJustBeat = true; }   // pierwszy raz pokonany → następny zostanie wybrany po Back
       }
       // postęp w lokacji: pokonanie kolejnego przeciwnika odblokowuje następnego w tej samej lokacji
