@@ -2043,10 +2043,10 @@ function clampPan() {
   const mx = treeExt.x * currentZoom, my = treeExt.y * currentZoom;
   setPanX(Math.max(-mx, Math.min(mx, panX))); setPanY(Math.max(-my, Math.min(my, panY)));
 }
-// UPGRADE TOKEN Z WALKI: każdy przeciwnik (wyprawa i lochy) ma 1% szansy na Upgrade Token po wygranej – ZAMIAST przedmiotu z ekwipunku
-// (przeciwnicy lochów nie dają losowego ekwipunku – u nich token to osobny 1%). mobMats = lista do panelu ℹ️ (materiały + token).
+// UPGRADE TOKEN Z WALKI: tylko WYPRAWY – każdy przeciwnik ma 1% szansy na Upgrade Token po wygranej, ZAMIAST przedmiotu z ekwipunku.
+// Lochy: bez tokena (wypadają z nich tylko special dropy). mobMats = lista do panelu ℹ️ (materiały + token tylko u przeciwników z wypraw).
 const TOKEN_DROP = 0.01;
-const mobMats = m => [...(m.mats || []), ['upgrade_token', TOKEN_DROP]];
+const mobMats = m => [...(m.mats || []), ...(ALL_LOCS.some(l => l.mobs.includes(m)) ? [['upgrade_token', TOKEN_DROP]] : [])];
 function renderInfo(m) {
   const r = Math.round, d = der(), s = mstats(m);
   const L = live && live.mob === m ? live : null, c = L ? L.M : s;
@@ -2498,7 +2498,7 @@ function render() {
         const dP = dunProg(), cd = i <= dP ? dunCd(i) : 0, st = i > dP ? 'lock' : cd ? 'cool' : 'open', on = i === Math.min(dview, N - 1);
         // bez XP i bez kłódki: zablokowani są tylko wyszarzeni; pod nazwą jedynie licznik przerwy; ostatni przeciwnik bez czerwonej obwódki
         const sub = st === 'cool' ? `<small class="dcd" data-cd="${i}">${fmtCd(cd)}</small>` : '';
-        return `<button class="tile dmob${on ? ' sel' : ''}${st === 'lock' ? ' dlock' : ''}${st === 'cool' ? ' dcool' : ''}" data-a="dsel" data-i="${i}"${busy ? ' disabled' : ''}>${lvlTag(m, false)}${winTag(m)}${mobBTag(m)}${mobIco(m, 64)}<b>${m.n}</b>${sub}</button>`;
+        return `<button class="tile dmob${on ? ' sel' : ''}${st === 'lock' ? ' dlock' : ''}${st === 'cool' ? ' dcool' : ''}" data-a="dsel" data-i="${i}"${busy ? ' disabled' : ''}>${lvlTag(m, false)}${winTag(m)}${mobIco(m, 64)}<b>${m.n}</b>${sub}</button>`;
       }).join('') + `</div><div class="dundrops">${dunDrops(D.mobs[Math.min(dview, N - 1)], Math.min(dview, N - 1))}${loreHtml(Math.min(dview, N - 1))}${dunFightBtn(Math.min(dview, N - 1))}</div></div>`);
   // okno walki: w trybie walki lochu przeniesione DO karty lochu (zamiast listy przeciwników), w pozostałych przypadkach na swoim miejscu nad plecakiem
   if (view == 'dun' && dloc != null && dfight && $('dunfight-slot')) $('dunfight-slot').appendChild(FIGHTBOX);
@@ -3273,7 +3273,7 @@ function diffColor(mob) {
   const w = winChance(mob), h = winHp[mob.n + '|' + mob.l] || 0;
   return w >= 99 && h > 0.8 ? 'var(--mut)' : w >= 80 ? '#2fae3f' : w >= 40 ? '#d49a00' : '#e53935';
 }
-// BONUSY PRZECIWNIKA: 2 kwadraty nad kafelkiem każdego przeciwnika (wyprawa i lochy). Każda wygrana z nim ma 10% szansy
+// BONUSY PRZECIWNIKA: 2 kwadraty nad kafelkiem każdego przeciwnika z wyprawy (lochy bez bonusów). Każda wygrana z nim ma 10% szansy
 // na odblokowanie każdego zablokowanego kwadratu (ikony zawsze widoczne, zablokowane – wyszarzone): XP (orb XP) = +50% XP z tego przeciwnika, Gold = +50% złota. Zapis: me.mobB[nazwa] = { x: 1, g: 1 }.
 const MOB_B_CH = 0.10, MOB_B_PCT = 50;
 const mobB = m => (me.mobB && me.mobB[m.n]) || {};
@@ -3416,10 +3416,10 @@ $('go').onclick = async ev => {
     let rwXp = 0, rwGold = 0;   // nagroda tej walki (napis pod łupem)
     if (ph > 0) {
       const expB = view == 'exp';   // Plunder / Battle Lore: tylko wyprawy (nie lochy)
-      const mb = mobB(mob), mbX = mb.x ? MOB_B_PCT : 0, mbG = mb.g ? MOB_B_PCT : 0;   // bonusy przeciwnika (+50% XP / złota) – sumują się z Plunder / Battle Lore
+      const mb = expB ? mobB(mob) : {}, mbX = mb.x ? MOB_B_PCT : 0, mbG = mb.g ? MOB_B_PCT : 0;   // bonusy przeciwnika (+50% XP / złota, tylko wyprawa) – sumują się z Plunder / Battle Lore
       const xp = Math.round(xpOf(mob) * (1 + ((expB ? tupVal('lore') : 0) + mbX) / 100)), rewardGold = Math.round(mob.l * 3 * (1 + ((expB ? tupVal('plunder') : 0) + mbG) / 100));
       // po nagrodzie: 10% szansy na odblokowanie każdego zablokowanego kwadratu (działa od następnej walki)
-      { const B = me.mobB = me.mobB || {}, o = B[mob.n] = B[mob.n] || {}, nw = [];
+      if (expB) { const B = me.mobB = me.mobB || {}, o = B[mob.n] = B[mob.n] || {}, nw = [];
         if (!o.x && Math.random() < MOB_B_CH) { o.x = 1; nw.push(`+${MOB_B_PCT}% XP`); }
         if (!o.g && Math.random() < MOB_B_CH) { o.g = 1; nw.push(`+${MOB_B_PCT}% gold`); }
         if (nw.length) { say(`<b>${mob.n}</b> bonus unlocked: ${nw.join(', ')}`, 'crit'); { const r = ($('fm') || document.body).getBoundingClientRect(); floatText(`<span style="color:#ffd36b">Bonus unlocked!</span><br><span style="font-size:13px;color:#fff">${nw.join(' · ')}</span>`, r.left + r.width / 2, r.top + 10, false, 700); } } }
@@ -3431,9 +3431,9 @@ $('go').onclick = async ev => {
       while (me.lvl < MAX_LVL && me.xp >= xpNeed(me.lvl)) { me.xp -= xpNeed(me.lvl); me.lvl++; me.str += 1; me.dex += 1; me.con += 1; me.sp++;   /* awans: +1 do każdej statystyki (było +2) */ spDot = true; say(`<b>Level up: ${me.lvl}!</b> +1 skill point`, 'crit'); }
       if (me.lvl >= 10 && !showDunUnlockMsg) setShowDunUnlockMsg(true);
       // poniżej 10 poziomu: +10 pkt proc. szansy, że łup z walki to broń (dodatkowe losowanie przed zwykłym wyborem slotu)
-      const tokDrop = Math.random() < TOKEN_DROP;   // 1%: Upgrade Token zamiast przedmiotu
+      const tokDrop = view == 'exp' && Math.random() < TOKEN_DROP;   // 1%: Upgrade Token zamiast przedmiotu – tylko wyprawy (z lochów tylko special dropy)
       if (tokDrop) { const d = MATS.upgrade_token;
-        if (view != 'exp') giveMat('upgrade_token'); else { loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: 'upgrade_token' }); say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`); } }
+        { loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: 'upgrade_token' }); say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`); } }
       else if (mob.drop && mob.drop.length) { const it = mk(mob.drop, me.lvl < 10 && Math.random() < 0.10 ? 'weapon' : undefined, undefined, actOfMob(mob)); it.fresh = 1; if (view == 'exp') loot.push(it); else inv.push(it); say(`Loot: <b class="t${it.r}">${it.name}</b>`); }   // wyprawa: do plecaka dopiero po Collect   // Akty 2 i 3: na razie bez dropów
       for (const [k, ch] of (mob.mats || [])) if (Math.random() < ch) {   // materiały przeciwnika (Upgrade Token losowany wyżej, zamiast przedmiotu)
         if (view != 'exp') { giveMat(k); continue; }
