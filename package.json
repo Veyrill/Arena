@@ -1,0 +1,25 @@
+{
+  "name": "arena",
+  "version": "0.1.0",
+  "description": "Arena",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win portable"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.0.0"
+  },
+  "build": {
+    "appId": "com.arena.game",
+    "productName": "Arena",
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "js/**/*",
+      "assets/**/*"
+    ]
+  }
+}

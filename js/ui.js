@@ -1528,8 +1528,21 @@ function applySettings() { document.body.classList.toggle('hpv-off', !opt('hpVal
 function renderSettings() {
   const el = $('body-set'); if (!el) return; const v = opt('hpVals');
   el.innerHTML = `<div class="setrow"><div><b>Health bar</b><small>What the health bars show in fights.</small></div>`
-    + `<div class="setopt"><button data-hpv="0" class="${v ? '' : 'on'}">Percent</button><button data-hpv="1" class="${v ? 'on' : ''}">Percent + values</button></div></div>`;
+    + `<div class="setopt"><button data-hpv="0" class="${v ? '' : 'on'}">Percent</button><button data-hpv="1" class="${v ? 'on' : ''}">Percent + values</button></div></div>`
+    + `<div class="setrow" style="margin-top:8px"><div><b>Display mode</b><small>${window.arenaApp ? 'Play in a window or on the full screen. F11 also switches it.' : 'Play in a window or on the full screen (in the browser it resets after reloading the page).'}</small></div>`
+    + `<div class="setopt"><button data-fsm="0" class="${isFull() ? '' : 'on'}">Windowed</button><button data-fsm="1" class="${isFull() ? 'on' : ''}">Fullscreen</button></div></div>`;
 }
+// TRYB WYŚWIETLANIA (Settings → Display mode): Windowed / Fullscreen.
+// Aplikacja (Electron): przez window.arenaApp z preload.js – zmienia tryb okna, zapamiętuje go w pliku ustawień i przywraca przy starcie (F11 też działa).
+// Przeglądarka: Fullscreen API (tylko po kliknięciu; po odświeżeniu strony wraca okno).
+const isFull = () => window.arenaApp ? !!window.arenaApp.isFullscreen() : !!document.fullscreenElement;
+const setFull = v => {
+  if (window.arenaApp) return window.arenaApp.setFullscreen(v);
+  try { if (v && !document.fullscreenElement) document.documentElement.requestFullscreen(); else if (!v && document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+};
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-fsm]'); if (b) setFull(b.dataset.fsm === '1'); });
+if (window.arenaApp) window.arenaApp.onFullscreen(() => renderSettings());   // zmiana (np. F11) → przyciski w Settings od razu aktualne
+document.addEventListener('fullscreenchange', () => renderSettings());
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-hpv]'); if (!b) return;
   me.opts = Object.assign({}, me.opts, { hpVals: b.dataset.hpv === '1' }); saveGame(); render();
