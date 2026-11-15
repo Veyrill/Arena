@@ -433,9 +433,12 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 .mbq:not(.on)>*{filter:grayscale(1) brightness(.7);opacity:.6}   /* zablokowany: ikona wyszarzona */
 /* LISTA DROPÓW: ikona skrzyni w prawym górnym rogu okna walki (wiersz Back), dymek z dropami przeciwnika */
 #dropbtn,#infobtn{position:absolute;top:8px;right:12px;z-index:6;width:40px;height:40px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--bd);border-radius:8px;background:var(--card);cursor:help}
-#infobtn{right:58px;cursor:pointer}#infobtn.solo{right:12px}#infobtn.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 35%,var(--card))}   /* „i” jak zakładki w Fishing; w lochu (bez listy dropów) w samym rogu */
+#infobtn{right:58px}#infobtn.solo{right:12px}#infobtn.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 35%,var(--card))}   /* „i” jak zakładki w Fishing; w lochu (bez listy dropów) w samym rogu */
 #dropbtn[hidden]{display:none}#dropbtn:hover,#infobtn:hover{border-color:var(--ac)}
 #dropbtn img{width:32px;height:32px;image-rendering:pixelated;display:block}
+#tip .etpic{display:flex;justify-content:center;padding:6px;background:#14161b;border:2px solid #000;border-radius:6px}#tip .etpic img,#tip .etpic .ic{width:96px!important;height:96px!important;image-rendering:pixelated}
+#tip .ethead{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:8px 0 4px}#tip .ethead b{display:inline;font-size:18px}#tip .ethead .mlvl{position:static;font-size:13px}
+#tip .etrow{display:flex;justify-content:space-between;gap:20px;padding:3px 0;border-bottom:1px dotted var(--bd);font-size:15px}#tip .etrow:last-child{border:0}#tip .etrow span{color:var(--mut)}#tip .etrow b{display:inline;font-size:15px}   /* dymek „i”: karta przeciwnika */
 #tip .drrow{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:15px}#tip .drrow em{margin-left:auto;padding-left:14px;font-style:normal;font-weight:800}#tip .drrow img{width:32px!important;height:32px!important}
 .tile.boss{border-color:#e0524a;box-shadow:0 0 10px 2px color-mix(in srgb,#e0524a 45%,transparent)}.fig.boss{filter:drop-shadow(0 0 7px #e0524a)}
 </style></head><body>

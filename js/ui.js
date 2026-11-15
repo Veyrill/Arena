@@ -2067,6 +2067,11 @@ function renderInfo(m) {
     B('Item drop', dropTxt) + '</div><div>' +   // materiały i Upgrade Token – w liście dropów (ikona skrzyni w prawym górnym rogu okna walki)
     B('Damage', ch(s.min, c.min) + '–' + ch(s.max, c.max)) + B('Armor', ch(s.arm, c.arm)) + B('Crit chance', r(s.crit) + '%') +
     B('Hits you for', ch(hit(s.min), hit(c.min)) + '–' + ch(hit(s.max), hit(c.max))) + '</div>';
+  // DYMEK „i” (wariant A – karta): grafika przeciwnika 96 px w ciemnej ramce, nazwa + poziom, pod spodem lista statystyk
+  const ib = $('infobtn'); if (ib) { const R = (l, v) => `<span class='etrow'><span>${l}</span><b>${v}</b></span>`;
+    ib.dataset.tip = `<span class='etpic'>${mobIco(m, 96)}</span><span class='ethead'><b>${m.n}</b>${lvlTag(m, isBoss(m))}</span>`
+      + R('Damage', ch(s.min, c.min) + '–' + ch(s.max, c.max)) + R('Hits you for', ch(hit(s.min), hit(c.min)) + '–' + ch(hit(s.max), hit(c.max)))
+      + R('Health', r(s.hp)) + R('Armor', ch(s.arm, c.arm)) + R('Crit chance', r(s.crit) + '%'); }
 }
 
 // SLOTY EKWIPUNKU (aktualna strona 1 / 2) + przyciski stron. Wydzielone z render(), żeby przy podniesieniu sprzętu wędkarskiego
@@ -2545,16 +2550,16 @@ function render() {
     }
     $('nm').innerHTML = `${m.n}${lvlTag(m, isBoss(m))}`;   // statystyki przeciwnika – ikona „i” w prawym górnym rogu okna walki (obok listy dropów)
     const s = mstats(m);
-    $('info').style.display = showInfo ? 'flex' : 'none';
+    $('info').style.display = 'none';   // dawny rozwijany panel statystyk – zastąpiony dymkiem ikony „i”
     if (lastMob !== m && !busy) live = null;   // inny przeciwnik → panel znów pokazuje statystyki bazowe
     renderInfo(m);
     // przycisk „Show battle log” (absolutnie pod przeciwnikiem) zjeżdża pod panel ℹ️, gdy ten jest otwarty
     { const lw = $('logwrap'); if (lw && lw.parentElement !== FIGHTBOX) FIGHTBOX.appendChild(lw); }
     { let db = $('dropbtn'); if (!db) { db = document.createElement('div'); db.id = 'dropbtn'; db.innerHTML = `<img src="${ASSETS_DIR}/ui/tup_plunder.png" alt="" draggable="false" onerror="this.outerHTML='🎁'">`; }
       if (db.parentElement !== FIGHTBOX) FIGHTBOX.appendChild(db); db.hidden = view !== 'exp'; db.dataset.tip = dropTip(m); }
-    // STATYSTYKI PRZECIWNIKA: ikona „i” (assets/ui/ui_info.png, jak w Fishing) na lewo od listy dropów – klik pokazuje / chowa panel statystyk
-    { let ib = $('infobtn'); if (!ib) { ib = document.createElement('button'); ib.id = 'infobtn'; ib.dataset.a = 'info'; ib.dataset.tip = '<b>Enemy stats</b>'; ib.innerHTML = uiIco('ui_info', 'ℹ️', 32); }
-      if (ib.parentElement !== FIGHTBOX) FIGHTBOX.appendChild(ib); ib.classList.toggle('on', !!showInfo); ib.classList.toggle('solo', view !== 'exp'); }   // LISTA DROPÓW – tylko wyprawa (lochy mają własny panel dropów)   // DPS meter (ramka ze smokami) w prawym górnym rogu okna walki – stała pozycja, niezależna od paska i panelu ℹ️
+    // STATYSTYKI PRZECIWNIKA: ikona „i” (assets/ui/ui_info.png, jak w Fishing) na lewo od listy dropów – po najechaniu dymek z grafiką i statystykami
+    { let ib = $('infobtn'); if (!ib) { ib = document.createElement('div'); ib.id = 'infobtn'; ib.innerHTML = uiIco('ui_info', 'ℹ️', 32); }
+      if (ib.parentElement !== FIGHTBOX) FIGHTBOX.appendChild(ib); ib.classList.toggle('solo', view !== 'exp'); renderInfo(m); }   // dymek ze statystykami (bez rozwijanego panelu)   // LISTA DROPÓW – tylko wyprawa (lochy mają własny panel dropów)   // DPS meter (ramka ze smokami) w prawym górnym rogu okna walki – stała pozycja, niezależna od paska i panelu ℹ️
     if (lastMob !== m && !busy) { setLastMob(m); setShowInfo(false); renderDebuffs({}); setDps({}, 0); const h0 = frailHp(s.hp);
       // Elemental Barrier widoczna już przed walką: niebieska końcówka paska i HP + tarcza / maks. HP (bez ikony buffa)
       const sh0 = Math.round(d.hp * (ub().barrier || 0) / 100), tot = d.hp + sh0;
