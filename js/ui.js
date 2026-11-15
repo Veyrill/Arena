@@ -3628,6 +3628,41 @@ document.addEventListener('mouseup', () => {
   if (panDrag) { setPanDrag(null); setTimeout(() => setPanMoved(false), 0); }
 });
 
+// PRZECIĄGANIE MYSZKĄ BEZ NATYWNEGO DRAG & DROP: w trakcie natywnego przeciągania przeglądarka pokazuje systemowy kursor (nie da się go zmienić).
+// Dlatego dla myszy: wciśnięcie na elemencie draggable i ruch > 5 px → własne przeciąganie (kopia elementu za kursorem, kursor = zaciśnięta rękawica),
+// a do istniejącego kodu trafiają te same zdarzenia co wcześniej (dragstart / dragenter / dragover / dragleave / drop / dragend) z prostym dataTransfer.
+// Natywne przeciąganie myszką jest blokowane. Dotyk – bez zmian (natywnie).
+{ let src = null, sx = 0, sy = 0, on = false, ghost = null, over = null, dt = null, offX = 0, offY = 0, lastPt = 'mouse';
+  const mkDT = () => { const d = {}; return { setData: (k, v) => { d[k] = v; }, getData: k => d[k] || '', clearData: () => {}, setDragImage() {}, effectAllowed: 'all', dropEffect: 'none', types: [], files: [] }; };
+  const fire = (el, type, x, y) => { if (!el) return false; const ev = new Event(type, { bubbles: true, cancelable: true });
+    Object.defineProperties(ev, { dataTransfer: { value: dt }, clientX: { value: x }, clientY: { value: y } }); return !el.dispatchEvent(ev); };   // true = preventDefault
+  const stop = () => { if (ghost) ghost.remove(); ghost = null; document.body.classList.remove('dragging'); src = null; on = false; over = null; dt = null; };
+  window.addEventListener('pointerdown', e => { lastPt = e.pointerType; if (e.button !== 0 || e.pointerType !== 'mouse') return; const t = e.target.closest && e.target.closest('[draggable="true"]'); if (!t) return;
+    src = t; sx = e.clientX; sy = e.clientY; const r = t.getBoundingClientRect(); offX = e.clientX - r.left; offY = e.clientY - r.top; }, true);
+  window.addEventListener('dragstart', e => { if (e.isTrusted && lastPt === 'mouse') { e.preventDefault(); e.stopImmediatePropagation(); } }, true);   // natywne przeciąganie myszką – wyłączone
+  window.addEventListener('pointermove', e => {
+    if (!src) return;
+    if (!on) { if (Math.abs(e.clientX - sx) + Math.abs(e.clientY - sy) < 6) return;
+      dt = mkDT(); if (fire(src, 'dragstart', e.clientX, e.clientY)) { src = null; dt = null; return; }   // np. skill w trakcie walki – nie wolno
+      on = true; document.body.classList.add('dragging'); getSelection && getSelection().removeAllRanges();
+      const r = src.getBoundingClientRect(); ghost = src.cloneNode(true); ghost.removeAttribute('id'); ghost.classList.add('dragghost');
+      Object.assign(ghost.style, { position: 'fixed', left: '0', top: '0', width: r.width + 'px', height: r.height + 'px', margin: '0', zIndex: 1000, pointerEvents: 'none', opacity: '.85' });
+      document.body.appendChild(ghost); }
+    ghost.style.transform = `translate(${e.clientX - offX}px,${e.clientY - offY}px)`;
+    const t = document.elementFromPoint(e.clientX, e.clientY);
+    if (t !== over) { fire(over, 'dragleave', e.clientX, e.clientY); fire(t, 'dragenter', e.clientX, e.clientY); over = t; }
+    fire(t, 'dragover', e.clientX, e.clientY);
+  }, true);
+  window.addEventListener('pointerup', e => {
+    if (!src) return; if (!on) { src = null; return; }
+    const s0 = src, t = document.elementFromPoint(e.clientX, e.clientY);
+    if (t) fire(t, 'drop', e.clientX, e.clientY);
+    fire(s0, 'dragend', e.clientX, e.clientY); stop();
+    const eat = ev => { ev.stopPropagation(); ev.preventDefault(); };   // kliknięcie zaraz po upuszczeniu – ignorowane (tylko w tej chwili)
+    window.addEventListener('click', eat, true); setTimeout(() => window.removeEventListener('click', eat, true), 0);
+  }, true);
+  window.addEventListener('blur', () => { if (on) { fire(src, 'dragend', 0, 0); stop(); } });
+}
 // czy podczas bieżącego przeciągania strona ekwipunku została automatycznie przełączona na 2 (wtedy po upuszczeniu – pełny render)
 let dragPageSwitch = false;
 

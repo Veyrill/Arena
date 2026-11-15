@@ -17,6 +17,7 @@ html,body{cursor:url(assets/ui/cursor.png) 5 4,auto}
 :is(button:not(:disabled),a,[onclick],[data-a],[style*="cursor:pointer"],[style*="cursor: pointer"],.tile:not(:disabled),.upg-node:not(.disabled):not(.bought),.sk.ab,.sk.atk,.bpc,.absub,.eq-page-btn){cursor:url(assets/ui/cursor_hover.png) 6 4,pointer!important}
 :is([draggable=true],.slot[draggable],.upg-tree-container){cursor:url(assets/ui/cursor_grab.png) 16 16,grab!important}
 :is([draggable=true],.slot[draggable],.upg-tree-container):active{cursor:url(assets/ui/cursor_grabbing.png) 17 16,grabbing!important}
+body.dragging,body.dragging *{cursor:url(assets/ui/cursor_grabbing.png) 17 16,grabbing!important;user-select:none}   /* w trakcie przeciągania (własne, nie natywne) – wszędzie zaciśnięta rękawica */
 :is(button:disabled,.tile:disabled,.upg-node.disabled,.cell.lock,[style*="cursor:not-allowed"],[style*="cursor: not-allowed"],.plusw:has(.plus:disabled)){cursor:url(assets/ui/cursor_no.png) 5 4,not-allowed!important}
 body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.35 'Cascadia Mono','Cascadia Code',Consolas,'Courier New',monospace}
 h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;letter-spacing:.05em;color:var(--mut)}
