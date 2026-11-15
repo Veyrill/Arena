@@ -422,6 +422,13 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 .upg-line.on{stroke:#f2c200;filter:drop-shadow(0 0 3px #f2c200)}.upg-line.off{stroke-dasharray:4 5;opacity:.75}
 .upg-badge{position:absolute;bottom:-4px;right:-4px;background:var(--ac);color:var(--on-ac);font-size:9px;font-weight:700;padding:1px 4px;border-radius:6px;border:1px solid var(--card)}
 .upg-node.bought .upg-badge{background:#f2c200;color:#2b2118}
+/* BONUSY PRZECIWNIKA: 2 kwadraty nad prawym górnym rogiem kafelka (XP – fiolet, Gold – moneta); zablokowane – ciemne, puste */
+.tiles.mobt{row-gap:30px;margin-top:26px}.dunmobs{gap:30px!important;padding-top:24px}
+.mbon{position:absolute;top:-24px;right:2px;display:flex;gap:4px;z-index:2}
+.mbq{width:20px;height:20px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:2px solid #111;border-radius:3px;background:#2a2520;box-shadow:inset 0 0 0 1px #4a3e2c;font:800 9px/1 inherit;font-style:normal;color:#fff;cursor:help}
+.mbq.mbx.on{background:#8e44ad;box-shadow:inset 0 2px 0 #b57ad0,0 0 6px #8e44ad99}
+.mbq.mbg.on{background:#5a3a10;box-shadow:inset 0 0 0 1px #e69500,0 0 6px #e6950099}
+.tile.mlock .mbon,.tile.dlock .mbon{opacity:.5}
 .tile.boss{border-color:#e0524a;box-shadow:0 0 10px 2px color-mix(in srgb,#e0524a 45%,transparent)}.fig.boss{filter:drop-shadow(0 0 7px #e0524a)}
 </style></head><body>
 <div id="popup-container"></div>

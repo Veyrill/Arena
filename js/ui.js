@@ -2471,7 +2471,7 @@ function render() {
   const lockedLocs = `<div class="tiles">` + Array.from({ length: 5 }, () => `<div class="tile lock"><b>???</b><small>Coming soon</small></div>`).join('') + `</div>`;
   $('body-exp').innerHTML = eloc == null ? (
       ACTS[actI].locs ? locTiles : lockedLocs
-    ) : back('eback', `${ALL_LOCS[eloc].e} ${ALL_LOCS[eloc].n}`) + `<div class="tiles">` + ALL_LOCS[eloc].mobs.map((m, i) => `<button class="tile${i == esel ? ' sel' : ''}${i == ALL_LOCS[eloc].mobs.length - 1 ? ' boss' : ''}${mobOpen(eloc, i) ? '' : ' mlock'}" data-a="esel" data-i="${i}"${busy || fishing.active || !mobOpen(eloc, i) ? ' disabled' : ''}>${lvlTag(m, i == ALL_LOCS[eloc].mobs.length - 1)}${winTag(m)}${mobIco(m, 64)}<b>${m.n}</b><small>+${xpOf(m)} XP</small></button>`).join('') + `</div>`;
+    ) : back('eback', `${ALL_LOCS[eloc].e} ${ALL_LOCS[eloc].n}`) + `<div class="tiles mobt">` + ALL_LOCS[eloc].mobs.map((m, i) => `<button class="tile${i == esel ? ' sel' : ''}${i == ALL_LOCS[eloc].mobs.length - 1 ? ' boss' : ''}${mobOpen(eloc, i) ? '' : ' mlock'}" data-a="esel" data-i="${i}"${busy || fishing.active || !mobOpen(eloc, i) ? ' disabled' : ''}>${lvlTag(m, i == ALL_LOCS[eloc].mobs.length - 1)}${winTag(m)}${mobBTag(m)}${mobIco(m, 64)}<b>${m.n}</b><small>+${mobXp(m)} XP</small></button>`).join('') + `</div>`;
   { const h = document.querySelector('#v-dun h2'); if (h) h.textContent = dloc != null && curDun().raid ? 'Raids' : 'Dungeons'; }
   // ZAKŁADKA RAIDS: kafelki raidów (od req poziomu); kliknięcie otwiera raid w widoku lochu (ten sam mechanizm: kolejni bossowie, przerwy, opisy)
   { const rb = $('body-raid'); if (rb) rb.innerHTML = `<div class="grid9">` + DUNS.map((X, i) => [X, i]).filter(([X]) => X.raid).map(([X, i]) => !dunLvlOk(i)
@@ -2494,7 +2494,7 @@ function render() {
         const dP = dunProg(), cd = i <= dP ? dunCd(i) : 0, st = i > dP ? 'lock' : cd ? 'cool' : 'open', on = i === Math.min(dview, N - 1);
         // bez XP i bez kłódki: zablokowani są tylko wyszarzeni; pod nazwą jedynie licznik przerwy; ostatni przeciwnik bez czerwonej obwódki
         const sub = st === 'cool' ? `<small class="dcd" data-cd="${i}">${fmtCd(cd)}</small>` : '';
-        return `<button class="tile dmob${on ? ' sel' : ''}${st === 'lock' ? ' dlock' : ''}${st === 'cool' ? ' dcool' : ''}" data-a="dsel" data-i="${i}"${busy ? ' disabled' : ''}>${lvlTag(m, false)}${winTag(m)}${mobIco(m, 64)}<b>${m.n}</b>${sub}</button>`;
+        return `<button class="tile dmob${on ? ' sel' : ''}${st === 'lock' ? ' dlock' : ''}${st === 'cool' ? ' dcool' : ''}" data-a="dsel" data-i="${i}"${busy ? ' disabled' : ''}>${lvlTag(m, false)}${winTag(m)}${mobBTag(m)}${mobIco(m, 64)}<b>${m.n}</b>${sub}</button>`;
       }).join('') + `</div><div class="dundrops">${dunDrops(D.mobs[Math.min(dview, N - 1)], Math.min(dview, N - 1))}${loreHtml(Math.min(dview, N - 1))}${dunFightBtn(Math.min(dview, N - 1))}</div></div>`);
   // okno walki: w trybie walki lochu przeniesione DO karty lochu (zamiast listy przeciwników), w pozostałych przypadkach na swoim miejscu nad plecakiem
   if (view == 'dun' && dloc != null && dfight && $('dunfight-slot')) $('dunfight-slot').appendChild(FIGHTBOX);
@@ -3269,6 +3269,14 @@ function diffColor(mob) {
   const w = winChance(mob), h = winHp[mob.n + '|' + mob.l] || 0;
   return w >= 99 && h > 0.8 ? 'var(--mut)' : w >= 80 ? '#2fae3f' : w >= 40 ? '#d49a00' : '#e53935';
 }
+// BONUSY PRZECIWNIKA: 2 kwadraty nad kafelkiem każdego przeciwnika (wyprawa i lochy). Każda wygrana z nim ma 10% szansy
+// na odblokowanie każdego zablokowanego kwadratu: XP = +50% XP z tego przeciwnika, Gold = +50% złota. Zapis: me.mobB[nazwa] = { x: 1, g: 1 }.
+const MOB_B_CH = 0.10, MOB_B_PCT = 50;
+const mobB = m => (me.mobB && me.mobB[m.n]) || {};
+const mobXp = m => Math.round(xpOf(m) * (1 + (mobB(m).x ? MOB_B_PCT / 100 : 0)));   // XP pokazywane na kafelku (z bonusem)
+const mobBTag = m => { const b = mobB(m), lk = `<br><span style='color:var(--mut)'>Locked – each victory has a ${MOB_B_CH * 100}% chance to unlock it</span>`;
+  return `<span class="mbon"><i class="mbq mbx${b.x ? ' on' : ''}" data-tip="<b>XP bonus</b>+${MOB_B_PCT}% XP from ${m.n}${b.x ? '' : lk}">${b.x ? 'XP' : ''}</i>`
+    + `<i class="mbq mbg${b.g ? ' on' : ''}" data-tip="<b>Gold bonus</b>+${MOB_B_PCT}% gold from ${m.n}${b.g ? '' : lk}">${b.g ? goldIco(12) : ''}</i></span>`; };
 const winTag = m => DEV ? (() => { const w = winChance(m); return `<span class="mwin" style="color:${w >= 80 ? '#3fdc3f' : w >= 40 ? '#e6a700' : '#e53935'}">${w}%</span>`; })() : '';
 
 // LICZBY OBRAŻEŃ: nad trafioną postacią wylatuje „37” (bez minusa) i znika w górę. Twoje ciosy – białe, ciosy wroga w Ciebie – czerwone,
@@ -3404,7 +3412,13 @@ $('go').onclick = async ev => {
     let rwXp = 0, rwGold = 0;   // nagroda tej walki (napis pod łupem)
     if (ph > 0) {
       const expB = view == 'exp';   // Plunder / Battle Lore: tylko wyprawy (nie lochy)
-      const xp = Math.round(xpOf(mob) * (1 + (expB ? tupVal('lore') : 0) / 100)), rewardGold = Math.round(mob.l * 3 * (1 + (expB ? tupVal('plunder') : 0) / 100));
+      const mb = mobB(mob), mbX = mb.x ? MOB_B_PCT : 0, mbG = mb.g ? MOB_B_PCT : 0;   // bonusy przeciwnika (+50% XP / złota) – sumują się z Plunder / Battle Lore
+      const xp = Math.round(xpOf(mob) * (1 + ((expB ? tupVal('lore') : 0) + mbX) / 100)), rewardGold = Math.round(mob.l * 3 * (1 + ((expB ? tupVal('plunder') : 0) + mbG) / 100));
+      // po nagrodzie: 10% szansy na odblokowanie każdego zablokowanego kwadratu (działa od następnej walki)
+      { const B = me.mobB = me.mobB || {}, o = B[mob.n] = B[mob.n] || {}, nw = [];
+        if (!o.x && Math.random() < MOB_B_CH) { o.x = 1; nw.push(`+${MOB_B_PCT}% XP`); }
+        if (!o.g && Math.random() < MOB_B_CH) { o.g = 1; nw.push(`+${MOB_B_PCT}% gold`); }
+        if (nw.length) { say(`<b>${mob.n}</b> bonus unlocked: ${nw.join(', ')}`, 'crit'); { const r = ($('fm') || document.body).getBoundingClientRect(); floatText(`<span style="color:#ffd36b">Bonus unlocked!</span><br><span style="font-size:13px;color:#fff">${nw.join(' · ')}</span>`, r.left + r.width / 2, r.top + 10, false, 700); } } }
       const gainXp = me.lvl >= MAX_LVL ? 0 : xp;   // na 80 poziomie XP już się nie zbiera
       holdGold = window.G_GLOBAL; holdXp = { lvl: me.lvl, xp: me.xp };   // panel Gold i pasek XP czekają na animację
       rwXp = gainXp; rwGold = rewardGold;
