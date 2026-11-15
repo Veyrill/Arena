@@ -7,8 +7,14 @@
 :root[data-theme=dark]{--bg:#1d1812;--card:#2a231a;--tx:#f0e6d2;--mut:#a39880;--bd:#4a3e2c;--ac:#e8803c;--on-ac:#1d1208;--c0:#a39880;--c1:#5fcf70;--c2:#6aa5ff;--c3:#c685f5;color-scheme:dark}
 *{box-sizing:border-box}
 /* KURSOR GRY: stalowa rękawica (assets/ui/cursor.png, 32×32), punkt kliknięcia = czubek palca (5, 4); brak pliku → zwykła strzałka.
-   Na razie tylko podstawowy – przyciski i elementy z cursor:pointer / help / grab mają dalej kursor systemowy */
+   Wersje (32×32, przezroczyste tło): cursor_hover.png – wszystko klikalne (punkt 6, 4); cursor_grab.png – przedmioty i rzeczy do przeciągnięcia,
+   plansza Passives (środek dłoni 16, 16); cursor_grabbing.png – wciśnięty przycisk myszy na tych elementach (17, 16).
+   Elementy „help” (dymki) i nieaktywne przyciski – podstawowa rękawica. „not-allowed” na razie systemowy. !important – wygrywa ze stylami w kodzie. */
 html,body{cursor:url(assets/ui/cursor.png) 5 4,auto}
+[data-tip],.lb,[style*="cursor:help"],[style*="cursor: help"],button:disabled,.tile:disabled,[style*="cursor:default"]{cursor:url(assets/ui/cursor.png) 5 4,default!important}
+:is(button:not(:disabled),a,[onclick],[data-a],[style*="cursor:pointer"],[style*="cursor: pointer"],.tile:not(:disabled),.upg-node:not(.disabled):not(.bought),.sk.ab,.sk.atk,.bpc,.absub,.eq-page-btn,.mbq){cursor:url(assets/ui/cursor_hover.png) 6 4,pointer!important}
+:is([draggable=true],.slot[draggable],.upg-tree-container){cursor:url(assets/ui/cursor_grab.png) 16 16,grab!important}
+:is([draggable=true],.slot[draggable],.upg-tree-container):active{cursor:url(assets/ui/cursor_grabbing.png) 17 16,grabbing!important}
 body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.35 'Cascadia Mono','Cascadia Code',Consolas,'Courier New',monospace}
 h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;letter-spacing:.05em;color:var(--mut)}
 #lvl { font-size: 1.2em; font-weight: 700; }
