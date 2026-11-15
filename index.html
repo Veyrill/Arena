@@ -6,6 +6,9 @@
 @media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#1d1812;--card:#2a231a;--tx:#f0e6d2;--mut:#a39880;--bd:#4a3e2c;--ac:#e8803c;--on-ac:#1d1208;--c0:#a39880;--c1:#5fcf70;--c2:#6aa5ff;--c3:#c685f5;color-scheme:dark}}
 :root[data-theme=dark]{--bg:#1d1812;--card:#2a231a;--tx:#f0e6d2;--mut:#a39880;--bd:#4a3e2c;--ac:#e8803c;--on-ac:#1d1208;--c0:#a39880;--c1:#5fcf70;--c2:#6aa5ff;--c3:#c685f5;color-scheme:dark}
 *{box-sizing:border-box}
+/* KURSOR GRY: stalowa rękawica (assets/ui/cursor.png, 32×32), punkt kliknięcia = czubek palca (5, 4); brak pliku → zwykła strzałka.
+   Na razie tylko podstawowy – przyciski i elementy z cursor:pointer / help / grab mają dalej kursor systemowy */
+html,body{cursor:url(assets/ui/cursor.png) 5 4,auto}
 body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.35 'Cascadia Mono','Cascadia Code',Consolas,'Courier New',monospace}
 h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;letter-spacing:.05em;color:var(--mut)}
 #lvl { font-size: 1.2em; font-weight: 700; }
