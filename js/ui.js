@@ -1191,7 +1191,7 @@ function renderAtkSlot() {
   const s = atkSlot(); if (!s) return;
   const w = eq1.weapon, key = (w ? 'w:' + (w.name || '') + (w.ic || '') + (w.img || '') : 'fist');
   // OPIS ZWYKŁEGO ATAKU (dymek na slocie 1) – jak przy umiejętnościach; obrażenia = aktualne obrażenia postaci
-  { const d = der(); s.dataset.tip = `<b>Attack</b>Cost: none<br>Generates: ${RAGE_HIT} Rage<br>Cooldown: none<br>Strikes with your ${w ? 'weapon' : 'fists'} for ${Math.round(d.min)}–${Math.round(d.max)} damage. Uses your turn.<br>Use it when you have no Rage for abilities.`; s.removeAttribute('title'); }
+  { const d = der(); s.dataset.tip = `<b>Attack</b>Cost: none<br>Generates: ${RAGE_HIT + rageGenB()} Rage<br>Cooldown: none<br>Strikes with your ${w ? 'weapon' : 'fists'} for ${Math.round(d.min)}–${Math.round(d.max)} damage. Uses your turn.<br>Use it when you have no Rage for abilities.`; s.removeAttribute('title'); }
   if (s.dataset.k === key) return; s.dataset.k = key;
   s.classList.add('atk');
   s.innerHTML = (w ? sizeIco(w, 48) : '<span class="ic">👊</span>') + '<span class="kb">1</span>';
@@ -1247,7 +1247,11 @@ const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = 
 // mk = klucz morpha (domyślnie wybrany przez gracza: me.morph[id]); morph nadpisuje nazwę, opis i mnożnik (koszt zostaje z 5 poziomu)
 // IKONA UMIEJĘTNOŚCI: obrazek z assets/skills/abilities/<img>.png (brak pliku albo brak img → emoji ico); morph używa ikony bazowej
 const abIco = (a, cls) => a.img ? `<span class="${cls} img"><img src="${ASSETS_DIR}/skills/abilities/${a.img}.png" alt="" onerror="this.parentNode.classList.remove('img');this.outerHTML='${a.ico}'"></span>` : `<span class="${cls}">${a.ico}</span>`;
-const abEff = (id, mk = me.morph && me.morph[id]) => {
+// BLADE CONTROL (Warrior): Ultimate tańszy o 5 / 10 / 15 Rage – nakładane na koszt z poziomu umiejętności / morpha
+const abEff = (id, mk) => { const r = abEff0(id, mk); if (!r || !r.ult) return r; const c = ub().ultCut || 0; return c ? Object.assign({}, r, { cost: Math.max(0, r.cost - c) }) : r; };
+// SEETHING STRIKES (Warrior): zwykły atak +2 / +3 / +4 Rage (ranga + 1)
+const rageGenB = () => { const r = ub().rageGen || 0; return r ? r + 1 : 0; };
+const abEff0 = (id, mk = me.morph && me.morph[id]) => {
   const a = ABILS[id]; if (!a || !(a.lvB || a.lvC || a.lvG || a.lvF || a.lvT || a.lvE)) return a; const l = abLvl(id).l - 1;
   const e = Object.assign({}, a, { cost: a.cost + ((a.lvC || [])[l] || 0), mul: !a.mul ? a.mul : a.lvAdd ? a.mul + ((a.lvB || [])[l] || 0) / 100 : a.mul * (1 + ((a.lvB || [])[l] || 0) / 100), gain: a.gain ? a.gain + ((a.lvG || [])[l] || 0) : a.gain,
     buffD: a.buffD ? a.buffD + ((a.lvF || [])[l] || 0) : a.buffD, buffT: a.buffT ? a.buffT + ((a.lvT || [])[l] || 0) : a.buffT,
@@ -3096,7 +3100,7 @@ function* fightGen(mob, io) {
           }
         }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
         if (UI) questEv(ab ? (ab.ult ? 'ult' : '') : 'atk');   // QUEST: zwykły atak / użycie Ultimate
-        if (!ab) { rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT + (furyT > 0 ? 2 : 0)); if (UI) setRage(rageBar); }   // RAGE: +8 za zwykły atak (+2 z Battle Fury), maks. 100
+        if (!ab) { rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT + (furyT > 0 ? 2 : 0) + (U.rageGen ? U.rageGen + 1 : 0)); if (UI) setRage(rageBar); }   // RAGE: +8 za zwykły atak (+2 z Battle Fury, +2/3/4 z Seething Strikes), maks. 100
         if (ab && ab.gain) { rageBar = Math.min(RAGE_MAX, rageBar + ab.gain); if (UI) setRage(rageBar); }   // Pommel Strike +25 (+30 na 5 poziomie)
         if (ab && ab.ult) { abCd[act] = Infinity; if (UI) refreshAb(); }   // ULTIMATE: raz na walkę
         if (ab && ab.rend && mh > 0) { rendT = ab.rendT; rendD = Math.max(1, Math.round(abDealt * ab.rend / ab.rendT)); deb.rend = { st: rendT, tip: `Loses ${rendD} health per turn<br>Turns left: ${rendT}` }; renderDebuffs(deb); }   // Skullsplitter: krwawienie

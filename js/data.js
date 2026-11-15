@@ -487,6 +487,12 @@ UPG.filter(n => ['ag', 'dj', 'lj'].includes(n.id)).forEach(n => { n.x = Math.sig
   const A = UPG.find(n => n.id === a), B = UPG.find(n => n.id === b), sg = Math.sign(A.x);
   UPG.push({ id: pre + (i + 1), from: a, fromX: [b], req: a, reqAny: [a, b], reqN: 2, vis: null, x: sg * (Math.abs(A.x) + 80), y: (A.y + B.y) / 2, k: 'b', ph: 1, n: 'Locked', d: SOON, eff: {}, max: 3 });
 }));
+// GOTOWE ŁĄCZNIKI (Warrior) – zastępują placeholdery; wymagają wymaksowania obu skilli, między którymi stoją:
+//   jd1 (Cruelty + Brutal Force) = Seething Strikes: zwykły atak generuje +2 / +3 / +4 Rage (rageGen = ranga; bonus = ranga + 1, liczony w walce w ui.js)
+//   jd3 (Rage Within + War Cry)  = Blade Control: Ultimate kosztuje 5 / 10 / 15 Rage mniej (ultCut = 5 za rangę, liczony w abEff w ui.js)
+// Ikony: assets/skills/curses/skill_seething_strikes.png, skill_blade_control.png (brak pliku → emoji)
+Object.assign(UPG.find(n => n.id === 'jd1'), { ph: 0, ic: CUR('skill_seething_strikes', '💢'), n: 'Seething Strikes', d: r => `Your basic attacks generate ${r + 1} more Rage`, eff: { rageGen: 1 }, buff: 1 });
+Object.assign(UPG.find(n => n.id === 'jd3'), { ph: 0, ic: CUR('skill_blade_control', '🗡️'), n: 'Blade Control', d: r => `Your Ultimate costs ${5 * r} less Rage`, eff: { ultCut: 5 } });
 
 // ===== ULEPSZENIA ZA UPGRADE TOKEN (zakładka Artifacts) =====
 // 5 kafelków; każdy poziom kupuje się za Upgrade Token (koszt rośnie z poziomem, cost[i] = koszt poziomu i+1).
