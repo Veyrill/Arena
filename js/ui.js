@@ -1551,9 +1551,9 @@ function dpsIco(k) {
 function setDps(by, turns) {
   const ent = Object.entries(by || {}).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
   const tot = ent.reduce((a, e) => a + e[1], 0), top = ent.length ? ent[0][1] : 1;
-  { const v = $('dps-tot'); if (v) v.textContent = turns ? fmtN(tot / turns) : '–'; }   // nagłówek panelu DPS (prawy górny róg): łączne obrażenia na turę
+  { const v = $('dps-tot'); if (v) v.innerHTML = turns ? `${fmtN(tot / turns)} <small>/ DPT</small>` : '–'; }   // nagłówek panelu DPS (prawy górny róg): łączne obrażenia na turę
   const rows = ent.map(([k, v]) => `<div class="dprow">${dpsIco(k)}<div class="dpbar"><i style="width:${v / top * 100}%"></i><span class="dpn">${k}</span>`
-    + `<span class="dpv">${fmtN(v)} ${Math.round(v / tot * 100)}%</span></div></div>`).join('');
+    + `<span class="dpv">${fmtN(v)}<span class="dpp">${Math.round(v / tot * 100)}%</span></span></div></div>`).join('');
   // PANEL DPS (zamiast dymka nad kafelkiem): szczegóły w karcie po prawej, widocznej w trakcie walki
   { const ps = $('body-dps-side'); if (ps) ps.innerHTML = `<div class="dpst">${rows || '<small>No damage yet</small>'}`
     + `</div>`; }   // bez podpisu Total

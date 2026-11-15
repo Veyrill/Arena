@@ -334,8 +334,9 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 .dpbar{position:relative;flex:1;height:22px;background:#1a1612;border-radius:2px;overflow:hidden;display:flex;align-items:center;justify-content:space-between;padding:0 6px;box-sizing:border-box}
 .dpbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#c0412f,#7d2418);z-index:0}
 .dpn,.dpv{position:relative;z-index:1;color:#fff;text-shadow:1px 1px 0 #000;white-space:nowrap}.dpv{font-weight:700;margin-left:10px}
+.dpp{display:inline-block;min-width:40px;margin-left:6px;padding:0 4px;border:1px solid #ffd36b;border-radius:3px;background:rgba(0,0,0,.35);text-align:center;font-size:12px;line-height:16px}   /* udział % źródła – w ramce */
 .dptot{margin-top:4px;font-size:13px;color:var(--mut)}
-.dpstot{font-size:18px;font-weight:800;letter-spacing:0;color:#e8793a}   /* panel DPS: łączne obrażenia na turę (prawy górny róg) */
+.dpstot{font-size:18px;font-weight:800;letter-spacing:0;color:#e8793a;cursor:help;text-transform:none}.dpstot small{font-size:12px;color:var(--mut);margin-left:2px}   /* panel DPS: łączne obrażenia na turę (prawy górny róg) */
 #log[hidden]{display:none}   /* log walki ukryty, dopóki gracz nie kliknie „Show battle log” */
 #log{height:100px;overflow:auto;font-size:12px;border:1px solid var(--bd);border-radius:8px;padding:5px;margin:8px 0}
 #log p{margin:1px 0}.crit{color:var(--ac);font-weight:700}.miss{color:var(--mut)}
@@ -467,7 +468,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 </div>
 <div class="card" id="fish-side" hidden><h2>Fish selection</h2><div id="body-fish-side"></div></div>
 <div class="card" id="act-side" hidden><h2>Act selection</h2><div id="body-act-side"></div></div>
-<div class="card" id="dps-side" hidden><h2 style="display:flex;justify-content:space-between;align-items:center;gap:12px">Damage per turn<b id="dps-tot" class="dpstot">–</b></h2><div id="body-dps-side"></div></div>
+<div class="card" id="dps-side" hidden><h2 style="display:flex;justify-content:space-between;align-items:center;gap:12px">Damage per turn<b id="dps-tot" class="dpstot" data-tip="<b>Damage per turn (DPT)</b>Average damage you deal in one of your turns in this fight, from all sources together (attacks, abilities and passive effects).">–</b></h2><div id="body-dps-side"></div></div>
 <div class="card" id="quest-side" hidden><h2 style="display:flex;justify-content:space-between;align-items:center;gap:10px">Quests<span data-questcd style="font-size:13px;color:var(--mut);letter-spacing:0;text-transform:none"></span></h2><div id="body-quest-side"></div></div>
 </div>
 <script type="module">
