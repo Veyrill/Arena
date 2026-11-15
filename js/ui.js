@@ -2047,18 +2047,21 @@ function clampPan() {
 // Lochy: bez tokena (wypadają z nich tylko special dropy). mobMats = lista do panelu ℹ️ (materiały + token tylko u przeciwników z wypraw).
 const TOKEN_DROP = 0.01;
 const mobMats = m => [...(m.mats || []), ...(ALL_LOCS.some(l => l.mobs.includes(m)) ? [['upgrade_token', TOKEN_DROP]] : [])];
+// LISTA DROPÓW (wyprawa): ikona skrzyni (assets/ui/tup_plunder.png) w prawym górnym rogu okna walki, w wierszu Back;
+// dymek po najechaniu: materiały przeciwnika i Upgrade Token z szansami (ikona, nazwa, %)
+const dropTip = m => { const L = mobMats(m);
+  return `<b>Drops</b>` + (L.length ? L.map(([k, p]) => `<span class='drrow'>${matIco(k, 32, 24)}<span class='t${MATS[k].r || 0}'>${MATS[k].name}</span><em>${+(p * 100).toFixed(1)}%</em></span>`).join('') : '<small>No drops</small>'); };
 function renderInfo(m) {
   const r = Math.round, d = der(), s = mstats(m);
   const L = live && live.mob === m ? live : null, c = L ? L.M : s;
   const B = (l, v) => `<span>${l} <b>${v}</b></span>`;
   const ch = (base, now) => r(now);   // tylko aktualna wartość (bez dopisku z różnicą)
-  const matsTxt = mobMats(m).map(([k, p]) => `${MATS[k].name} ${Math.round(p * 100)}%`).join(', ') || '—';
   // szanse na rzadkość przedmiotu z tego przeciwnika (z puli drop): np. „Common 70%, Uncommon 30%”
   const dropTxt = (m.drop && m.drop.length) ? [0, 1, 2, 3, 4].map(r => [r, m.drop.filter(x => Math.min(4, x) === r).length]).filter(([, n]) => n).map(([r, n]) => `<span class='t${r}' style='display:inline'>${RAR[r][0]} ${Math.round(n / m.drop.length * 100)}%</span>`).join(', ') : '—';
   const eCon = Math.max(1, r((s.hp / HP_MUL / ENEMY_HP - 40 - (m.sl ?? m.l) * 10) / 4));   // Vitality przeciwnika: HP bez mnożnika HP_MUL
   const hit = v => Math.max(1, r(v * (1 - armorRed(d.arm, m.l))));   // pancerz: % redukcji wg poziomu przeciwnika (maks. 50%)
   $('info').innerHTML = '<div>' + B('Strength', ch(s.str, c.str)) + B('Dexterity', r(s.dex)) + B('Vitality', eCon) +
-    B('Materials', matsTxt) + B('Item drop', dropTxt) + '</div><div>' +
+    B('Item drop', dropTxt) + '</div><div>' +   // materiały i Upgrade Token – w liście dropów (ikona skrzyni w prawym górnym rogu okna walki)
     B('Damage', ch(s.min, c.min) + '–' + ch(s.max, c.max)) + B('Armor', ch(s.arm, c.arm)) + B('Crit chance', r(s.crit) + '%') +
     B('Hits you for', ch(hit(s.min), hit(c.min)) + '–' + ch(hit(s.max), hit(c.max))) + '</div>';
 }
@@ -2543,7 +2546,9 @@ function render() {
     if (lastMob !== m && !busy) live = null;   // inny przeciwnik → panel znów pokazuje statystyki bazowe
     renderInfo(m);
     // przycisk „Show battle log” (absolutnie pod przeciwnikiem) zjeżdża pod panel ℹ️, gdy ten jest otwarty
-    { const lw = $('logwrap'); if (lw && lw.parentElement !== FIGHTBOX) FIGHTBOX.appendChild(lw); }   // DPS meter (ramka ze smokami) w prawym górnym rogu okna walki – stała pozycja, niezależna od paska i panelu ℹ️
+    { const lw = $('logwrap'); if (lw && lw.parentElement !== FIGHTBOX) FIGHTBOX.appendChild(lw); }
+    { let db = $('dropbtn'); if (!db) { db = document.createElement('div'); db.id = 'dropbtn'; db.innerHTML = `<img src="${ASSETS_DIR}/ui/tup_plunder.png" alt="" draggable="false" onerror="this.outerHTML='🎁'">`; }
+      if (db.parentElement !== FIGHTBOX) FIGHTBOX.appendChild(db); db.hidden = view !== 'exp'; db.dataset.tip = dropTip(m); }   // LISTA DROPÓW – tylko wyprawa (lochy mają własny panel dropów)   // DPS meter (ramka ze smokami) w prawym górnym rogu okna walki – stała pozycja, niezależna od paska i panelu ℹ️
     if (lastMob !== m && !busy) { setLastMob(m); setShowInfo(false); renderDebuffs({}); setDps({}, 0); const h0 = frailHp(s.hp);
       // Elemental Barrier widoczna już przed walką: niebieska końcówka paska i HP + tarcza / maks. HP (bez ikony buffa)
       const sh0 = Math.round(d.hp * (ub().barrier || 0) / 100), tot = d.hp + sh0;
