@@ -1959,7 +1959,7 @@ function renderPortrait() {
 }
 // ZAKŁADKI ODBLOKOWYWANE: Cooking – po znalezieniu pierwszego przepisu (drop, plecak albo nauczony); Tackle Upgrade – po złowieniu 15 Crucian Carp (licznik Fishpedii, jak dymek samouczka)
 const recipeFound = () => !!(fishing.recipes && Object.keys(fishing.recipes).length) || Object.keys(fishing).some(k => /^recipe[A-Z]/.test(k) && fishing[k]) || inv.some(i => i && i.isRecipe);
-const NAV_LOCK = { cook: () => !recipeFound(), upgrade: () => pediaCount('fish_carp') < TUT_CARP };
+const NAV_LOCK = { cook: () => !recipeFound(), upgrade: () => pediaCount('fish_carp') < TUT_CARP, art: () => me.lvl < QUEST_LVL };   // Artifacts – od 5 poziomu, razem z Quests
 function navLocks() {
   for (const k in NAV_LOCK) {
     const hide = NAV_LOCK[k](), b = document.querySelector(`#nav button[data-v="${k}"]`); if (b) b.hidden = hide;
@@ -2043,10 +2043,13 @@ function clampPan() {
   const mx = treeExt.x * currentZoom, my = treeExt.y * currentZoom;
   setPanX(Math.max(-mx, Math.min(mx, panX))); setPanY(Math.max(-my, Math.min(my, panY)));
 }
-// UPGRADE TOKEN Z WALKI: tylko WYPRAWY – każdy przeciwnik ma 1% szansy na Upgrade Token po wygranej, ZAMIAST przedmiotu z ekwipunku.
+// UPGRADE TOKEN Z WALKI: tylko WYPRAWY, od Necromancera – każdy taki przeciwnik ma 1% szansy na Upgrade Token po wygranej, ZAMIAST przedmiotu z ekwipunku.
 // Lochy: bez tokena (wypadają z nich tylko special dropy). mobMats = lista do panelu ℹ️ (materiały + token tylko u przeciwników z wypraw).
 const TOKEN_DROP = 0.01;
-const mobMats = m => [...(m.mats || []), ...(ALL_LOCS.some(l => l.mobs.includes(m)) ? [['upgrade_token', TOKEN_DROP]] : [])];
+// token dopiero od Necromancera (boss Graveyard) – on i wszyscy kolejni przeciwnicy wypraw (także Akty 2 i 3); wcześniejsi (Forest, szkielety) bez tokena
+const EXP_MOBS = ALL_LOCS.flatMap(l => l.mobs), TOKEN_FROM = EXP_MOBS.findIndex(x => x.n === 'Necromancer');
+const tokenMob = m => { const i = EXP_MOBS.indexOf(m); return i >= 0 && i >= TOKEN_FROM; };
+const mobMats = m => [...(m.mats || []), ...(tokenMob(m) ? [['upgrade_token', TOKEN_DROP]] : [])];
 // LISTA DROPÓW (wyprawa): ikona skrzyni (assets/ui/tup_plunder.png) w prawym górnym rogu okna walki, w wierszu Back;
 // dymek po najechaniu: materiały przeciwnika i Upgrade Token z szansami (ikona, nazwa, %)
 const dropTip = m => { const L = mobMats(m);
@@ -2101,7 +2104,7 @@ function render() {
 
   const popupContainer = $('popup-container');
   let popupHtml = '';
-  if (me.lvl >= QUEST_LVL && !me.questMsgClosed) popupHtml += `<div class="popup-msg"><span>📜 <b>Quests</b> unlocked!</span><button onclick="window.closeQuestMsg()">X</button></div>`;
+  if (me.lvl >= QUEST_LVL && !me.questMsgClosed) popupHtml += `<div class="popup-msg"><span>📜 <b>Quests</b> and <b>Artifacts</b> unlocked!</span><button onclick="window.closeQuestMsg()">X</button></div>`;
   if (me.lvl >= 10 && !dunMsgClosed) popupHtml += `<div class="popup-msg"><span>🕳️ <b>Dungeons</b> unlocked!</span><button onclick="window.closeDunMsg()">X</button></div>`;
   if (showNoRodMsg) popupHtml += `<div class="popup-msg"><span>🎣 ${hasRod() ? 'Equip a rod on equipment page 2!' : 'You do not have a fishing rod!'}</span><button onclick="window.closeNoRodMsg()">X</button></div>`;
 
@@ -3436,7 +3439,7 @@ $('go').onclick = async ev => {
       while (me.lvl < MAX_LVL && me.xp >= xpNeed(me.lvl)) { me.xp -= xpNeed(me.lvl); me.lvl++; me.str += 1; me.dex += 1; me.con += 1; me.sp++;   /* awans: +1 do każdej statystyki (było +2) */ spDot = true; say(`<b>Level up: ${me.lvl}!</b> +1 skill point`, 'crit'); }
       if (me.lvl >= 10 && !showDunUnlockMsg) setShowDunUnlockMsg(true);
       // poniżej 10 poziomu: +10 pkt proc. szansy, że łup z walki to broń (dodatkowe losowanie przed zwykłym wyborem slotu)
-      const tokDrop = view == 'exp' && Math.random() < TOKEN_DROP;   // 1%: Upgrade Token zamiast przedmiotu – tylko wyprawy (z lochów tylko special dropy)
+      const tokDrop = view == 'exp' && tokenMob(mob) && Math.random() < TOKEN_DROP;   // 1%: Upgrade Token zamiast przedmiotu – tylko wyprawy (z lochów tylko special dropy)
       if (tokDrop) { const d = MATS.upgrade_token;
         { loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: 'upgrade_token' }); say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`); } }
       else if (mob.drop && mob.drop.length) { const it = mk(mob.drop, me.lvl < 10 && Math.random() < 0.10 ? 'weapon' : undefined, undefined, actOfMob(mob)); it.fresh = 1; if (view == 'exp') loot.push(it); else inv.push(it); say(`Loot: <b class="t${it.r}">${it.name}</b>`); }   // wyprawa: do plecaka dopiero po Collect   // Akty 2 i 3: na razie bez dropów
