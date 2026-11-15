@@ -2543,7 +2543,7 @@ function render() {
       const fpEl = $('fp'), hk = me.cls || 'warrior'; if (fpEl && fpEl.dataset.hero !== hk) { fpEl.dataset.hero = hk; fpEl.innerHTML = heroIco(128); }   // postać gracza (raz – nie miga przy odświeżaniu)
       fmEl.classList.toggle('boss', isBoss(m));
     }
-    $('nm').innerHTML = `${m.n} <button class="ib" data-a="info">ℹ️</button>${lvlTag(m, isBoss(m))}`;
+    $('nm').innerHTML = `${m.n}${lvlTag(m, isBoss(m))}`;   // statystyki przeciwnika – ikona „i” w prawym górnym rogu okna walki (obok listy dropów)
     const s = mstats(m);
     $('info').style.display = showInfo ? 'flex' : 'none';
     if (lastMob !== m && !busy) live = null;   // inny przeciwnik → panel znów pokazuje statystyki bazowe
@@ -2551,7 +2551,10 @@ function render() {
     // przycisk „Show battle log” (absolutnie pod przeciwnikiem) zjeżdża pod panel ℹ️, gdy ten jest otwarty
     { const lw = $('logwrap'); if (lw && lw.parentElement !== FIGHTBOX) FIGHTBOX.appendChild(lw); }
     { let db = $('dropbtn'); if (!db) { db = document.createElement('div'); db.id = 'dropbtn'; db.innerHTML = `<img src="${ASSETS_DIR}/ui/tup_plunder.png" alt="" draggable="false" onerror="this.outerHTML='🎁'">`; }
-      if (db.parentElement !== FIGHTBOX) FIGHTBOX.appendChild(db); db.hidden = view !== 'exp'; db.dataset.tip = dropTip(m); }   // LISTA DROPÓW – tylko wyprawa (lochy mają własny panel dropów)   // DPS meter (ramka ze smokami) w prawym górnym rogu okna walki – stała pozycja, niezależna od paska i panelu ℹ️
+      if (db.parentElement !== FIGHTBOX) FIGHTBOX.appendChild(db); db.hidden = view !== 'exp'; db.dataset.tip = dropTip(m); }
+    // STATYSTYKI PRZECIWNIKA: ikona „i” (assets/ui/ui_info.png, jak w Fishing) na lewo od listy dropów – klik pokazuje / chowa panel statystyk
+    { let ib = $('infobtn'); if (!ib) { ib = document.createElement('button'); ib.id = 'infobtn'; ib.dataset.a = 'info'; ib.dataset.tip = '<b>Enemy stats</b>'; ib.innerHTML = uiIco('ui_info', 'ℹ️', 32); }
+      if (ib.parentElement !== FIGHTBOX) FIGHTBOX.appendChild(ib); ib.classList.toggle('on', !!showInfo); ib.classList.toggle('solo', view !== 'exp'); }   // LISTA DROPÓW – tylko wyprawa (lochy mają własny panel dropów)   // DPS meter (ramka ze smokami) w prawym górnym rogu okna walki – stała pozycja, niezależna od paska i panelu ℹ️
     if (lastMob !== m && !busy) { setLastMob(m); setShowInfo(false); renderDebuffs({}); setDps({}, 0); const h0 = frailHp(s.hp);
       // Elemental Barrier widoczna już przed walką: niebieska końcówka paska i HP + tarcza / maks. HP (bez ikony buffa)
       const sh0 = Math.round(d.hp * (ub().barrier || 0) / 100), tot = d.hp + sh0;
