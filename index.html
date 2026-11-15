@@ -41,7 +41,8 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 .tupl{font-size:12px;font-weight:800;color:var(--ac)}
 .tupd{font-size:11px;color:var(--mut);min-height:2.6em}
 .tupe{font-size:13px;font-weight:800;white-space:nowrap}.tupe span{color:var(--mut);font-weight:400}.tupe em{font-style:normal;color:#2e8b3d}
-.tupbtn{width:100%;margin-top:auto;padding:6px 0}
+.tupbtn{width:100%;margin-top:auto;padding:4px 0 6px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:15px}.tupbtn img{display:block}   /* koszt: liczba + ikona Upgrade Token (24 px) */
+.tupbtn:disabled img{filter:grayscale(1) brightness(.85)}
 .qbar{height:6px;background:var(--bd);border-radius:3px;overflow:hidden;margin:3px 0}.qbar i{display:block;height:100%;background:var(--ac)}
 #act-side .fish-list{gap:6px}
 @media(max-width:820px){.wrap{grid-template-columns:1fr}#fish-side,#act-side,#dps-side,#quest-side{position:static;width:auto;margin-left:0}}

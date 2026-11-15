@@ -1582,7 +1582,7 @@ function bestBeatenMob() {
 }
 
 // ===== ULEPSZENIA ZA UPGRADE TOKEN (zakładka Artifacts) =====
-// 5 kafelków w rzędzie: nazwa, poziom, efekt teraz → po ulepszeniu, przycisk z kosztem („1T”). Kupno zabiera tokeny z plecaka.
+// 5 kafelków w rzędzie: nazwa, poziom, efekt teraz → po ulepszeniu, przycisk z kosztem (liczba + ikona Upgrade Token). Kupno zabiera tokeny z plecaka.
 // Zapis: me.tup = { plunder, lore, bounty, couriers, medic: poziom }. Efekty:
 //   Plunder +5% złota z wypraw / poz., Battle Lore +5% XP z wypraw / poz., Bounty Board +1 quest w puli / poz.,
 //   Swift Couriers −3 min odnowienia questów / poz., Dungeon Explorer −10% przerwy po walce w lochu / poz.
@@ -1596,7 +1596,7 @@ function renderArt() {
   const tiles = TOKEN_UPG.map(u => { const l = tupLvl(u.k), mx = l >= u.max, c = mx ? 0 : u.cost[l];
     return `<div class="tupc${mx ? ' max' : ''}"><div class="tupico"><img src="${ASSETS_DIR}/${u.img}" alt="" onerror="this.remove()"></div><b class="tupn">${u.n}</b><span class="tupl">${l} / ${u.max}</span>`
       + `<div class="tupd">${u.d}</div><div class="tupe">${l ? tupFmt(u, l) : '0' + u.unit}${mx ? '' : ` <span>→</span> <em>${tupFmt(u, l + 1)}</em>`}</div>`
-      + `<button class="bkac tupbtn" onclick="window.tupBuy('${u.k}')"${mx || tok < c || busy ? ' disabled' : ''}>${mx ? 'MAX' : c + 'T'}</button></div>`; }).join('');
+      + `<button class="bkac tupbtn" onclick="window.tupBuy('${u.k}')"${mx || tok < c || busy ? ' disabled' : ''}>${mx ? 'MAX' : c + matIco('upgrade_token', 24, 18)}</button></div>`; }).join('');
   body.innerHTML = `<div class="tuptok">${matIco('upgrade_token', 24, 20)}<b>${tok}</b> Upgrade Tokens</div><div class="tuprow">${tiles}</div>`;
 }
 // kupno poziomu: zabiera koszt w Upgrade Token; Bounty Board od razu dokłada quest do puli, Swift Couriers skraca obecny licznik
