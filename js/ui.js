@@ -1248,7 +1248,17 @@ const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = 
 // IKONA UMIEJĘTNOŚCI: obrazek z assets/skills/abilities/<img>.png (brak pliku albo brak img → emoji ico); morph używa ikony bazowej
 const abIco = (a, cls) => a.img ? `<span class="${cls} img"><img src="${ASSETS_DIR}/skills/abilities/${a.img}.png" alt="" onerror="this.parentNode.classList.remove('img');this.outerHTML='${a.ico}'"></span>` : `<span class="${cls}">${a.ico}</span>`;
 // BLADE CONTROL (Warrior): Ultimate tańszy o 5 / 10 / 15 Rage – nakładane na koszt z poziomu umiejętności / morpha
-const abEff = (id, mk) => { const r = abEff0(id, mk); if (!r || !r.ult) return r; const c = ub().ultCut || 0; return c ? Object.assign({}, r, { cost: Math.max(0, r.cost - c) }) : r; };
+// HEAVY HANDS (Warrior): Overhead Blow i morphy tańsze o 5 / 10 / 15 Rage; REINFORCEMENTS: Call to Arms i morphy trwają 1 / 2 / 3 tury dłużej
+// (odnowienie Call to Arms = czas trwania buffa, więc rośnie razem z nim; opis „For N turns” poprawiany na nową liczbę tur)
+const abEff = (id, mk) => {
+  const r = abEff0(id, mk); if (!r) return r;
+  const U = (r.ult || id === 'overhead' || id === 'fury') ? ub() : null; if (!U) return r;
+  const cut = r.ult ? U.ultCut || 0 : id === 'overhead' ? U.ohCut || 0 : 0, ext = id === 'fury' ? U.furyExt || 0 : 0;
+  if (!cut && !ext) return r;
+  const o = Object.assign({}, r, { cost: Math.max(0, r.cost - cut) });
+  if (ext && o.buffT) { o.buffT += ext; if (o.cdBuff) o.cd = o.buffT; o.d = String(o.d).replace(/For \d+ turns/, `For ${o.buffT} turns`); }
+  return o;
+};
 // SEETHING STRIKES (Warrior): zwykły atak +2 / +3 / +4 Rage (ranga + 1)
 const rageGenB = () => { const r = ub().rageGen || 0; return r ? r + 1 : 0; };
 const abEff0 = (id, mk = me.morph && me.morph[id]) => {

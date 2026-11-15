@@ -490,9 +490,13 @@ UPG.filter(n => ['ag', 'dj', 'lj'].includes(n.id)).forEach(n => { n.x = Math.sig
 // GOTOWE ŁĄCZNIKI (Warrior) – zastępują placeholdery; wymagają wymaksowania obu skilli, między którymi stoją:
 //   jd1 (Cruelty + Brutal Force) = Seething Strikes: zwykły atak generuje +2 / +3 / +4 Rage (rageGen = ranga; bonus = ranga + 1, liczony w walce w ui.js)
 //   jd3 (Rage Within + War Cry)  = Blade Control: Ultimate kosztuje 5 / 10 / 15 Rage mniej (ultCut = 5 za rangę, liczony w abEff w ui.js)
-// Ikony: assets/skills/curses/skill_seething_strikes.png, skill_blade_control.png (brak pliku → emoji)
+//   jd2 (Brutal Force + Headstrong) = Heavy Hands: Overhead Blow i jego morphy kosztują 5 / 10 / 15 Rage mniej (ohCut)
+//   jd4 (War Cry + Thick Skin)      = Reinforcements: Call to Arms i jego morphy trwają 1 / 2 / 3 tury dłużej (furyExt; odnowienie = czas trwania, więc też rośnie)
+// Ikony: assets/skills/curses/skill_seething_strikes.png, skill_blade_control.png, skill_heavy_hands.png, skill_reinforcements.png (brak pliku → emoji)
 Object.assign(UPG.find(n => n.id === 'jd1'), { ph: 0, ic: CUR('skill_seething_strikes', '💢'), n: 'Seething Strikes', d: r => `Your basic attacks generate ${r + 1} more Rage`, eff: { rageGen: 1 }, buff: 1 });
 Object.assign(UPG.find(n => n.id === 'jd3'), { ph: 0, ic: CUR('skill_blade_control', '🗡️'), n: 'Blade Control', d: r => `Your Ultimate costs ${5 * r} less Rage`, eff: { ultCut: 5 } });
+Object.assign(UPG.find(n => n.id === 'jd2'), { ph: 0, ic: CUR('skill_heavy_hands', '🔨'), n: 'Heavy Hands', d: r => `Overhead Blow and its morphs cost ${5 * r} less Rage`, eff: { ohCut: 5 } });
+Object.assign(UPG.find(n => n.id === 'jd4'), { ph: 0, ic: CUR('skill_reinforcements', '🚩'), n: 'Reinforcements', d: r => `Call to Arms and its morphs last ${r} more turn${r > 1 ? 's' : ''}`, eff: { furyExt: 1 }, buff: 1 });
 
 // ===== ULEPSZENIA ZA UPGRADE TOKEN (zakładka Artifacts) =====
 // 5 kafelków; każdy poziom kupuje się za Upgrade Token (koszt rośnie z poziomem, cost[i] = koszt poziomu i+1).

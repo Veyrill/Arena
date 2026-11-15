@@ -191,7 +191,8 @@ export function ub() {
   // water = % maks. HP leczenia przy 5 stosach Water Energy (Tidal Renewal, 2% za rangę); tide = % pancerza z Soothing Tide (40, 1/1); critDown = −% krytyka wroga (Mist Veil, 3 za rangę)
   // elemMaster = Master of All Elements (1/1): Incantations przy 4 stosach zamiast 5
   // rageGen = ranga Seething Strikes (zwykły atak +ranga+1 Rage), ultCut = o ile mniej Rage kosztuje Ultimate (Blade Control, 5 za rangę)
-  const t = { str: 0, dex: 0, con: 0, ecrit: 0, edodge: 0, edmg: 0, earm: 0, efear: 0, esign: 0, efrail: 0, sunder: 0, sunderCap: 0, hpPct: 0, mark: 0, rend: 0, dexPct: 0, agony: 0, firstDmg: 0, strEff: 0, warcry: 0, critBonus: 0, endure: 0, vitEff: 0, armPct: 0, critEff: 0, rage: 0, fervor: 0, barrier: 0, bolt: 0, boltGrow: 0, fire: 0, burn: 0, water: 0, tide: 0, critDown: 0, elemMaster: 0, exhaust: 0, lacerate: 0, expose: 0, reap: 0, fester: 0, doom: 0, rageGen: 0, ultCut: 0 };
+  // ohCut = o ile mniej Rage kosztuje Overhead Blow i morphy (Heavy Hands, 5 za rangę), furyExt = o ile tur dłużej trwa Call to Arms i morphy (Reinforcements)
+  const t = { str: 0, dex: 0, con: 0, ecrit: 0, edodge: 0, edmg: 0, earm: 0, efear: 0, esign: 0, efrail: 0, sunder: 0, sunderCap: 0, hpPct: 0, mark: 0, rend: 0, dexPct: 0, agony: 0, firstDmg: 0, strEff: 0, warcry: 0, critBonus: 0, endure: 0, vitEff: 0, armPct: 0, critEff: 0, rage: 0, fervor: 0, barrier: 0, bolt: 0, boltGrow: 0, fire: 0, burn: 0, water: 0, tide: 0, critDown: 0, elemMaster: 0, exhaust: 0, lacerate: 0, expose: 0, reap: 0, fester: 0, doom: 0, rageGen: 0, ultCut: 0, ohCut: 0, furyExt: 0 };
   UPG.forEach(n => {
     if (upgTree.nodes[n.id] && n.eff && upgBranch(n) === (me.cls || 'warrior')) {   // liczą się tylko nody gałęzi Twojej klasy
       // nodes[id] = kupiona ranga (1..max); efekt jednej rangi × ranga
