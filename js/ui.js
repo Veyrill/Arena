@@ -1248,7 +1248,7 @@ const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = 
 // IKONA UMIEJĘTNOŚCI: obrazek z assets/skills/abilities/<img>.png (brak pliku albo brak img → emoji ico); morph używa ikony bazowej
 const abIco = (a, cls) => a.img ? `<span class="${cls} img"><img src="${ASSETS_DIR}/skills/abilities/${a.img}.png" alt="" onerror="this.parentNode.classList.remove('img');this.outerHTML='${a.ico}'"></span>` : `<span class="${cls}">${a.ico}</span>`;
 // BLADE CONTROL (Warrior): Ultimate tańszy o 5 / 10 / 15 Rage – nakładane na koszt z poziomu umiejętności / morpha
-// HEAVY HANDS (Warrior): Overhead Blow i morphy tańsze o 5 / 10 / 15 Rage; REINFORCEMENTS: Call to Arms i morphy trwają 1 / 2 / 3 tury dłużej
+// STEADY SWING (Warrior): Overhead Blow i morphy tańsze o 5 / 10 / 15 Rage; REINFORCEMENTS: Call to Arms i morphy trwają 1 / 2 / 3 tury dłużej
 // (odnowienie Call to Arms = czas trwania buffa, więc rośnie razem z nim; opis „For N turns” poprawiany na nową liczbę tur)
 const abEff = (id, mk) => {
   const r = abEff0(id, mk); if (!r) return r;
@@ -1259,7 +1259,7 @@ const abEff = (id, mk) => {
   if (ext && o.buffT) { o.buffT += ext; if (o.cdBuff) o.cd = o.buffT; o.d = String(o.d).replace(/For \d+ turns/, `For ${o.buffT} turns`); }
   return o;
 };
-// SEETHING STRIKES (Warrior): zwykły atak +2 / +3 / +4 Rage (ranga + 1)
+// MOUNTING FURY (Warrior): zwykły atak +2 / +3 / +4 Rage (ranga + 1)
 const rageGenB = () => { const r = ub().rageGen || 0; return r ? r + 1 : 0; };
 const abEff0 = (id, mk = me.morph && me.morph[id]) => {
   const a = ABILS[id]; if (!a || !(a.lvB || a.lvC || a.lvG || a.lvF || a.lvT || a.lvE)) return a; const l = abLvl(id).l - 1;
@@ -3110,7 +3110,7 @@ function* fightGen(mob, io) {
           }
         }   // fp = Twoja postać wyskakuje do ataku; liczba obrażeń nad wrogiem
         if (UI) questEv(ab ? (ab.ult ? 'ult' : '') : 'atk');   // QUEST: zwykły atak / użycie Ultimate
-        if (!ab) { rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT + (furyT > 0 ? 2 : 0) + (U.rageGen ? U.rageGen + 1 : 0)); if (UI) setRage(rageBar); }   // RAGE: +8 za zwykły atak (+2 z Battle Fury, +2/3/4 z Seething Strikes), maks. 100
+        if (!ab) { rageBar = Math.min(RAGE_MAX, rageBar + RAGE_HIT + (furyT > 0 ? 2 : 0) + (U.rageGen ? U.rageGen + 1 : 0)); if (UI) setRage(rageBar); }   // RAGE: +8 za zwykły atak (+2 z Battle Fury, +2/3/4 z Mounting Fury), maks. 100
         if (ab && ab.gain) { rageBar = Math.min(RAGE_MAX, rageBar + ab.gain); if (UI) setRage(rageBar); }   // Pommel Strike +25 (+30 na 5 poziomie)
         if (ab && ab.ult) { abCd[act] = Infinity; if (UI) refreshAb(); }   // ULTIMATE: raz na walkę
         if (ab && ab.rend && mh > 0) { rendT = ab.rendT; rendD = Math.max(1, Math.round(abDealt * ab.rend / ab.rendT)); deb.rend = { st: rendT, tip: `Loses ${rendD} health per turn<br>Turns left: ${rendT}` }; renderDebuffs(deb); }   // Skullsplitter: krwawienie
