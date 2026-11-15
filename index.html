@@ -326,11 +326,6 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 /* odznaka: ikonka wykresu + liczba + „dmg / turn”; po najechaniu podnosi się i świeci (zaprasza do sprawdzenia szczegółów) */
 /* DPS METER: sama liczba w ramce ze smokami (bez napisu DMG / TURN) */
 /* DPS METER: ramka ze smokami (assets/ui/ui_dps_frame.png, 59×30 pokazana ×2) + liczba zwykłą czcionką gry, pogrubiona */
-#logwrap{position:absolute;top:4px;right:10px;z-index:5;pointer-events:none}   /* DPS meter: prawy górny róg okna walki */
-#dunfight-slot #logwrap{top:-66px;right:0}   /* loch: okno walki bez ramki – licznik na wysokości wiersza Back */
-#dpsm{position:relative;display:block;width:118px;height:60px;background:url(assets/ui/ui_dps_frame.png) 0 0/118px 60px no-repeat;image-rendering:pixelated}
-#dpsm b{position:absolute;left:0;right:0;bottom:15px;text-align:center;font:800 18px/1 'Cascadia Mono','Cascadia Code',Consolas,monospace;color:#ffd36b;white-space:nowrap;-webkit-font-smoothing:none;text-shadow:2px 2px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000}
-#dpsm .dpln{display:none}
 #tip:has(.dpst){max-width:none}
 .dpst{display:flex;flex-direction:column;gap:3px;width:380px;margin-top:4px;font-size:14px}
 .dprow{display:flex;align-items:center;gap:6px}
@@ -340,6 +335,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 .dpbar i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(#c0412f,#7d2418);z-index:0}
 .dpn,.dpv{position:relative;z-index:1;color:#fff;text-shadow:1px 1px 0 #000;white-space:nowrap}.dpv{font-weight:700;margin-left:10px}
 .dptot{margin-top:4px;font-size:13px;color:var(--mut)}
+.dpstot{font-size:18px;font-weight:800;letter-spacing:0;color:#e8793a}   /* panel DPS: łączne obrażenia na turę (prawy górny róg) */
 #log[hidden]{display:none}   /* log walki ukryty, dopóki gracz nie kliknie „Show battle log” */
 #log{height:100px;overflow:auto;font-size:12px;border:1px solid var(--bd);border-radius:8px;padding:5px;margin:8px 0}
 #log p{margin:1px 0}.crit{color:var(--ac);font-weight:700}.miss{color:var(--mut)}
@@ -463,7 +459,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 <div class="row" id="fbackrow" style="display:none"><button data-a="fback">← Back</button><b id="fres"></b></div>
 <div class="arena"><div><div class="fig" id="fp">🧙</div><b id="pname">You</b><div class="hpw" tabindex="0"><div class="bar" style="position:relative"><i class="hpg" id="hg1" style="width:100%"></i><i id="hp1" style="width:100%"></i><i id="sh1"></i><span class="hpv" id="hpv1"></span><span class="hpp" id="hpp1"></span></div><small id="ht1" class="hptip"></small></div><div class="bar rage" id="rgw"><i id="rg1" style="width:0%"></i><span class="hpp" id="rgp1">0</span></div></div>
 <div style="font-size:18px">VS</div>
-<div style="position:relative"><div class="fig" id="fm"></div><b id="nm"></b><div class="hpw" tabindex="0"><div class="bar"><i class="hpg" id="hg2" style="width:100%"></i><i id="hp2" style="width:100%"></i><span class="hpv" id="hpv2"></span><span class="hpp" id="hpp2"></span></div><small id="ht2" class="hptip"></small></div><div class="bar rage" style="visibility:hidden" aria-hidden="true"></div><div id="logwrap"><span id="dpsm"><b id="dpsv">–</b><i class="dpln"></i></span></div></div></div>
+<div style="position:relative"><div class="fig" id="fm"></div><b id="nm"></b><div class="hpw" tabindex="0"><div class="bar"><i class="hpg" id="hg2" style="width:100%"></i><i id="hp2" style="width:100%"></i><span class="hpv" id="hpv2"></span><span class="hpp" id="hpp2"></span></div><small id="ht2" class="hptip"></small></div><div class="bar rage" style="visibility:hidden" aria-hidden="true"></div></div></div>
 <div class="skillbar" id="skillbar"><div class="sk" data-key="1"><span class="kb">1</span></div><div class="sk" data-key="2"><span class="kb">2</span></div><div class="sk" data-key="3"><span class="kb">3</span></div><div class="sk" data-key="4"><span class="kb">4</span></div><div class="sk" data-key="5"><span class="kb">5</span></div><div class="sk" data-key="Q"><span class="kb">Q</span></div><div class="sk" data-key="W"><span class="kb">W</span></div><div class="sk" data-key="E"><span class="kb">E</span></div><div class="sk" data-key="R"><span class="kb">R</span></div><div class="sk" data-key="Tab"><span class="kb">Tab</span></div></div>
 <div class="info" id="info"></div>
 <div id="loot" hidden></div><button id="go">Fight!</button><div id="log" hidden></div></div>
@@ -471,7 +467,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 </div>
 <div class="card" id="fish-side" hidden><h2>Fish selection</h2><div id="body-fish-side"></div></div>
 <div class="card" id="act-side" hidden><h2>Act selection</h2><div id="body-act-side"></div></div>
-<div class="card" id="dps-side" hidden><h2>Damage per turn</h2><div id="body-dps-side"></div></div>
+<div class="card" id="dps-side" hidden><h2 style="display:flex;justify-content:space-between;align-items:center;gap:12px">Damage per turn<b id="dps-tot" class="dpstot">–</b></h2><div id="body-dps-side"></div></div>
 <div class="card" id="quest-side" hidden><h2 style="display:flex;justify-content:space-between;align-items:center;gap:10px">Quests<span data-questcd style="font-size:13px;color:var(--mut);letter-spacing:0;text-transform:none"></span></h2><div id="body-quest-side"></div></div>
 </div>
 <script type="module">

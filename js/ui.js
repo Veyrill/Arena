@@ -1546,14 +1546,14 @@ function dpsIco(k) {
   const d = DEBUFFS[DPS_PAS[k]];
   return box(d ? `<img src="${ASSETS_DIR}/skills/curses/${d[0]}.png" alt="" onerror="this.outerHTML='${d[2] || '✦'}'">` : '✦');
 }
-// wiersz jak w meterach z MMO: ikona | pasek (długość względem najlepszego źródła) z nazwą | obrażenia na turę (suma) udział %
+// wiersz jak w meterach z MMO: ikona | pasek (długość względem najlepszego źródła) z nazwą | suma obrażeń w walce, udział %
+// (licznik DMG / TURN w oknie walki usunięty – łączne obrażenia na turę są w nagłówku panelu DPS)
 function setDps(by, turns) {
-  const el = $('dpsm'); if (!el) return;
   const ent = Object.entries(by || {}).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
   const tot = ent.reduce((a, e) => a + e[1], 0), top = ent.length ? ent[0][1] : 1;
-  { const v = $('dpsv'); if (v) { v.textContent = turns ? fmtN(tot / turns).replace(/,/g, '') : '–'; v.style.fontSize = v.textContent.length > 6 ? '14px' : ''; } }   // kafelek: liczba bez przecinka (1284, nie 1,284); 7+ znaków → mniejsza liczba, żeby zmieściło się w ramce
+  { const v = $('dps-tot'); if (v) v.textContent = turns ? fmtN(tot / turns) : '–'; }   // nagłówek panelu DPS (prawy górny róg): łączne obrażenia na turę
   const rows = ent.map(([k, v]) => `<div class="dprow">${dpsIco(k)}<div class="dpbar"><i style="width:${v / top * 100}%"></i><span class="dpn">${k}</span>`
-    + `<span class="dpv">${fmtN(v / turns)} (${fmtN(v)}) ${Math.round(v / tot * 100)}%</span></div></div>`).join('');
+    + `<span class="dpv">${fmtN(v)} ${Math.round(v / tot * 100)}%</span></div></div>`).join('');
   // PANEL DPS (zamiast dymka nad kafelkiem): szczegóły w karcie po prawej, widocznej w trakcie walki
   { const ps = $('body-dps-side'); if (ps) ps.innerHTML = `<div class="dpst">${rows || '<small>No damage yet</small>'}`
     + `</div>`; }   // bez podpisu Total
