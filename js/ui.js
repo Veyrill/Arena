@@ -2043,12 +2043,16 @@ function clampPan() {
   const mx = treeExt.x * currentZoom, my = treeExt.y * currentZoom;
   setPanX(Math.max(-mx, Math.min(mx, panX))); setPanY(Math.max(-my, Math.min(my, panY)));
 }
+// UPGRADE TOKEN Z WALKI: każdy przeciwnik (wyprawa i lochy) ma 1% szansy na Upgrade Token po wygranej – ZAMIAST przedmiotu z ekwipunku
+// (przeciwnicy lochów nie dają losowego ekwipunku – u nich token to osobny 1%). mobMats = lista do panelu ℹ️ (materiały + token).
+const TOKEN_DROP = 0.01;
+const mobMats = m => [...(m.mats || []), ['upgrade_token', TOKEN_DROP]];
 function renderInfo(m) {
   const r = Math.round, d = der(), s = mstats(m);
   const L = live && live.mob === m ? live : null, c = L ? L.M : s;
   const B = (l, v) => `<span>${l} <b>${v}</b></span>`;
   const ch = (base, now) => r(now);   // tylko aktualna wartość (bez dopisku z różnicą)
-  const matsTxt = (m.mats || []).map(([k, p]) => `${MATS[k].name} ${Math.round(p * 100)}%`).join(', ') || '—';
+  const matsTxt = mobMats(m).map(([k, p]) => `${MATS[k].name} ${Math.round(p * 100)}%`).join(', ') || '—';
   // szanse na rzadkość przedmiotu z tego przeciwnika (z puli drop): np. „Common 70%, Uncommon 30%”
   const dropTxt = (m.drop && m.drop.length) ? [0, 1, 2, 3, 4].map(r => [r, m.drop.filter(x => Math.min(4, x) === r).length]).filter(([, n]) => n).map(([r, n]) => `<span class='t${r}' style='display:inline'>${RAR[r][0]} ${Math.round(n / m.drop.length * 100)}%</span>`).join(', ') : '—';
   const eCon = Math.max(1, r((s.hp / HP_MUL / ENEMY_HP - 40 - (m.sl ?? m.l) * 10) / 4));   // Vitality przeciwnika: HP bez mnożnika HP_MUL
@@ -3427,8 +3431,11 @@ $('go').onclick = async ev => {
       while (me.lvl < MAX_LVL && me.xp >= xpNeed(me.lvl)) { me.xp -= xpNeed(me.lvl); me.lvl++; me.str += 1; me.dex += 1; me.con += 1; me.sp++;   /* awans: +1 do każdej statystyki (było +2) */ spDot = true; say(`<b>Level up: ${me.lvl}!</b> +1 skill point`, 'crit'); }
       if (me.lvl >= 10 && !showDunUnlockMsg) setShowDunUnlockMsg(true);
       // poniżej 10 poziomu: +10 pkt proc. szansy, że łup z walki to broń (dodatkowe losowanie przed zwykłym wyborem slotu)
-      if (mob.drop && mob.drop.length) { const it = mk(mob.drop, me.lvl < 10 && Math.random() < 0.10 ? 'weapon' : undefined, undefined, actOfMob(mob)); it.fresh = 1; if (view == 'exp') loot.push(it); else inv.push(it); say(`Loot: <b class="t${it.r}">${it.name}</b>`); }   // wyprawa: do plecaka dopiero po Collect   // Akty 2 i 3: na razie bez dropów
-      for (const [k, ch] of mob.mats || []) if (Math.random() < ch) {
+      const tokDrop = Math.random() < TOKEN_DROP;   // 1%: Upgrade Token zamiast przedmiotu
+      if (tokDrop) { const d = MATS.upgrade_token;
+        if (view != 'exp') giveMat('upgrade_token'); else { loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: 'upgrade_token' }); say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`); } }
+      else if (mob.drop && mob.drop.length) { const it = mk(mob.drop, me.lvl < 10 && Math.random() < 0.10 ? 'weapon' : undefined, undefined, actOfMob(mob)); it.fresh = 1; if (view == 'exp') loot.push(it); else inv.push(it); say(`Loot: <b class="t${it.r}">${it.name}</b>`); }   // wyprawa: do plecaka dopiero po Collect   // Akty 2 i 3: na razie bez dropów
+      for (const [k, ch] of (mob.mats || [])) if (Math.random() < ch) {   // materiały przeciwnika (Upgrade Token losowany wyżej, zamiast przedmiotu)
         if (view != 'exp') { giveMat(k); continue; }
         const d = MATS[k]; loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: k });   // _mk: klucz materiału (po Collect → giveMat)
         say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`);
