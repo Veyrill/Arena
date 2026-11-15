@@ -1959,7 +1959,7 @@ function renderPortrait() {
 }
 // ZAKŁADKI ODBLOKOWYWANE: Cooking – po znalezieniu pierwszego przepisu (drop, plecak albo nauczony); Tackle Upgrade – po złowieniu 15 Crucian Carp (licznik Fishpedii, jak dymek samouczka)
 const recipeFound = () => !!(fishing.recipes && Object.keys(fishing.recipes).length) || Object.keys(fishing).some(k => /^recipe[A-Z]/.test(k) && fishing[k]) || inv.some(i => i && i.isRecipe);
-const NAV_LOCK = { cook: () => !recipeFound(), upgrade: () => pediaCount('fish_carp') < TUT_CARP, art: () => me.lvl < QUEST_LVL };   // Artifacts – od 5 poziomu, razem z Quests
+const NAV_LOCK = { cook: () => !recipeFound(), upgrade: () => pediaCount('fish_carp') < TUT_CARP, art: () => me.lvl < QUEST_LVL, dun: () => me.lvl < 10 && !UNLOCK() };   // Artifacts – od 5 poziomu, razem z Quests; Dungeons – od 10 poziomu (DEV „odblokuj wszystko” pokazuje zawsze)
 function navLocks() {
   for (const k in NAV_LOCK) {
     const hide = NAV_LOCK[k](), b = document.querySelector(`#nav button[data-v="${k}"]`); if (b) b.hidden = hide;
