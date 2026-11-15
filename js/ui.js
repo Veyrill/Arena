@@ -3270,13 +3270,13 @@ function diffColor(mob) {
   return w >= 99 && h > 0.8 ? 'var(--mut)' : w >= 80 ? '#2fae3f' : w >= 40 ? '#d49a00' : '#e53935';
 }
 // BONUSY PRZECIWNIKA: 2 kwadraty nad kafelkiem każdego przeciwnika (wyprawa i lochy). Każda wygrana z nim ma 10% szansy
-// na odblokowanie każdego zablokowanego kwadratu: XP = +50% XP z tego przeciwnika, Gold = +50% złota. Zapis: me.mobB[nazwa] = { x: 1, g: 1 }.
+// na odblokowanie każdego zablokowanego kwadratu (ikony zawsze widoczne, zablokowane – wyszarzone): XP (orb XP) = +50% XP z tego przeciwnika, Gold = +50% złota. Zapis: me.mobB[nazwa] = { x: 1, g: 1 }.
 const MOB_B_CH = 0.10, MOB_B_PCT = 50;
 const mobB = m => (me.mobB && me.mobB[m.n]) || {};
 const mobXp = m => Math.round(xpOf(m) * (1 + (mobB(m).x ? MOB_B_PCT / 100 : 0)));   // XP pokazywane na kafelku (z bonusem)
 const mobBTag = m => { const b = mobB(m), lk = `<br><span style='color:var(--mut)'>Locked – each victory has a ${MOB_B_CH * 100}% chance to unlock it</span>`;
-  return `<span class="mbon"><i class="mbq mbx${b.x ? ' on' : ''}" data-tip="<b>XP bonus</b>+${MOB_B_PCT}% XP from ${m.n}${b.x ? '' : lk}">${b.x ? 'XP' : ''}</i>`
-    + `<i class="mbq mbg${b.g ? ' on' : ''}" data-tip="<b>Gold bonus</b>+${MOB_B_PCT}% gold from ${m.n}${b.g ? '' : lk}">${b.g ? goldIco(12) : ''}</i></span>`; };
+  return `<span class="mbon"><i class="mbq mbx${b.x ? ' on' : ''}" data-tip="<b>XP bonus</b>+${MOB_B_PCT}% XP from ${m.n}${b.x ? '' : lk}"><i class="xporb"></i></i>`
+    + `<i class="mbq mbg${b.g ? ' on' : ''}" data-tip="<b>Gold bonus</b>+${MOB_B_PCT}% gold from ${m.n}${b.g ? '' : lk}">${goldIco(12)}</i></span>`; };
 const winTag = m => DEV ? (() => { const w = winChance(m); return `<span class="mwin" style="color:${w >= 80 ? '#3fdc3f' : w >= 40 ? '#e6a700' : '#e53935'}">${w}%</span>`; })() : '';
 
 // LICZBY OBRAŻEŃ: nad trafioną postacią wylatuje „37” (bez minusa) i znika w górę. Twoje ciosy – białe, ciosy wroga w Ciebie – czerwone,
