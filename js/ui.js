@@ -1588,15 +1588,28 @@ function dpsIco(k, wpx = 32) {   // wpx: rozmiar ikony broni (16 px ×2 = 32 px 
 // pasywki: Bleed, Lightning Bolt, Fire Energy, Burning, Death Sentence; Skullsplitter → Bleeding); puste miejsca = ciemne wiersze
 const dpsRowsMax = () => { const U = ub(), bar = Object.values(me.bar || {}).filter(id => me.abils && me.abils[id] && ABILS[id] && myAb(id));
   return Math.max(3, 1 + bar.filter(id => !ABILS[id].free).length + bar.filter(id => ABILS[id].rend).length + ['lacerate', 'bolt', 'fire', 'burn', 'doom'].filter(k => U[k]).length); };
-// HISTORIA RUCHÓW nad listą obrażeń: 5 ostatnich Twoich ruchów (ikona, strzałka ›, obrażenia pod ikoną; krytyk – złota liczba; umiejętność bez obrażeń – „–”)
+// DYMKI ikon w panelu DPS (historia i lista) – takie same jak na liczniku umiejętności po lewej (abTip); Attack = dymek slotu 1,
+// Bleeding = Skullsplitter, pasywki (Death Sentence, Lightning Bolt, Fire Energy, Burning, Bleed) = nazwa i opis noda z Passives na obecnej randze
+const DPS_NODE = { 'Death Sentence': 'ds', 'Lightning Bolt': 'l0_3', 'Fire Energy': 'l1_3', 'Burning': 'l1_7' };
+const dpsTip = k => {
+  if (k === 'Attack') { const s = atkSlot(); return (s && s.dataset.tip) || '<b>Attack</b>'; }
+  const id = k === 'Bleeding' ? 'split' : Object.keys(ABILS).find(i => (abEff(i) || {}).n === k);
+  if (id && ABILS[id]) return abTip(id);
+  const n = UPG.find(x => x.id === DPS_NODE[k]) || (k === 'Bleed' ? UPG.find(x => x.eff && x.eff.lacerate) : null);
+  if (!n) return `<b>${k}</b>`;
+  const r = Math.max(1, rankOf(n.id)), mx = n.max || 1;
+  return `<b>${n.n}</b>${typeof n.d === 'function' ? n.d(r) : n.d}<br><span style='color:var(--mut)'>Rank ${rankOf(n.id)}/${mx}</span>`;
+};
+const tipAttr = k => `data-tip="${dpsTip(k).replace(/"/g, '&quot;')}"`;
+// HISTORIA RUCHÓW nad listą obrażeń: 5 ostatnich Twoich ruchów (ikona, strzałka ›, obrażenia pod ikoną; krytyk – złota liczba; umiejętność bez obrażeń, np. Call to Arms – bez liczby)
 let dpsHist = [];
 const histHtml = () => { const L = dpsHist.slice(-5);   // 5 ostatnich ruchów (ikony 32 px)
-  return `<div class="dphist">${L.length ? L.map((h, i) => (i ? '<span class="dpar">›</span>' : '') + `<div class="dphc">${dpsIco(h.k, 32)}<em class="${h.cr ? 'cr' : ''}">${h.dm == null ? '–' : fmtN(h.dm)}</em></div>`).join('') : '<small>No moves yet</small>'}</div>`; };
+  return `<div class="dphist">${L.length ? L.map((h, i) => (i ? '<span class="dpar">›</span>' : '') + `<div class="dphc" ${tipAttr(h.k)}>${dpsIco(h.k, 32)}<em class="${h.cr ? 'cr' : ''}">${h.dm == null ? '&nbsp;' : fmtN(h.dm)}</em></div>`).join('') : '<small>No moves yet</small>'}</div>`; };
 function setDps(by, turns) {
   const ent = Object.entries(by || {}).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
   const tot = ent.reduce((a, e) => a + e[1], 0), top = ent.length ? ent[0][1] : 1;
   { const v = $('dps-tot'); if (v) v.textContent = turns ? fmtN(tot / turns) : '–'; }   // nagłówek panelu: sama liczba (podpis „average damage per turn” jest w index.html)   // nagłówek panelu DPS (prawy górny róg): łączne obrażenia na turę
-  const rows = ent.map(([k, v]) => `<div class="dprow">${dpsIco(k)}<div class="dpbar"><i style="width:${v / top * 100}%"></i><span class="dpn">${k}</span>`
+  const rows = ent.map(([k, v]) => `<div class="dprow" ${tipAttr(k)}>${dpsIco(k)}<div class="dpbar"><i style="width:${v / top * 100}%"></i><span class="dpn">${k}</span>`
     + `<span class="dpv">${fmtN(v)}</span></div></div>`).join('');
   // PANEL DPS (zamiast dymka nad kafelkiem): szczegóły w karcie po prawej, widocznej w trakcie walki
   const nr = dpsRowsMax(), empty = '<div class="dprow dpe"><span class="dpi"></span><div class="dpbar"></div></div>'.repeat(Math.max(0, nr - ent.length));
