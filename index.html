@@ -377,7 +377,25 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 #skillreset:disabled{pointer-events:none}#skillresetw:has(#skillreset:disabled){cursor:not-allowed}
 .recipes{display:grid;grid-template-columns:repeat(auto-fill,90px);gap:16px 12px}
 .recipe{display:flex;flex-direction:column;align-items:flex-start;gap:6px;width:90px}
-.ctabs{display:flex;gap:6px;margin-bottom:10px}.ctabs button{font-weight:700}.ctabs button.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac)}
+.ctabs{display:flex;gap:6px;margin-bottom:10px}
+/* CRAFTING – układ A: lista przepisów (zielone tło = da się zrobić, czerwone = brakuje) + szczegóły wybranego przepisu */
+.crwrap{display:grid;grid-template-columns:260px 1fr;gap:14px}
+.crlist.rlist{height:330px;box-sizing:border-box;gap:5px}
+.crli{display:flex;align-items:center;gap:10px;padding:6px 8px;border-radius:8px;border:1px solid var(--bd);cursor:pointer;flex:none}
+.crli.ok{background:color-mix(in srgb,#3fae4f 22%,var(--card));border-color:color-mix(in srgb,#3fae4f 45%,var(--bd))}
+.crli.no{background:color-mix(in srgb,#e53935 14%,var(--card));border-color:color-mix(in srgb,#e53935 35%,var(--bd))}
+.crli.sel{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}
+.crli:hover:not(.sel){border-color:color-mix(in srgb,var(--ac) 60%,var(--bd))}
+.crli .cell{width:52px;height:52px;flex:none;cursor:help}.crli b{font-size:12px}
+.crdet{border-left:1px solid var(--bd);padding-left:14px;display:flex;flex-direction:column;min-height:372px;box-sizing:border-box}
+.crhd{display:flex;gap:12px;align-items:center}.crhd .cell{width:80px;height:80px;flex:none;cursor:help}
+.creff{font-size:12px;color:var(--mut);margin-top:4px}
+.crsec{font-size:11px;letter-spacing:.05em;color:var(--mut);margin:14px 0 6px;text-transform:uppercase}
+.crmat{display:flex;align-items:center;gap:10px;padding:4px 10px;border:1px solid var(--bd);border-radius:6px;background:var(--bg);margin-bottom:4px;cursor:help}
+.crmat span{flex:1}.crmat em{font-style:normal;font-weight:700}.crmat em.ok{color:var(--c1)}.crmat em.no{color:var(--lack)}
+.crft{display:flex;gap:6px;align-items:center;margin-top:auto;padding-top:10px}
+.crft button{min-width:32px;height:32px;font-weight:700}.crqn{min-width:28px;text-align:center}
+.crft .crgo{flex:1;background:var(--ac);color:var(--on-ac);border-color:var(--ac)}.ctabs button{font-weight:700}.ctabs button.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac)}
 #devbtn{position:fixed;left:12px;bottom:12px;z-index:60;font-weight:700;font-size:12px;opacity:.85}
 #devbtn.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac)}
 

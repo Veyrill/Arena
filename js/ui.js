@@ -124,8 +124,14 @@ window.craftScroll = (k = 'str') => {
   flyToInv('scroll:' + k, inv.find(x => x.isScroll && scrollKind(x) === k));   // zwój wlatuje do plecaka
 };
 
-// aktywna zakładka w Wytwarzaniu
+// aktywna zakładka w Wytwarzaniu, wybrany przepis w każdej zakładce i licznik ilości (układ A: lista + szczegóły)
 let craftTab = 'scrolls';
+const craftSel = { scrolls: 'scroll:str', gear: null };
+let craftQty = 1;
+// Craft xN: wykonuje przepis N razy z rzędu (przerywa, gdy zabraknie materiałów); licznik wraca do 1
+window.craftMany = (n, t, k) => { const can = () => t === 'scroll' ? canCraftScroll(k) : canCraftGear(k);
+  for (let i = 0; i < n && !busy && can(); i++) t === 'scroll' ? window.craftScroll(k) : window.craftGear(k);
+  craftQty = 1; render(); };
 
 // Sprzęt wędkarski z Wytwarzania (Niezwykły, 25 FP – było 20, zakładany na stronie 2). Zawsze ta sama grafika co na ikonie przepisu.
 // mats = potrzebne materiały [id, ilość], gold = koszt w złocie
@@ -552,7 +558,7 @@ function flyReward(gold, xp, from) {
 // CRAFTING / COOKING: wytworzony przedmiot spada z ikony przepisu (wiersz z przyciskiem data-btn=key) prosto w dół do swojej komórki w plecaku; komórka „podskakuje”, nad przepisem wylatuje napis „+1 nazwa” w kolorze rzadkości. Wywoływać PO render().
 function flyToInv(key, item) {
   if (!item) return;
-  const btn = document.querySelector(`[data-btn="${key}"]`), src = btn && btn.closest('.rrow') ? btn.closest('.rrow').querySelector('.cell') : null;
+  const btn = document.querySelector(`[data-btn="${key}"]`), src = btn && btn.closest('.rrow, .crdet') ? btn.closest('.rrow, .crdet').querySelector('.cell') : null;
   if (!src || !src.offsetParent) return;
   const n = inv.indexOf(item), cell = n >= 0 ? document.querySelector(`#inv [data-n="${n}"]`) : null;
   const a = src.getBoundingClientRect(), b = (cell || $('invcard')).getBoundingClientRect(), h = 24;
@@ -2231,27 +2237,44 @@ function render() {
 
   // WYTWARZANIE – zakładki: Scrolls i Fishing Gear (Pierścień i Amulet, po 25 FP)
   // zwój: wynik + materiały + złoto (wiersz recipeRow)
-  const scrollRecipeOf = k => { const dd = SCROLLS[k]; return recipeRow({ compact: 1, key: 'scroll:' + k, r: 2, ico: scrollIco(k, 48), it: 'craft:scroll_' + k, name: dd.name,
-    mats: dd.mats.map(([m, q]) => ({ ...matRow(m, q), big: matIco(m, 32, 26) })), gold: dd.gold, can: canCraftScroll(k), btn: 'Craft', onclick: `window.craftScroll('${k}')`, vis: view === 'craft' && craftTab === 'scrolls' }); };
-  const scrollRecipe = `<div class="rlist rfix">${scrollRecipeOf('str')}${scrollRecipeOf('dex')}</div>`;
-  // jeden przepis sprzętu wędkarskiego (pierścień / amulet) – bez podpisu pod ikoną; brakujące składniki na czerwono
-  const fishRecipe = sl => { const dd = CRAFT_FISH[sl]; return `<div class="recipe"><div class="cell r1" style="width:64px;height:64px" data-it="craft:${sl}">${ico(makeCraftFish(sl))}</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">${dd.mats.map(([k, q]) => `<div style="display:flex;align-items:center;gap:4px;${matQty(k) < q ? 'color:#e53935' : ''}"><span data-it="mat:${k}" style="display:inline-flex;cursor:help">${matIco(k, 32, 30)}</span><span>×${q}</span></div>`).join('')}</div><div style="${window.G_GLOBAL < dd.gold ? 'color:#e53935' : ''};margin-top:2px;font-weight:700">Cost: ${dd.gold}</div><button onclick="window.craftFish('${sl}')"${!canCraftFish(sl) || busy ? ' disabled' : ''} style="margin-top:4px">Craft</button></div>`; };
-  // przepis sprzętu (Seasoned Angler, Sea Raider, Ring of the Tide): wynik (64 px) + składniki: przedmiot niższego tieru ×1 (jeśli jest) i materiały ×ilość (brakujące na czerwono)
+  // CRAFTING – układ A: po lewej lista przepisów (zielone tło = da się zrobić, czerwone = brakuje), po prawej szczegóły wybranego
+  // przepisu: duża ikona, nazwa, efekt, składniki „masz / potrzeba”, licznik ilości (− / + / Max) i przycisk Craft.
+  // Ikony w natywnej skali pikseli: zwoje (24 px) ×2 / ×3, materiały, złoto i sprzęt (16 px) ×2 / ×3 / ×4.
   const fixedIco = (k, px) => ico(makeFixed(k)).replace(/width:\d+px;height:\d+px/, `width:${px}px;height:${px}px`);
-  const gearRecipeHtml = ({ from, to, mats, gold }) => {
-    if (to === 'rod') return recipeRow({ compact: 1, key: 'gear:rod', r: ROD_TIERS[0].r, ico: ico(makeRod()).replace(/width:\d+px;height:\d+px/, 'width:48px;height:48px'), it: 'rod:new', name: ROD_TIERS[0].name,
-      mats: [], gold, can: canCraftGear('rod'), btn: 'Craft', onclick: `window.craftGear('rod')`, vis: view === 'craft' && craftTab === 'gear' });
-    return recipeRow({ compact: 1, key: 'gear:' + to, r: FIXED_ITEMS[to].r, ico: fixedIco(to, 48), it: 'fixed:' + to, name: FIXED_ITEMS[to].name,
-      mats: [...(from ? [{ big: fixedIco(from, 32), it: 'fixed:' + from, name: FIXED_ITEMS[from].name, have: hasFixed(from) ? 1 : 0, need: 1 }] : []), ...mats.map(([m, q]) => ({ ...matRow(m, q), big: matIco(m, 32, 26) }))],
-      can: canCraftGear(to), btn: 'Craft', onclick: `window.craftGear('${to}')`, vis: view === 'craft' && craftTab === 'gear' }); };
-  // zielone przepisy (pierścień i amulet za materiały) usunięte z zakładki; zostają tylko przepisy odblokowane projektami Crafting Design
-  // kolejność: najpierw Seasoned Angler (rare), potem Sea Raider (epic), na końcu Ring of the Tide – jak w GEAR_RECIPES
   const learnedGear = GEAR_RECIPES.filter(r => knowsDesign(r.to));
-  const gearRecipe = learnedGear.length ? `<div class="rlist rfix">${learnedGear.map(gearRecipeHtml).join('')}</div>`
-    : `<div class="rlist rfix"><small style="color:var(--mut)">No crafting designs learned yet. Find Crafting Designs while fishing or fighting in the Forest.</small></div>`;   // przepisy widoczne dopiero po nauce z Crafting Design
-  const craftSt = (($('body-craft') || document).querySelector('.rlist') || {}).scrollTop || 0;   // pozycja przewinięcia listy Crafting
-  $('body-craft').innerHTML = `<div class="ctabs"><button data-ctab="scrolls" class="${craftTab === 'scrolls' ? 'on' : ''}">Scrolls</button><button data-ctab="gear" class="${craftTab === 'gear' ? 'on' : ''}">Fishing Gear</button></div>` + (craftTab === 'gear' ? gearRecipe : scrollRecipe);
-  { const nl = $('body-craft').querySelector('.rlist'); if (nl) nl.scrollTop = craftSt; }
+  const crList = craftTab === 'gear' ? learnedGear.map(r => 'gear:' + r.to) : Object.keys(SCROLLS).map(k => 'scroll:' + k);
+  if (!crList.includes(craftSel[craftTab])) craftSel[craftTab] = crList[0];
+  const crInfo = id => {   // dane przepisu: ikony, nazwa, rzadkość, efekt, składniki, złoto, ile razy da się zrobić
+    const [t, k] = id.split(':');
+    if (t === 'scroll') { const d = SCROLLS[k], mats = d.mats.map(([m, q]) => ({ ico: matIco(m, 32, 26), it: 'mat:' + m, name: MATS[m].name, have: matQty(m), need: q }));
+      return { r: 2, name: d.name, ico: px => scrollIco(k, px === 'L' ? 72 : 48), it: 'craft:scroll_' + k, eff: `Use: <b class="t1" style="display:inline">+10% ${d.stat}</b> for 30 minutes`, mats, gold: d.gold, can: canCraftScroll(k), go: `window.craftScroll('${k}')`, key: 'scroll:' + k }; }
+    const r = gearRecipeOf(k);
+    if (k === 'rod') return { r: ROD_TIERS[0].r, name: ROD_TIERS[0].name, ico: px => ico(makeRod()).replace(/width:\d+px;height:\d+px/, `width:${px === 'L' ? 64 : 48}px;height:${px === 'L' ? 64 : 48}px`), it: 'rod:new',
+      eff: `Fishing Rod · FP <b class="t2" style="display:inline">${ROD_TIERS[0].fp}</b>`, mats: [], gold: r.gold, can: canCraftGear('rod'), go: `window.craftGear('rod')`, key: 'gear:rod' };
+    const it = FIXED_ITEMS[k], slot = it.sl === 'lantern' ? 'Lantern' : (SL[it.sl] ? SL[it.sl][1] : it.sl);
+    const sk = Object.keys(FISH_SETS).find(x => FISH_SETS[x].pieces.includes(k));
+    const mats = [...(r.from ? [{ ico: fixedIco(r.from, 32), it: 'fixed:' + r.from, name: FIXED_ITEMS[r.from].name, have: inv.filter(x => x.fixed === r.from).length, need: 1 }] : []),
+      ...r.mats.map(([m, q]) => ({ ico: matIco(m, 32, 26), it: 'mat:' + m, name: MATS[m].name, have: matQty(m), need: q }))];
+    return { r: it.r, name: it.name, ico: px => fixedIco(k, px === 'L' ? 64 : 48), it: 'fixed:' + k, eff: `Fishing ${slot} · FP <b class="t2" style="display:inline">${it.fp}</b>` + (sk ? `<br><span style="color:#e69500">Set: ${FISH_SETS[sk].name}</span>` : ''),
+      mats, gold: r.gold, can: canCraftGear(k), go: `window.craftGear('${k}')`, key: 'gear:' + k };
+  };
+  const crMax = o => Math.max(0, Math.min(...o.mats.map(m => Math.floor(m.have / m.need)), o.gold ? Math.floor(window.G_GLOBAL / o.gold) : Infinity));
+  const crItem = id => { const o = crInfo(id), ok = o.can;
+    return `<div class="crli ${ok ? 'ok' : 'no'}${craftSel[craftTab] === id ? ' sel' : ''}" data-crsel="${id}"><div class="cell r${o.r}" data-it="${o.it}">${o.ico('S')}</div><b class="t${o.r}">${o.name}</b></div>`; };
+  let crDet = '';
+  if (craftSel[craftTab]) {
+    const o = crInfo(craftSel[craftTab]), mx = crMax(o), q = craftQty = Math.max(1, Math.min(craftQty, mx || 1));
+    crDet = `<div class="crdet"><div class="crhd"><div class="cell r${o.r}" data-it="${o.it}">${o.ico('L')}</div><div><b class="t${o.r}" style="font-size:15px">${o.name}</b><div class="creff">${o.eff}</div></div></div>`
+      + `<div class="crsec">Required</div>`
+      + o.mats.map(m => `<div class="crmat" data-it="${m.it}">${m.ico}<span>${m.name}</span><em class="${m.have >= m.need * q ? 'ok' : 'no'}">${m.have} / ${m.need * q}</em></div>`).join('')
+      + (o.gold ? `<div class="crmat" data-tip="<b>Gold</b>You have: ${window.G_GLOBAL}">${goldIco(32)}<span>Gold</span><em class="${window.G_GLOBAL >= o.gold * q ? 'ok' : 'no'}">${o.gold * q}</em></div>` : '')
+      + `<div class="crft"><button data-crq="-1"${q <= 1 ? ' disabled' : ''}>-</button><b class="crqn">${q}</b><button data-crq="1"${q >= mx ? ' disabled' : ''}>+</button><button data-crq="max"${mx <= 1 ? ' disabled' : ''}>Max</button>`
+      + `<button class="crgo" data-btn="${o.key}" onclick="window.craftMany(${q},'${o.key.split(':')[0]}','${o.key.split(':')[1]}')"${o.can && !busy ? '' : ' disabled'}>Craft</button></div></div>`;
+  } else crDet = `<div class="crdet"><small style="color:var(--mut)">No crafting designs learned yet. Find Crafting Designs while fishing or fighting in the Forest.</small></div>`;
+  const craftSt = (($('body-craft') || document).querySelector('.crlist') || {}).scrollTop || 0;   // pozycja przewinięcia listy Crafting
+  $('body-craft').innerHTML = `<div class="crwrap"><div><div class="ctabs"><button data-ctab="scrolls" class="${craftTab === 'scrolls' ? 'on' : ''}">Scrolls</button><button data-ctab="gear" class="${craftTab === 'gear' ? 'on' : ''}">Fishing Gear</button></div>`
+    + `<div class="crlist rlist">${crList.map(crItem).join('')}</div></div>${crDet}</div>`;
+  { const nl = $('body-craft').querySelector('.crlist'); if (nl) nl.scrollTop = craftSt; }
   renderCook(); updateCookBar();
 
   const rodMax = isUpgradable(upgradeItem) && upLvl >= gearMaxLevel(upgradeItem);   // mityczny = koniec ulepszania
@@ -3909,7 +3932,12 @@ document.addEventListener('click', e => {
   // wybór ryby do łowienia (zablokowane placeholdery nie mają data-fish)
   // zakładki Wytwarzania
   const ct = t.closest('[data-ctab]');
-  if (ct) { craftTab = ct.dataset.ctab; render(); return; }
+  if (ct) { craftTab = ct.dataset.ctab; craftQty = 1; render(); return; }
+  // Crafting: wybór przepisu z listy i licznik ilości (− / + / Max)
+  const cs = t.closest('[data-crsel]');
+  if (cs) { if (craftSel[craftTab] !== cs.dataset.crsel) craftQty = 1; craftSel[craftTab] = cs.dataset.crsel; render(); return; }
+  const cq = t.closest('[data-crq]');
+  if (cq && !cq.disabled) { craftQty = cq.dataset.crq === 'max' ? 999 : craftQty + +cq.dataset.crq; render(); return; }
 
   // wybór aktu w bocznym menu Wyprawy
   const ac = t.closest('[data-act]');
