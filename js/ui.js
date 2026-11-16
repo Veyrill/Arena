@@ -1582,6 +1582,14 @@ function dpsIco(k) {
 }
 // wiersz jak w meterach z MMO: ikona | pasek (długość względem najlepszego źródła) z nazwą | suma obrażeń w walce
 // (licznik DMG / TURN w oknie walki usunięty – łączne obrażenia na turę są w nagłówku panelu DPS)
+// PANEL DPS – stała wysokość: tyle wierszy, ile źródeł obrażeń może mieć postać (Attack, umiejętności zadające obrażenia z paska,
+// pasywki: Bleed, Lightning Bolt, Fire Energy, Burning, Death Sentence; Skullsplitter → Bleeding); puste miejsca = ciemne wiersze
+const dpsRowsMax = () => { const U = ub(), bar = Object.values(me.bar || {}).filter(id => me.abils && me.abils[id] && ABILS[id] && myAb(id));
+  return Math.max(3, 1 + bar.filter(id => !ABILS[id].free).length + bar.filter(id => ABILS[id].rend).length + ['lacerate', 'bolt', 'fire', 'burn', 'doom'].filter(k => U[k]).length); };
+// HISTORIA RUCHÓW nad listą obrażeń: 6 ostatnich Twoich ruchów (ikona, strzałka ›, obrażenia pod ikoną; krytyk – złota liczba; umiejętność bez obrażeń – „–”)
+let dpsHist = [];
+const histHtml = () => { const L = dpsHist.slice(-6);
+  return `<div class="dphist">${L.length ? L.map((h, i) => (i ? '<span class="dpar">›</span>' : '') + `<div class="dphc">${dpsIco(h.k)}<em class="${h.cr ? 'cr' : ''}">${h.dm == null ? '–' : fmtN(h.dm)}</em></div>`).join('') : '<small>No moves yet</small>'}</div>`; };
 function setDps(by, turns) {
   const ent = Object.entries(by || {}).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
   const tot = ent.reduce((a, e) => a + e[1], 0), top = ent.length ? ent[0][1] : 1;
@@ -1589,8 +1597,9 @@ function setDps(by, turns) {
   const rows = ent.map(([k, v]) => `<div class="dprow">${dpsIco(k)}<div class="dpbar"><i style="width:${v / top * 100}%"></i><span class="dpn">${k}</span>`
     + `<span class="dpv">${fmtN(v)}</span></div></div>`).join('');
   // PANEL DPS (zamiast dymka nad kafelkiem): szczegóły w karcie po prawej, widocznej w trakcie walki
-  { const ps = $('body-dps-side'); if (ps) ps.innerHTML = `<div class="dpst">${rows || '<small>No damage yet</small>'}`
-    + `</div>`; }   // bez podpisu Total
+  const nr = dpsRowsMax(), empty = '<div class="dprow dpe"><span class="dpi"></span><div class="dpbar"></div></div>'.repeat(Math.max(0, nr - ent.length));
+  { const ps = $('body-dps-side'); if (ps) ps.innerHTML = histHtml() + `<div class="dpst" style="min-height:${nr * 25 - 3}px">${rows}${empty}`
+    + `</div>`; }   // bez podpisu Total; stała wysokość (puste wiersze) – panel nie rośnie w trakcie walki
 }
 // RAGE (pasek pod zdrowiem bohatera): 0–100, na start walki 0; każdy zwykły atak gracza +RAGE_HIT (na razie nic nie zużywa rage)
 const RAGE_MAX = 100, RAGE_HIT = 8;
@@ -2631,7 +2640,7 @@ function render() {
     // STATYSTYKI PRZECIWNIKA: ikona „i” (assets/ui/ui_info.png, jak w Fishing) na lewo od listy dropów – po najechaniu dymek z grafiką i statystykami
     { let ib = $('infobtn'); if (!ib) { ib = document.createElement('div'); ib.id = 'infobtn'; ib.innerHTML = uiIco('ui_info', 'ℹ️', 32); }
       if (ib.parentElement !== FIGHTBOX) FIGHTBOX.appendChild(ib); ib.classList.toggle('solo', view !== 'exp'); renderInfo(m); }   // dymek ze statystykami (bez rozwijanego panelu)   // LISTA DROPÓW – tylko wyprawa (lochy mają własny panel dropów)   // DPS meter (ramka ze smokami) w prawym górnym rogu okna walki – stała pozycja, niezależna od paska i panelu ℹ️
-    if (lastMob !== m && !busy) { setLastMob(m); setShowInfo(false); renderDebuffs({}); setDps({}, 0); const h0 = frailHp(s.hp);
+    if (lastMob !== m && !busy) { setLastMob(m); setShowInfo(false); renderDebuffs({}); (dpsHist = [], setDps({}, 0)); const h0 = frailHp(s.hp);
       // Elemental Barrier widoczna już przed walką: niebieska końcówka paska i HP + tarcza / maks. HP (bez ikony buffa)
       const sh0 = Math.round(d.hp * (ub().barrier || 0) / 100), tot = d.hp + sh0;
       { const u0 = ub(), N = u0.elemMaster ? 4 : 5, pv = {};   // podgląd przed walką: ikony energii z ich stosami startowymi (wszystkie 1)
@@ -3035,7 +3044,7 @@ function* fightGen(mob, io) {
     // DPS METER: rejestr obrażeń zadanych wrogowi wg źródła (bez nadwyżki ponad pozostałe HP) i licznik Twoich tur
     const dmgBy = {}; let pTurns = 0;
     const dr = (src, v) => { dmgBy[src] = (dmgBy[src] || 0) + Math.max(0, v); if (UI) setDps(dmgBy, pTurns); return v; };   // DPS METER: pełne obrażenia ciosu (także nadwyżka ponad HP wroga – np. krytyk Ultimate kończący walkę liczy się w całości, jak liczba nad wrogiem)
-    if (UI) setDps({}, 0);
+    if (UI) (dpsHist = [], setDps({}, 0));
     const abReady = {}; io.ready = abReady; let furyT = 0, stunT = 0, rendT = 0, rendD = 0, markD = 0, cripT = 0, cripP = 0;   // markD: Mark of Death (% do następnego ciosu), cripT/cripP: Crippling Strike (tury wroga, % mniej obrażeń)   // stunT: Earthshaker (tury wroga do pominięcia); rendT/rendD: Skullsplitter (tury krwawienia, obrażenia na turę)   // abReady.crit = Revenge (tura po krytyku wroga), abReady.exec = Decapitate (wróg < 20% HP); furyT = tury Battle Fury
     const abOk = id => { const a = abEff(id); return !!a && rageBar >= a.cost && !abCd[id] && (!a.need || !!abReady[a.need]); };
     // BATTLE PLAN (Skip): pierwsza umiejętność z planu, która jest gotowa i spełnia warunki; noFree = Battle Fury już użyty w tej turze
@@ -3152,7 +3161,7 @@ function* fightGen(mob, io) {
           if (skipFight) { io.act = planPick(planFree > 0); if (ABILS[io.act] && ABILS[io.act].free) planFree++; }   // SKIP: ruch wybiera Battle Plan
           const fa = io.act; if (!(fa && ABILS[fa] && ABILS[fa].free)) break;
           io.act = 'atk';
-          if (abOk(fa)) { yield { beat: 0.5 }; const a = abEff(fa); if (UI) abUse(fa); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; furyP = a.buffD || 0; furyDex = a.dexUp || 0; furyKey = { 'Battlecry': 'cry', 'Rally': 'rfury' }[a.n] || 'fury'; furyCrit(true); pbuf[furyK()] = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b>${a.cost ? ` (−${a.cost} Rage)` : ''}`, 'crit'); }
+          if (abOk(fa)) { yield { beat: 0.5 }; const a = abEff(fa); if (UI) abUse(fa); dpsHist.push({ k: a.n, dm: null }); if (UI) setDps(dmgBy, pTurns); rageBar -= a.cost; abCd[fa] = a.cd; if (UI) setRage(rageBar); furyT = a.buffT; furyP = a.buffD || 0; furyDex = a.dexUp || 0; furyKey = { 'Battlecry': 'cry', 'Rally': 'rfury' }[a.n] || 'fury'; furyCrit(true); pbuf[furyK()] = { st: furyT, tip: furyTip() }; renderPBuffs(pbuf); say(`<b>${a.n}!</b>${a.cost ? ` (−${a.cost} Rage)` : ''}`, 'crit'); }
         }
       } else yield 'beat';   // TAKT: tura wroga zaczyna się równy takt po Twoim ruchu (WALKA RĘCZNA: w Twojej turze walka czeka na atak – slot 1 / klawisz 1)
       if (turn == 0) {
@@ -3200,9 +3209,10 @@ function* fightGen(mob, io) {
         firstHit = false;
         pTurns++;   // DPS METER: Twoja tura
         let abDealt = 0;   // suma obrażeń umiejętności (Skullsplitter: krwawienie od tej sumy)
+        const hrec = { k: ab ? ab.n : execute ? 'Death Sentence' : 'Attack', dm: 0, cr: false }; dpsHist.push(hrec);   // HISTORIA RUCHÓW (panel DPS)
         for (let h = 0, nh = ab && ab.hits || 1; h < nh && mh > 0; h++) {   // Bladestorm: 3 ciosy, każdy z osobną szansą na krytyk
           if (h) yield 230;
-          const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); if (UI && hit.crit) questEv('crit'); abDealt += Math.min(dm, Math.max(0, mh)); mh -= dr(ab ? ab.n : execute ? 'Death Sentence' : 'Attack', dm); if (UI) dmgPop(fm, dm, hit.crit, ab ? 'ab' : 'out');   // umiejętność: żółta liczba (krytyk – żółta w formacie krytyka)   // QUEST: krytyk = +1 do questa
+          const dm = hit('You', mob.n, A, M, fp, (t, c) => say(t, c)); if (UI && hit.crit) questEv('crit'); abDealt += Math.min(dm, Math.max(0, mh)); hrec.dm += dm; hrec.cr = hrec.cr || hit.crit; mh -= dr(ab ? ab.n : execute ? 'Death Sentence' : 'Attack', dm); if (UI) dmgPop(fm, dm, hit.crit, ab ? 'ab' : 'out');   // umiejętność: żółta liczba (krytyk – żółta w formacie krytyka)   // QUEST: krytyk = +1 do questa
           // BLADESTORM: każdy cios oprócz ostatniego liczy się osobno dla pasywek „za cios / za krytyk” (ostatni obsługuje kod niżej, jak przy zwykłym ataku);
           // nowe stosy Battle Fervor działają już od następnego ciosu tej samej serii
           if (h < nh - 1 && mh > 0) {
@@ -3504,7 +3514,7 @@ $('go').onclick = async ev => {
   // try/finally: nawet jeśli w trakcie walki pojawi się błąd, gra zawsze odblokuje klikanie (busy = false)
   try {
    for (let run = 0; run < runs; run++) {
-    if (run) { seriesRun = run + 1; fightOn = true; skipFight = true; $('log').innerHTML = ''; live = null; renderDebuffs({}); renderPBuffs({}); setDps({}, 0); await slp(700); }   // kolejna walka serii – od nowa, pełne HP
+    if (run) { seriesRun = run + 1; fightOn = true; skipFight = true; $('log').innerHTML = ''; live = null; renderDebuffs({}); renderPBuffs({}); (dpsHist = [], setDps({}, 0)); await slp(700); }   // kolejna walka serii – od nowa, pełne HP
     render();
     const io = { sim: false, manual: true }; fightIo = io;
     { const sb = $('skillbar'); if (sb) sb.classList.add('fighting'); }   // w trakcie walki slot ataku jest szary poza Twoją turą   // manual: atak gracza dopiero po kliknięciu slotu 1 / klawisza 1 (symulacja szans – bez czekania)
