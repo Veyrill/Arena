@@ -1629,25 +1629,33 @@ const tupFmt = (u, l) => `${u.sign}${u.per * l}${u.unit}`;
 function renderArt() {
   const body = $('body-art'); if (!body) return;
   const tok = artTokens();
-  const tiles = TOKEN_UPG.map(u => { const l = tupLvl(u.k), mx = l >= u.max, c = mx ? 0 : u.cost[l];
+  // u.gold = ulepszenie za złoto (Battle Series), inaczej koszt w Upgrade Token; u.fmt = własny zapis efektu (np. x2)
+  const fx = (u, l) => u.fmt ? u.fmt(l) : l ? tupFmt(u, l) : '0' + u.unit;
+  const tiles = TOKEN_UPG.map(u => { const l = tupLvl(u.k), mx = l >= u.max, c = mx ? 0 : (u.gold || u.cost)[l], can = u.gold ? window.G_GLOBAL >= c : tok >= c;
     return `<div class="tupc${mx ? ' max' : ''}"><div class="tupico"><img src="${ASSETS_DIR}/${u.img}" alt="" onerror="this.remove()"></div><b class="tupn">${u.n}</b><span class="tupl">${l} / ${u.max}</span>`
-      + `<div class="tupd">${u.d}</div><div class="tupe">${l ? tupFmt(u, l) : '0' + u.unit}${mx ? '' : ` <span>→</span> <em>${tupFmt(u, l + 1)}</em>`}</div>`
-      + `<button class="bkac tupbtn" onclick="window.tupBuy('${u.k}')"${mx || tok < c || busy ? ' disabled' : ''}>${mx ? 'MAX' : c + matIco('upgrade_token', 24, 18)}</button></div>`; }).join('');
+      + `<div class="tupd">${u.d}</div><div class="tupe">${fx(u, l)}${mx ? '' : ` <span>→</span> <em>${fx(u, l + 1)}</em>`}</div>`
+      + `<button class="bkac tupbtn" onclick="window.tupBuy('${u.k}')"${mx || !can || busy ? ' disabled' : ''}>${mx ? 'MAX' : u.gold ? c.toLocaleString('en-US') + goldIco(18) : c + matIco('upgrade_token', 24, 18)}</button></div>`; }).join('');
   body.innerHTML = `<div class="tuptok">${matIco('upgrade_token', 24, 20)}<b>${tok}</b> Upgrade Tokens</div><div class="tuprow">${tiles}</div>`;
 }
-// kupno poziomu: zabiera koszt w Upgrade Token; Bounty Board od razu dokłada quest do puli, Swift Couriers skraca obecny licznik
+// kupno poziomu: zabiera koszt w Upgrade Token (albo w złocie – Battle Series); Bounty Board od razu dokłada quest do puli, Swift Couriers skraca obecny licznik
 window.tupBuy = k => {
   const u = TOKEN_UPG.find(x => x.k === k); if (!u || busy) return;
   const l = tupLvl(k); if (l >= u.max) return;
-  const c = u.cost[l], ti = inv.findIndex(x => x.mat && x.sl === 'upgrade_token');
-  if (ti < 0 || inv[ti].qty < c) return;
-  if ((inv[ti].qty -= c) <= 0) inv.splice(ti, 1);
+  if (u.gold) { const c = u.gold[l]; if (window.G_GLOBAL < c) return; window.G_GLOBAL -= c; }
+  else { const c = u.cost[l], ti = inv.findIndex(x => x.mat && x.sl === 'upgrade_token');
+    if (ti < 0 || inv[ti].qty < c) return;
+    if ((inv[ti].qty -= c) <= 0) inv.splice(ti, 1); }
   me.tup = me.tup || {}; me.tup[k] = l + 1;
   if (k === 'bounty' && me.quests && me.quests.list) addQuest();
   if (k === 'couriers' && me.quests && me.quests.t) me.quests.t -= u.per * 60e3;
   say(`<b>${u.n}</b> upgraded to level ${l + 1}`);
   saveGame(); render();
 };
+// BATTLE SERIES: wybrana liczba walk z rzędu (me.series = 2 / 3 / 4; brak = 1), maks. = poziom ulepszenia + 1
+const seriesMax = () => tupLvl('series') + 1;
+const seriesN = () => Math.max(1, Math.min(me.series || 1, seriesMax()));
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-ser]'); if (!b || busy) return;
+  const n = +b.dataset.ser; me.series = seriesN() === n ? 1 : n; saveGame(); render(); });   // klik w zaznaczony = wyłączenie (1 walka)
 delete me.arts; delete me.artSlots;   // stary zapis: dane usuniętych artefaktów
 
 // ===== QUESTY =====
@@ -2608,6 +2616,12 @@ function render() {
     $('go').textContent = done ? (expRes.win ? 'Collect' : 'Back') : fightOn ? 'Auto ▶▶' : dcd > 0 ? `Next fight in ${fmtCd(dcd)}` : 'Auto ▶▶';
     $('go').dataset.st = !done && !fightOn && !(dcd > 0) ? 'start' : '';   // start = przed walką (atak / umiejętność zaczyna walkę ręcznie, Auto – automatycznie)
     $('go').style.visibility = !done && !fightOn && !m ? 'hidden' : '';   // bez wybranego przeciwnika – brak przycisku (miejsce zostaje)
+    // BATTLE SERIES: przyciski 2x / 3x / 4x obok Auto (tylko wyprawa, po kupnie ulepszenia; w trakcie serii – postęp „Fight 2/3”)
+    { let sr = $('series'); if (!sr) { sr = document.createElement('div'); sr.id = 'series'; $('go').insertAdjacentElement('afterend', sr); }
+      const show = view == 'exp' && seriesMax() > 1 && m && !done;
+      sr.hidden = !show;
+      if (show) sr.innerHTML = fightOn && seriesTot > 1 ? `<span class="serp">Fight ${seriesRun}/${seriesTot}</span>`
+        : Array.from({ length: seriesMax() - 1 }, (_, i) => i + 2).map(n => `<button data-ser="${n}" class="${seriesN() === n ? 'on' : ''}"${busy ? ' disabled' : ''} data-tip="<b>Battle Series</b>Auto fights ${n} times in a row. Loot and rewards are collected together at the end. The series stops if you lose.">${n}x</button>`).join(''); }
   }   // AUTO: przed walką i w jej trakcie – gra walczy sama wg Battle Plan
   refreshTip();
   checkSetFx();   // efekt po osiągnięciu progu bonusu setowego (2/4, 4/4)
@@ -3419,6 +3433,7 @@ const mobIco = (m, px) => MOB_MISS.has(mobImg(m))
 // AUTO ▶▶ (przycisk #go): przed walką albo w jej trakcie – gra sama wybiera ruchy (Battle Plan), z animacjami i logiem, o 30% szybciej
 // paski HP pokazują wynik końcowy (przegrany 0 HP, zwycięzca – pozostałe HP), potem normalnie nagrody / porażka
 let fightOn = false, skipFight = false;   // skipFight = tryb auto po kliknięciu Skip
+let seriesRun = 1, seriesTot = 1;   // BATTLE SERIES: która walka serii / ile walk w serii
 const AUTO_SPEED = 0.7;
 // TAKT: odstęp między zdarzeniami walki (ms, ×FIGHT_SLOW; w Auto ×AUTO_SPEED) – ok. 0,47 s ręcznie, 0,33 s w Auto
 const FIGHT_TAKT = 360;
@@ -3443,10 +3458,15 @@ $('go').onclick = async ev => {
   const mob = curMob(); if (!mob || busy || fishing.active || Date.now() < cdEnd) return;
   if (view == 'dun' && dunCd(curDun().mobs.indexOf(mob)) > 0) return;   // loch: przerwa 1 h po wygranej
   dunRes = null;   // nowa walka – stary napis VICTORY / DEFEAT znika
+  // BATTLE SERIES: Auto na wyprawie z wybraną serią (2x–4x) = kilka walk z rzędu z tym samym przeciwnikiem, łup i nagrody zbierane razem
+  const runs = view == 'exp' && ev ? seriesN() : 1; seriesTot = runs; seriesRun = 1;
+  const allLoot = []; let totXp = 0, totGold = 0, wins = 0;
   setBusy(true); fightOn = true; skipFight = !!ev; $('log').innerHTML = '';   // kliknięcie Auto przed walką (ev) → walka od razu w trybie auto; start z ataku / umiejętności (bez ev) → ręcznie
   live = null;   // nowa walka – panel ℹ️ startuje od wartości bazowych
   // try/finally: nawet jeśli w trakcie walki pojawi się błąd, gra zawsze odblokuje klikanie (busy = false)
   try {
+   for (let run = 0; run < runs; run++) {
+    if (run) { seriesRun = run + 1; fightOn = true; skipFight = true; $('log').innerHTML = ''; live = null; renderDebuffs({}); renderPBuffs({}); setDps({}, 0); await slp(700); }   // kolejna walka serii – od nowa, pełne HP
     render();
     const io = { sim: false, manual: true }; fightIo = io;
     { const sb = $('skillbar'); if (sb) sb.classList.add('fighting'); }   // w trakcie walki slot ataku jest szary poza Twoją turą   // manual: atak gracza dopiero po kliknięciu slotu 1 / klawisza 1 (symulacja szans – bez czekania)
@@ -3527,7 +3547,11 @@ $('go').onclick = async ev => {
       }
     } else { say('<b>You lost.</b> Get stronger and try again.'); }
     if (view == 'dun') dunRes = { win: ph > 0 };   // LOCH: napis wyniku nad oknem walki
-    if (view == 'exp') { expRes = { win: ph > 0, loot, had: loot.length > 0, xp: rwXp, gold: rwGold }; if (loot.length) me.pendLoot = loot; }   // pendLoot: ta sama tablica – zapis gry   // had: był łup (po założeniu wszystkiego nie piszemy „No loot”)
+    allLoot.push(...loot); totXp += rwXp; totGold += rwGold; if (ph > 0) wins++;
+    if (view == 'exp') me.pendLoot = allLoot;   // zapis gry: łup całej serii czeka na Collect
+    if (ph <= 0) break;   // przegrana przerywa serię
+   }
+    if (view == 'exp') { expRes = { win: wins > 0, loot: allLoot, had: allLoot.length > 0, xp: totXp, gold: totGold }; if (!allLoot.length) delete me.pendLoot; if (runs > 1) say(`<b>Battle Series:</b> ${wins}/${runs} fights won`, 'crit'); }   // pendLoot: ta sama tablica – zapis gry   // had: był łup (po założeniu wszystkiego nie piszemy „No loot”)
   } catch (err) {
     console.error('Combat error:', err);
     say('An error occurred during combat (see console, F12).', 'miss');

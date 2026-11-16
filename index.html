@@ -49,7 +49,7 @@ body .qrow .qcol{display:block;margin:6px auto 0;font-size:11px;padding:3px 10px
 .qreroll{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:12px}.qreroll img{width:16px;height:16px;image-rendering:pixelated}.qreroll:disabled img{filter:grayscale(1)}
 /* ARTIFACTS: 5 kafelków ulepszeń za Upgrade Token w jednym rzędzie (ikony assets/ui/tup_*.png) */
 .tuptok{display:flex;align-items:center;justify-content:flex-end;gap:6px;margin:-26px 0 12px;font-size:13px;color:var(--mut)}.tuptok b{font-size:15px;color:var(--tx)}
-.tuprow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.tuprow{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
 .tupc{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px;border:2px solid var(--bd);border-radius:10px;text-align:center}
 .tupc.max{border-color:#f2c200}
 .tupico{width:72px;height:72px;display:flex;align-items:center;justify-content:center;border:2px solid var(--bd);border-radius:8px;background:color-mix(in srgb,var(--bd) 18%,transparent)}
@@ -338,6 +338,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 .resv.win{color:#f5d88a}.resv.lose{color:#e05050}
 .ress{font-size:11px;font-weight:700;letter-spacing:.25em;color:var(--mut)}
 :root:not([data-theme=dark]) .resv.win{color:#e8b54a}
+#gorow{display:flex;justify-content:center;align-items:center;gap:8px;margin-top:20px}#gorow #go{margin:0}#series{display:flex;gap:6px}#series[hidden]{display:none}#series button{min-width:44px;padding:3px 8px;font-weight:800}#series button.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac)}#series .serp{font-weight:800;color:var(--ac)}   /* BATTLE SERIES: 2x / 3x / 4x obok Auto (w jednym wierszu z #go) */
 #go{display:block;width:auto;margin:20px auto 0;padding:6px 16px;background:var(--ac);color:var(--on-ac);border-color:var(--ac);font-weight:700}
 /* DPS METER: średnie obrażenia na Twoją turę; dymek = obrażenia z każdego źródła */
 /* odznaka: ikonka wykresu + liczba + „dmg / turn”; po najechaniu podnosi się i świeci (zaprasza do sprawdzenia szczegółów) */
@@ -497,7 +498,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 <div style="position:relative"><div class="fig" id="fm"></div><b id="nm"></b><div class="hpw" tabindex="0"><div class="bar"><i class="hpg" id="hg2" style="width:100%"></i><i id="hp2" style="width:100%"></i><span class="hpv" id="hpv2"></span><span class="hpp" id="hpp2"></span></div><small id="ht2" class="hptip"></small></div><div class="bar rage" style="visibility:hidden" aria-hidden="true"></div></div></div>
 <div class="skillbar" id="skillbar"><div class="sk" data-key="1"><span class="kb">1</span></div><div class="sk" data-key="2"><span class="kb">2</span></div><div class="sk" data-key="3"><span class="kb">3</span></div><div class="sk" data-key="4"><span class="kb">4</span></div><div class="sk" data-key="5"><span class="kb">5</span></div><div class="sk" data-key="Q"><span class="kb">Q</span></div><div class="sk" data-key="W"><span class="kb">W</span></div><div class="sk" data-key="E"><span class="kb">E</span></div><div class="sk" data-key="R"><span class="kb">R</span></div><div class="sk" data-key="Tab"><span class="kb">Tab</span></div></div>
 <div class="info" id="info"></div>
-<div id="loot" hidden></div><button id="go">Fight!</button><div id="log" hidden></div></div>
+<div id="loot" hidden></div><div id="gorow"><button id="go">Fight!</button></div><div id="log" hidden></div></div>
 <div class="card" id="invcard"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Backpack</h2><button id="sellbtn" title="Sell mode: click an item or drop it on this button">💰 Sell</button></div><div class="inv" id="inv"></div></div>
 </div>
 <div class="card" id="fish-side" hidden><h2>Fish selection</h2><div id="body-fish-side"></div></div>
