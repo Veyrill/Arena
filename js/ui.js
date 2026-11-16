@@ -3518,7 +3518,7 @@ $('go').onclick = async ev => {
     render();
     const io = { sim: false, manual: true }; fightIo = io;
     { const sb = $('skillbar'); if (sb) sb.classList.add('fighting'); }   // w trakcie walki slot ataku jest szary poza Twoją turą   // manual: atak gracza dopiero po kliknięciu slotu 1 / klawisza 1 (symulacja szans – bez czekania)
-    let lastBeat = 0;   // TAKTY: każde zdarzenie walki (Twój ruch, ruch wroga, efekt) startuje równy takt po poprzednim
+    let lastBeat = performance.now();   // start walki = pierwszy takt: Auto czeka jeden takt przed pierwszym ciosem (pełne HP obu stron widać na starcie)   // TAKTY: każde zdarzenie walki (Twój ruch, ruch wroga, efekt) startuje równy takt po poprzednim
     for (const ms of fightGen(mob, io)) {
       const tempo = skipFight ? AUTO_SPEED : 1; fightTempo(tempo);
       if (ms === 'wait') { if (!skipFight) await waitAttack(); continue; }   // Auto: bez osobnej pauzy – odstęp robi takt
