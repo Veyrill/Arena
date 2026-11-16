@@ -103,6 +103,7 @@ export let inv = DEV ? [
   { isRecipe: 1, kind: 'abyssal_broth', sl: 'recipe', r: 4, name: 'Recipe: Abyssal Broth', val: 400, s: {} },   // przepis (zwój, legendary) – z Lewiatana
   { isChest: 1, sl: 'chest', r: 2, name: 'Sunken Chest', qty: 999, val: 100, s: {} },   // DEV: Sunken Chest (kliknięcie = otwarcie)
   { isBanner: 1, sl: 'banner', r: 3, name: 'War Banner', val: 300, s: {} },   // DEV: War Banner (kliknięcie = Battle Series +1)
+  { isStrap: 1, sl: 'strap', r: 2, name: 'Backpack Strap', val: 100, s: {} },   // DEV: Backpack Strap (kliknięcie = +1 miejsce w plecaku; w DEV plecak i tak bez limitu)
   // DEV: dania z Cooking (po 5 sztuk; wartość = 10 ryb × 1.2)
   ...[['cooked_carp', 'Cooked Crucian Carp', 1, 180], ['cooked_cod', 'Cooked Cod', 1, 480], ['grilled_catfish', 'Grilled Catfish', 2, 960], ['steamed_barracuda', 'Grilled Barracuda', 2, 1800],
     ['anglerfish_stew', 'Anglerfish Stew', 3, 3600], ['shark_steak', 'Shark Stew', 3, 6000], ['abyssal_broth', 'Abyssal Broth', 4, 12000]]

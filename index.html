@@ -395,6 +395,10 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 .slot[data-slot=weapon] img[src*="/weapon/"]{width:64px!important;height:64px!important;image-rendering:pixelated!important}
 .inv{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:5px}
 .cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border:2px solid var(--bd);border-radius:8px;cursor:pointer;background:var(--card)}.cell .ic{font-size:32px}.cell.r0{border-color:var(--c0)}.cell.r1{border-color:var(--c1)}.cell.r2{border-color:var(--c2)}.cell.r3{border-color:var(--c3)}.cell.r4{border-color:#f2c200;box-shadow:0 0 8px #f2c20088}.cell.r5{border-color:#e53935;box-shadow:0 0 8px #e5393588}
+/* PLECAK z limitem: wolne miejsca = przygaszone pola (bez kłódek); licznik „8 / 11” przy nagłówku, czerwony przy pełnym, miga przy próbie przekroczenia */
+.cell.em{cursor:default!important;background:color-mix(in srgb,var(--bd) 14%,transparent);border-color:color-mix(in srgb,var(--bd) 70%,transparent)}
+.invcap{font-size:12px;color:var(--mut);letter-spacing:0}.invcap.full{color:#ff6b5a}.invcap.flash{animation:invflash .25s 3 alternate}
+@keyframes invflash{to{color:#fff;text-shadow:0 0 6px #ff6b5a}}
 #sellbtn.on{background:var(--ac);color:var(--on-ac);border-color:var(--ac)}
 #tip{position:fixed;display:none;z-index:50;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;font-size:18px;line-height:1.35;max-width:315px;pointer-events:none;box-shadow:0 4px 14px #0006}
 #tip b{display:block;font-size:19px}
@@ -546,7 +550,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 <div class="skillbar" id="skillbar"><div class="sk" data-key="1"><span class="kb">1</span></div><div class="sk" data-key="2"><span class="kb">2</span></div><div class="sk" data-key="3"><span class="kb">3</span></div><div class="sk" data-key="4"><span class="kb">4</span></div><div class="sk" data-key="5"><span class="kb">5</span></div><div class="sk" data-key="Q"><span class="kb">Q</span></div><div class="sk" data-key="W"><span class="kb">W</span></div><div class="sk" data-key="E"><span class="kb">E</span></div><div class="sk" data-key="R"><span class="kb">R</span></div></div>
 <div class="info" id="info"></div>
 <div id="loot" hidden></div><div id="gorow"><button id="go">Fight!</button></div><div id="log" hidden></div></div>
-<div class="card" id="invcard"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Backpack</h2><button id="sellbtn" title="Sell mode: click an item or drop it on this button">💰 Sell</button></div><div class="inv" id="inv"></div></div>
+<div class="card" id="invcard"><div class="row" style="justify-content:space-between"><h2 style="margin:0;display:flex;gap:10px;align-items:baseline">Backpack<b id="invcap" class="invcap"></b></h2><button id="sellbtn" title="Sell mode: click an item or drop it on this button">💰 Sell</button></div><div class="inv" id="inv"></div></div>
 </div>
 <div class="card" id="fish-side" hidden><h2>Fish selection</h2><div id="body-fish-side"></div></div>
 <div class="card" id="act-side" hidden><h2>Act selection</h2><div id="body-act-side"></div></div>
