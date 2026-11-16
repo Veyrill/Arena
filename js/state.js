@@ -92,6 +92,7 @@ export let inv = DEV ? [
   ...['hunter_helmet', 'hunter_parka', 'hunter_wellies', 'hunter_lantern'].map(k => ({ isDesign: 1, kind: k, sl: 'design', r: 3,
     name: 'Crafting Design: ' + { hunter_helmet: 'Sea Raider Helmet', hunter_parka: 'Sea Raider Parka', hunter_wellies: 'Sea Raider Wellies', hunter_lantern: 'Sea Raider Lantern' }[k], val: 200, s: {} })),
   { isDesign: 1, kind: 'tide_ring', sl: 'design', r: 3, name: 'Crafting Design: Ring of the Tide', val: 200, s: {} },   // projekt (epic) z Barrakudy
+  { isDesign: 1, kind: 'rod', sl: 'design', r: 0, name: 'Crafting Design: Stick and String', val: 50, s: {} },   // projekt wędki (Forest, 5%, jednorazowo) – 500 złota
   { isGuide: 1, sl: 'guide', r: 2, name: 'Fishing Guide', qty: 10, val: 50, s: {} },   // DEV: Fishing Guide (kliknięcie = +1 Fishing Skill Point)
   { isRecipe: 1, kind: 'cooked_carp', sl: 'recipe', r: 1, name: 'Recipe: Cooked Crucian Carp', val: 50, s: {} },  // przepis (zwój)
   { isRecipe: 1, kind: 'cooked_cod', sl: 'recipe', r: 1, name: 'Recipe: Cooked Cod', val: 50, s: {} },   // przepis (zwój)

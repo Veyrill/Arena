@@ -255,6 +255,7 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 6307 | Crafting Design: Sea Raider Wellies |
 | 6308 | Crafting Design: Sea Raider Lantern |
 | 6309 | Crafting Design: Ring of the Tide |
+| 6310 | Crafting Design: Stick and String (Forest, 5%, jednorazowo; crafting za 500 złota) |
 
 ## Other
 

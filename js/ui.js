@@ -146,7 +146,9 @@ const canCraftFish = sl => { const d = CRAFT_FISH[sl]; return d.mats.every(([k, 
 //   Seasoned Angler (rare) = część Angler (uncommon) + 5 Catfish Scale
 //   Sea Raider (epic)      = część Seasoned Angler (rare) + 5 Light of Anglerfish
 //   Ring of the Tide (epic) = 9 Eye of Cod + 9 Catfish Scale + 9 Barracuda Fang + 9 Light of Anglerfish (bez przedmiotu bazowego)
+const ROD_DESIGN_GOLD = 500, ROD_DESIGN_CH = 0.05;   // projekt wędki Stick and String: koszt craftingu (złoto) i szansa dropu w Forest
 const GEAR_RECIPES = [
+  { to: 'rod', gold: ROD_DESIGN_GOLD, mats: [] },   // Stick and String – 500 złota (projekt z Forest)
   { from: 'boonie', to: 'seasoned_cap', mats: [['catfish_scale', 5]] },
   { from: 'parka', to: 'seasoned_parka', mats: [['catfish_scale', 5]] },
   { from: 'wellies', to: 'seasoned_wellies', mats: [['catfish_scale', 5]] },
@@ -159,13 +161,14 @@ const GEAR_RECIPES = [
 ];
 const gearRecipeOf = to => GEAR_RECIPES.find(r => r.to === to);
 const hasFixed = k => inv.some(x => x.fixed === k);   // składnik musi leżeć w plecaku (założony na stronie 2 się nie liczy)
-const canCraftGear = to => { const r = gearRecipeOf(to); return !!r && knowsDesign(to) && (!r.from || hasFixed(r.from)) && r.mats.every(([m, q]) => matQty(m) >= q); };
+const canCraftGear = to => { const r = gearRecipeOf(to); return !!r && knowsDesign(to) && (!r.from || hasFixed(r.from)) && r.mats.every(([m, q]) => matQty(m) >= q) && (!r.gold || window.G_GLOBAL >= r.gold); };
 window.craftGear = to => {
   if (busy || !canCraftGear(to)) return;
   const r = gearRecipeOf(to);
   if (r.from) inv.splice(inv.findIndex(x => x.fixed === r.from), 1);    // stary odpowiednik znika z plecaka
   r.mats.forEach(([k, q]) => { const m = inv.find(x => x.mat && x.sl === k); m.qty -= q; if (m.qty <= 0) inv.splice(inv.indexOf(m), 1); });
-  const it = makeFixed(to); it.fresh = 1; inv.push(it);
+  if (r.gold) window.G_GLOBAL -= r.gold;
+  const it = to === 'rod' ? makeRod() : makeFixed(to); it.fresh = 1; inv.push(it);
   say(`Crafted: <b class="t${it.r}">${it.name}</b>!`, 'crit');
   render();
   flyToInv('gear:' + to, it);   // przedmiot wlatuje do plecaka
@@ -647,7 +650,11 @@ const makeRecipe = k => ({ isRecipe: 1, kind: k, sl: 'recipe', r: RECIPES[k].r, 
 // kind = klucz przedmiotu wynikowego (FIXED_ITEMS); nauczone przepisy: fishing.designs[kind] = true. Special drop z Suma (10%, jednorazowo, każdy osobno).
 const DESIGN_KINDS = ['seasoned_cap', 'seasoned_parka', 'seasoned_wellies', 'seasoned_lantern'];
 // rzadkość projektu = rzadkość przedmiotu, którego uczy (Seasoned Angler: rare, Sea Raider: epic); wartość: rare 100, epic 200
-const makeDesign = k => ({ isDesign: 1, kind: k, sl: 'design', r: FIXED_ITEMS[k].r, name: `Crafting Design: ${FIXED_ITEMS[k].name}`, val: FIXED_ITEMS[k].r >= 3 ? 200 : 100, s: {} });
+// PROJEKT WĘDKI (kind 'rod'): uczy craftingu Stick and String (szara wędka) za 500 złota. 5% z każdego przeciwnika w Forest, tylko raz
+// (po zdobyciu – fishing.rodDesignGot – znika z puli dropów, nawet zanim gracz go przeczyta). ID 6310.
+const designItem = k => k === 'rod' ? { r: ROD_TIERS[0].r, name: ROD_TIERS[0].name, fp: ROD_TIERS[0].fp, sl: 'weapon' } : FIXED_ITEMS[k];   // dane przedmiotu wynikowego
+const makeDesign = k => ({ isDesign: 1, kind: k, sl: 'design', r: designItem(k).r, name: `Crafting Design: ${designItem(k).name}`, val: k === 'rod' ? 50 : designItem(k).r >= 3 ? 200 : 100, s: {} });
+const rodDesignInPool = () => !(fishing.rodDesignGot || (fishing.designs && fishing.designs.rod));
 const knowsDesign = k => !!(fishing.designs && fishing.designs[k]);
 // komplet Sea Raider (epic) – z Żabnicy (Anglerfish) wypadają PROJEKTY Crafting Design do tych przedmiotów (po 10%, każdy jednorazowo, flaga: fishing['design_' + klucz]),
 // tak jak projekty Seasoned Angler z Suma. Przedmioty wykonuje się potem w Crafting → Fishing Gear: część Seasoned Angler + 5 Light of Anglerfish (GEAR_RECIPES).
@@ -1958,6 +1965,7 @@ function flashNav(v) {
 }
 // dymek Crafting Design: co dokładnie powstanie – nazwa, slot, FP, set (z bonusami) i przepis
 function designTip(k) {
+  if (k === 'rod') return `<br><br><b class="t${ROD_TIERS[0].r}" style="display:inline">${ROD_TIERS[0].name}</b><br>Fishing Rod<br>FP: <b class="t2" style="display:inline">${ROD_TIERS[0].fp}</b><br><br>Recipe:<br>• ${ROD_DESIGN_GOLD} gold`;
   const it = FIXED_ITEMS[k], rc = gearRecipeOf(k), slot = it.sl === 'lantern' ? 'Lantern' : (SL[it.sl] ? SL[it.sl][1] : it.sl);
   const sk = Object.keys(FISH_SETS).find(x => FISH_SETS[x].pieces.includes(k)), S = sk ? FISH_SETS[sk] : null;
   return `<br><br><b class="t${it.r}" style="display:inline">${it.name}</b><br>Fishing ${slot}<br>FP: <b class="t2" style="display:inline">${it.fp}</b>`
@@ -2072,8 +2080,9 @@ const tokenMob = m => { const i = EXP_MOBS.indexOf(m); return i >= 0 && i >= TOK
 const mobMats = m => [...(m.mats || []), ...(tokenMob(m) ? [['upgrade_token', TOKEN_DROP]] : [])];
 // LISTA DROPÓW (wyprawa): ikona skrzyni (assets/ui/tup_plunder.png) w prawym górnym rogu okna walki, w wierszu Back;
 // dymek po najechaniu: materiały przeciwnika i Upgrade Token z szansami (ikona, nazwa, %)
-const dropTip = m => { const L = mobMats(m);
-  return `<b>Drops</b>` + (L.length ? L.map(([k, p]) => `<span class='drrow'>${matIco(k, 32, 24)}<span class='t${MATS[k].r || 0}'>${MATS[k].name}</span><em>${+(p * 100).toFixed(1)}%</em></span>`).join('') : '<small>No drops</small>'); };
+const dropTip = m => { const L = mobMats(m), rd = LOCS[0].mobs.includes(m) && rodDesignInPool(), dz = rd ? makeDesign('rod') : null;
+  return `<b>Drops</b>` + (L.length || rd ? L.map(([k, p]) => `<span class='drrow'>${matIco(k, 32, 24)}<span class='t${MATS[k].r || 0}'>${MATS[k].name}</span><em>${+(p * 100).toFixed(1)}%</em></span>`).join('')
+    + (rd ? `<span class='drrow'>${ico(dz, 32)}<span class='t${dz.r}'>${dz.name}</span><em>${ROD_DESIGN_CH * 100}%</em></span>` : '') : '<small>No drops</small>'); };   // + projekt wędki (Forest, dopóki nie zdobyty)
 function renderInfo(m) {
   const r = Math.round, d = der(), s = mstats(m);
   const L = live && live.mob === m ? live : null, c = L ? L.M : s;
@@ -2212,7 +2221,9 @@ function render() {
   const fishRecipe = sl => { const dd = CRAFT_FISH[sl]; return `<div class="recipe"><div class="cell r1" style="width:64px;height:64px" data-it="craft:${sl}">${ico(makeCraftFish(sl))}</div><div style="display:flex;flex-direction:column;gap:6px;margin-top:4px">${dd.mats.map(([k, q]) => `<div style="display:flex;align-items:center;gap:4px;${matQty(k) < q ? 'color:#e53935' : ''}"><span data-it="mat:${k}" style="display:inline-flex;cursor:help">${matIco(k, 32, 30)}</span><span>×${q}</span></div>`).join('')}</div><div style="${window.G_GLOBAL < dd.gold ? 'color:#e53935' : ''};margin-top:2px;font-weight:700">Cost: ${dd.gold}</div><button onclick="window.craftFish('${sl}')"${!canCraftFish(sl) || busy ? ' disabled' : ''} style="margin-top:4px">Craft</button></div>`; };
   // przepis sprzętu (Seasoned Angler, Sea Raider, Ring of the Tide): wynik (64 px) + składniki: przedmiot niższego tieru ×1 (jeśli jest) i materiały ×ilość (brakujące na czerwono)
   const fixedIco = (k, px) => ico(makeFixed(k)).replace(/width:\d+px;height:\d+px/, `width:${px}px;height:${px}px`);
-  const gearRecipeHtml = ({ from, to, mats }) => {
+  const gearRecipeHtml = ({ from, to, mats, gold }) => {
+    if (to === 'rod') return recipeRow({ compact: 1, key: 'gear:rod', r: ROD_TIERS[0].r, ico: ico(makeRod()).replace(/width:\d+px;height:\d+px/, 'width:48px;height:48px'), it: 'rod:new', name: ROD_TIERS[0].name,
+      mats: [], gold, can: canCraftGear('rod'), btn: 'Craft', onclick: `window.craftGear('rod')`, vis: view === 'craft' && craftTab === 'gear' });
     return recipeRow({ compact: 1, key: 'gear:' + to, r: FIXED_ITEMS[to].r, ico: fixedIco(to, 48), it: 'fixed:' + to, name: FIXED_ITEMS[to].name,
       mats: [...(from ? [{ big: fixedIco(from, 32), it: 'fixed:' + from, name: FIXED_ITEMS[from].name, have: hasFixed(from) ? 1 : 0, need: 1 }] : []), ...mats.map(([m, q]) => ({ ...matRow(m, q), big: matIco(m, 32, 26) }))],
       can: canCraftGear(to), btn: 'Craft', onclick: `window.craftGear('${to}')`, vis: view === 'craft' && craftTab === 'gear' }); };
@@ -2220,7 +2231,7 @@ function render() {
   // kolejność: najpierw Seasoned Angler (rare), potem Sea Raider (epic), na końcu Ring of the Tide – jak w GEAR_RECIPES
   const learnedGear = GEAR_RECIPES.filter(r => knowsDesign(r.to));
   const gearRecipe = learnedGear.length ? `<div class="rlist rfix">${learnedGear.map(gearRecipeHtml).join('')}</div>`
-    : `<div class="rlist rfix"><small style="color:var(--mut)">No crafting designs learned yet. Find Crafting Designs while fishing.</small></div>`;   // przepisy widoczne dopiero po nauce z Crafting Design
+    : `<div class="rlist rfix"><small style="color:var(--mut)">No crafting designs learned yet. Find Crafting Designs while fishing or fighting in the Forest.</small></div>`;   // przepisy widoczne dopiero po nauce z Crafting Design
   const craftSt = (($('body-craft') || document).querySelector('.rlist') || {}).scrollTop || 0;   // pozycja przewinięcia listy Crafting
   $('body-craft').innerHTML = `<div class="ctabs"><button data-ctab="scrolls" class="${craftTab === 'scrolls' ? 'on' : ''}">Scrolls</button><button data-ctab="gear" class="${craftTab === 'gear' ? 'on' : ''}">Fishing Gear</button></div>` + (craftTab === 'gear' ? gearRecipe : scrollRecipe);
   { const nl = $('body-craft').querySelector('.rlist'); if (nl) nl.scrollTop = craftSt; }
@@ -2889,7 +2900,7 @@ function equip(n) {
     if (knowsDesign(i.kind)) { say(`You already know this design.`, 'miss'); return; }
     fishing.designs = fishing.designs || {}; fishing.designs[i.kind] = true; newRecipes.add('gear:' + i.kind);   // przebłysk na wierszu przepisu
     inv.splice(n, 1);
-    say(`Learned: <b class="t${FIXED_ITEMS[i.kind].r}">${FIXED_ITEMS[i.kind].name}</b> – now craftable in Crafting → Fishing Gear!`, 'crit');
+    say(`Learned: <b class="t${designItem(i.kind).r}">${designItem(i.kind).name}</b> – now craftable in Crafting → Fishing Gear!`, 'crit');
     render(); flashNav('craft'); return;
   }
   delete i.fresh;
@@ -3471,6 +3482,9 @@ $('go').onclick = async ev => {
       if (tokDrop) { const d = MATS.upgrade_token;
         { loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: 'upgrade_token' }); say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`); } }
       else if (mob.drop && mob.drop.length) { const it = mk(mob.drop, me.lvl < 10 && Math.random() < 0.10 ? 'weapon' : undefined, undefined, actOfMob(mob)); it.fresh = 1; if (view == 'exp') loot.push(it); else inv.push(it); say(`Loot: <b class="t${it.r}">${it.name}</b>`); }   // wyprawa: do plecaka dopiero po Collect   // Akty 2 i 3: na razie bez dropów
+      // PROJEKT WĘDKI: 5% z każdego przeciwnika w Forest (tylko wyprawa), jednorazowo – po zdobyciu znika z puli
+      if (view == 'exp' && LOCS[0].mobs.includes(mob) && rodDesignInPool() && Math.random() < ROD_DESIGN_CH) {
+        fishing.rodDesignGot = true; const dz = makeDesign('rod'); dz.fresh = 1; loot.push(dz); say(`Loot: <b class="t${dz.r}">${dz.name}</b>`, 'crit'); }
       for (const [k, ch] of (mob.mats || [])) if (Math.random() < ch) {   // materiały przeciwnika (Upgrade Token losowany wyżej, zamiast przedmiotu)
         if (view != 'exp') { giveMat(k); continue; }
         const d = MATS[k]; loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: k });   // _mk: klucz materiału (po Collect → giveMat)
@@ -3548,6 +3562,7 @@ function updateTip(x, y, target) {
     if (it === 'upgrade') i = upgradeItem;
     else if (it === 'upgprev') i = isUpgradable(upgradeItem) ? previewGear(upgradeItem) : null;
     else if (it.startsWith('fixed:')) i = makeFixed(it.split(':')[1]);
+    else if (it === 'rod:new') i = makeRod();   // wynik przepisu wędki (Crafting → Fishing Gear)
     else if (it.startsWith('dish:')) i = makeDish(it.split(':')[1]);   // danie w zakładce Cooking   // przepisy craftingu sprzętu: Seasoned Angler, Sea Raider (wynik i składnik)
     else if (it === 'craft:ring' || it === 'craft:amulet') i = makeCraftFish(it.split(':')[1]);
     else if (it.startsWith('craft:scroll_')) { const k = it.split('_')[1]; i = { isScroll: true, kind: k, name: SCROLLS[k].name, val: 0, noSell: true, qty: 1 }; }
@@ -3987,6 +4002,7 @@ DISH_KEYS.forEach((k, n) => regI(6101 + n, 'Food', DISHES[k].name, () => makeDis
 DISH_KEYS.forEach((k, n) => regI(6201 + n, 'Recipe', RECIPES[k].name, () => makeRecipe(k), { recipe: k }));
 ['seasoned_cap', 'seasoned_parka', 'seasoned_wellies', 'seasoned_lantern', 'hunter_helmet', 'hunter_parka', 'hunter_wellies', 'hunter_lantern', 'tide_ring']
   .forEach((k, n) => regI(6301 + n, 'Crafting Design', makeDesign(k).name, () => makeDesign(k), { design: k }));
+regI(6310, 'Crafting Design', makeDesign('rod').name, () => makeDesign('rod'), { design: 'rod' });   // projekt wędki Stick and String (Forest, 5%, jednorazowo)
 regI(6401, 'Other', GUIDE.name, () => ({ isGuide: 1, sl: 'guide', r: GUIDE.r, name: GUIDE.name, qty: 1, val: GUIDE.val, s: {} }), { guide: true, stack: true });
 regI(6402, 'Other', CHEST.name, () => makeChest(), { chest: true, stack: true });
 // ID z istniejącego przedmiotu (np. z plecaka) – do przyszłych zapisów, statystyk, logów; w grze niewidoczne
