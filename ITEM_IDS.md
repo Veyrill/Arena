@@ -263,7 +263,7 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 |---|---|
 | 6401 | Fishing Guide (stos) |
 | 6402 | Sunken Chest (stos) |
-| 6403 | War Banner (jeden na akt, 2% z przeciwników aktu na wyprawie) |
+| 6403 | War Banner (jeden na akt: 2% z przeciwników aktu na wyprawie; kliknięcie = Battle Series +1, maks. x4) |
 
 ## Artifacts
 
