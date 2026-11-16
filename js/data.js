@@ -309,7 +309,7 @@ export const SKILL_ICON_CENTER = SKI('skill_surprise', '⚡', 32);   // środkow
 // Ikony klątw (styl WoW, 128×128) z assets/skills/curses – w dużym nodzie 40 px, skalowane gładko (to nie pixel art)
 // Gdy pliku nie ma w assets/skills/curses/, szuka dalej w assets/skills/, assets/curses/ i assets/ – dopiero potem pokazuje emoji.
 const CUR_DIRS = ['assets/skills/curses/', 'assets/skills/', 'assets/curses/', 'assets/'];
-const CUR = (f, e) => `<img src="${CUR_DIRS[0]}${f}.png" alt="" data-n="0" style="display:block;width:40px;height:40px;border-radius:6px" onerror="const d=${JSON.stringify(CUR_DIRS).replace(/"/g, "'")},n=+this.dataset.n+1;this.dataset.n=n;if(d[n])this.src=d[n]+'${f}.png';else this.outerHTML='${e}'">`;
+const CUR = (f, e) => `<img src="${CUR_DIRS[0]}${f}.png" alt="" data-n="0" style="display:block;width:32px;height:32px;border-radius:4px;image-rendering:pixelated" onerror="const d=${JSON.stringify(CUR_DIRS).replace(/"/g, "'")},n=+this.dataset.n+1;this.dataset.n=n;if(d[n])this.src=d[n]+'${f}.png';else this.outerHTML='${e}'">`;
 
 // ===== DRZEWKO KLĄTW (CURSES) – prawy górny róg =====
 // Układ: pień po przekątnej (45°) → rozwidlenie → 3 równoległe, poziome tory (y = -345 / -225 / -105).

@@ -1575,7 +1575,7 @@ document.addEventListener('click', e => {
 const fmtN = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e4 ? (v / 1e3).toFixed(1) + 'K' : Math.round(v).toLocaleString('en-US');
 // ikona źródła obrażeń w dymku: Attack = obecna broń, umiejętność = jej ikona, pasywka = ikona z drzewka (brak pliku → emoji)
 const DPS_PAS = { 'Lightning Bolt': 'bolt', 'Fire Energy': 'fire', 'Burning': 'burn', 'Bleed': 'bleed', 'Death Sentence': 'doom', 'Deep Wound': 'rend', 'Bleeding': 'rend' };
-function dpsIco(k, wpx = 20) {   // wpx: rozmiar ikony broni (lista 20 px, historia 32 px)
+function dpsIco(k, wpx = 32) {   // wpx: rozmiar ikony broni (16 px ×2 = 32 px – lista i historia)
   const box = c => `<span class="dpi">${c}</span>`;
   if (k === 'Attack') return box(eq1.weapon ? sizeIco(eq1.weapon, wpx) : '👊');
   const ab = Object.keys(ABILS).map(id => abEff(id)).find(a => a.n === k); if (ab) return box(ab.img ? `<img src="${ASSETS_DIR}/skills/abilities/${ab.img}.png" alt="" onerror="this.outerHTML='${ab.ico}'">` : ab.ico);   // także nazwy po morphie (np. Siphoning Strike)
@@ -1600,7 +1600,7 @@ function setDps(by, turns) {
     + `<span class="dpv">${fmtN(v)}</span></div></div>`).join('');
   // PANEL DPS (zamiast dymka nad kafelkiem): szczegóły w karcie po prawej, widocznej w trakcie walki
   const nr = dpsRowsMax(), empty = '<div class="dprow dpe"><span class="dpi"></span><div class="dpbar"></div></div>'.repeat(Math.max(0, nr - ent.length));
-  { const ps = $('body-dps-side'); if (ps) ps.innerHTML = histHtml() + `<div class="dpst" style="min-height:${nr * 25 - 3}px">${rows}${empty}`
+  { const ps = $('body-dps-side'); if (ps) ps.innerHTML = histHtml() + `<div class="dpst" style="min-height:${nr * 37 - 3}px">${rows}${empty}`
     + `</div>`; }   // bez podpisu Total; stała wysokość (puste wiersze) – panel nie rośnie w trakcie walki
 }
 // RAGE (pasek pod zdrowiem bohatera): 0–100, na start walki 0; każdy zwykły atak gracza +RAGE_HIT (na razie nic nie zużywa rage)
@@ -1657,8 +1657,8 @@ function renderArt() {
   const tiles = TOKEN_UPG.map(u => { const l = tupLvl(u.k), mx = l >= u.max, c = mx ? 0 : (u.gold || u.cost)[l], can = u.gold ? window.G_GLOBAL >= c : tok >= c;
     return `<div class="tupc${mx ? ' max' : ''}"><div class="tupico"><img src="${ASSETS_DIR}/${u.img}" alt="" onerror="this.remove()"></div><b class="tupn">${u.n}</b><span class="tupl">${l} / ${u.max}</span>`
       + `<div class="tupd">${u.d}</div><div class="tupe">${fx(u, l)}${mx ? '' : ` <span>→</span> <em>${fx(u, l + 1)}</em>`}</div>`
-      + `<button class="bkac tupbtn" onclick="window.tupBuy('${u.k}')"${mx || !can || busy ? ' disabled' : ''}>${mx ? 'MAX' : u.gold ? c.toLocaleString('en-US') + goldIco(18) : c + matIco('upgrade_token', 24, 18)}</button></div>`; }).join('');
-  body.innerHTML = `<div class="tuptok">${matIco('upgrade_token', 24, 20)}<b>${tok}</b> Upgrade Tokens</div><div class="tuprow">${tiles}</div>`;
+      + `<button class="bkac tupbtn" onclick="window.tupBuy('${u.k}')"${mx || !can || busy ? ' disabled' : ''}>${mx ? 'MAX' : u.gold ? c.toLocaleString('en-US') + goldIco(18) : c + matIco('upgrade_token', 32, 24)}</button></div>`; }).join('');
+  body.innerHTML = `<div class="tuptok">${matIco('upgrade_token', 32, 24)}<b>${tok}</b> Upgrade Tokens</div><div class="tuprow">${tiles}</div>`;
 }
 // kupno poziomu: zabiera koszt w Upgrade Token (albo w złocie – Battle Series); Bounty Board od razu dokłada quest do puli, Swift Couriers skraca obecny licznik
 window.tupBuy = k => {
@@ -2547,8 +2547,10 @@ function render() {
       // przybliżanie względem ŚRODKA obecnego widoku: punkt planszy na środku ekranu zostaje na miejscu
       // (pozycja na ekranie = pan + punkt × zoom, więc przy zmianie zoomu pan skalujemy tym samym współczynnikiem)
       const z0 = currentZoom;
-      setCurrentZoom(e.deltaY < 0 ? Math.min(2.5, currentZoom + 0.15) : Math.max(0.5, currentZoom - 0.15));
-      const k = currentZoom / z0; setPanX(panX * k); setPanY(panY * k);
+      // stopnie przybliżenia 0.5 / 1 / 2 – ikony nodów (32 px i 16 px) zawsze w równej skali pikseli (×0.5 / ×1 / ×2), bez rozmycia
+      const ZS = [0.5, 1, 2], zi = ZS.reduce((b, z, i) => Math.abs(z - z0) < Math.abs(ZS[b] - z0) ? i : b, 0);
+      setCurrentZoom(ZS[Math.max(0, Math.min(ZS.length - 1, zi + (e.deltaY < 0 ? 1 : -1)))]);
+      const k = currentZoom / z0; setPanX(Math.round(panX * k)); setPanY(Math.round(panY * k));
       clampPan();
       const tc = $('treeContent');
       if (tc) tc.style.transform = `translate(${panX}px,${panY}px) scale(${currentZoom})`;
