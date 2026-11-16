@@ -1595,7 +1595,7 @@ const histHtml = () => { const L = dpsHist.slice(-5);   // 5 ostatnich ruchów (
 function setDps(by, turns) {
   const ent = Object.entries(by || {}).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
   const tot = ent.reduce((a, e) => a + e[1], 0), top = ent.length ? ent[0][1] : 1;
-  { const v = $('dps-tot'); if (v) v.innerHTML = turns ? `${fmtN(tot / turns)} <small>/ DPT</small>` : '–'; }   // nagłówek panelu DPS (prawy górny róg): łączne obrażenia na turę
+  { const v = $('dps-tot'); if (v) v.textContent = turns ? fmtN(tot / turns) : '–'; }   // nagłówek panelu: sama liczba (podpis „average damage per turn” jest w index.html)   // nagłówek panelu DPS (prawy górny róg): łączne obrażenia na turę
   const rows = ent.map(([k, v]) => `<div class="dprow">${dpsIco(k)}<div class="dpbar"><i style="width:${v / top * 100}%"></i><span class="dpn">${k}</span>`
     + `<span class="dpv">${fmtN(v)}</span></div></div>`).join('');
   // PANEL DPS (zamiast dymka nad kafelkiem): szczegóły w karcie po prawej, widocznej w trakcie walki

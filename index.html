@@ -372,6 +372,9 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 .dphc em{font-style:normal;font-size:11px;font-weight:700;color:var(--tx)}.dphc em.cr{color:#ffb347}
 .dpar{color:#8a7a62;font-size:11px;margin-top:12px}
 .dprow.dpe .dpi{background:#17130e;border-color:#2a241c}.dprow.dpe .dpbar{background:#17130e}
+/* PANEL DPS – nagłówek: duża liczba na środku (średnie obrażenia na Twoją turę), pod nią podpis; linia oddziela go od historii ruchów */
+.dpshd{display:flex;flex-direction:column;align-items:center;gap:0;margin:0 0 8px;padding-bottom:6px;border-bottom:1px solid var(--bd);text-transform:none;letter-spacing:0}
+.dpsbig{font-size:30px;font-weight:800;line-height:1.1;color:#e8793a}.dpshd span{font-size:11px;color:var(--mut)}
 .dpstot{font-size:18px;font-weight:800;letter-spacing:0;color:#e8793a;text-transform:none}.dpstot small{font-size:12px;color:var(--mut);margin-left:2px}   /* panel DPS: łączne obrażenia na turę (prawy górny róg) */
 #log[hidden]{display:none}   /* log walki ukryty, dopóki gracz nie kliknie „Show battle log” */
 #log{height:100px;overflow:auto;font-size:12px;border:1px solid var(--bd);border-radius:8px;padding:5px;margin:8px 0}
@@ -540,7 +543,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 </div>
 <div class="card" id="fish-side" hidden><h2>Fish selection</h2><div id="body-fish-side"></div></div>
 <div class="card" id="act-side" hidden><h2>Act selection</h2><div id="body-act-side"></div></div>
-<div class="card" id="dps-side" hidden><h2 style="display:flex;justify-content:space-between;align-items:center;gap:12px">Damage per turn<b id="dps-tot" class="dpstot">–</b></h2><div id="body-dps-side"></div></div>
+<div class="card" id="dps-side" hidden><h2 class="dpshd"><b id="dps-tot" class="dpsbig">–</b><span>average damage per turn</span></h2><div id="body-dps-side"></div></div>
 <div class="card" id="quest-side" hidden><h2 style="display:flex;justify-content:space-between;align-items:center;gap:10px">Quests<span data-questcd style="font-size:13px;color:var(--mut);letter-spacing:0;text-transform:none"></span></h2><div id="body-quest-side"></div></div>
 </div>
 <script type="module">
