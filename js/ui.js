@@ -1215,7 +1215,7 @@ function renderAtkSlot() {
   { const d = der(); s.dataset.tip = `<b>Attack</b>Cost: none<br>Generates: ${RAGE_HIT + rageGenB()} Rage<br>Cooldown: none<br>Strikes with your ${w ? 'weapon' : 'fists'} for ${Math.round(d.min)}–${Math.round(d.max)} damage. Uses your turn.<br>Use it when you have no Rage for abilities.`; s.removeAttribute('title'); }
   if (s.dataset.k === key) return; s.dataset.k = key;
   s.classList.add('atk');
-  s.innerHTML = (w ? sizeIco(w, 48) : '<span class="ic">👊</span>') + '<span class="kb">1</span>';
+  s.innerHTML = (w ? sizeIco(w, 64) : '<span class="ic">👊</span>') + '<span class="kb">1</span>';   // broń 16 px ×4 = 64 px (jak ikony umiejętności 32 px ×2)
 }
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#skillbar .sk[data-key="1"]')) useSkillOrStart(); });
 addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '') && (atkResolve || (!fightOn && !FIGHTBOX.hidden))) { e.preventDefault(); useSkillOrStart(); } });
