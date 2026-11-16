@@ -1112,7 +1112,7 @@ const DEBUFFS = {
   // buff Call to Arms i morphów: ta sama ikona co umiejętność (assets/skills/abilities, ścieżka względem folderu curses)
   fury: ['../abilities/ab_fury', 'Call to Arms', '📯'], cry: ['../abilities/ab_fury_cry', 'Battlecry', '📯'], rfury: ['../abilities/ab_fury_free', 'Rally', '🚩'],
   // mdeath / crip: morphy Pommel Strike (Marking Strike / Crippling Strike)
-  stun: ['debuff_stun', 'Stunned', '💫'], mdeath: ['debuff_mark_of_death', 'Mark of Death', '🎯'], crip: ['debuff_crippled', 'Crippled', '🩼'], rend: ['debuff_deep_wound', 'Deep Wound', '🩸'],   // Earthshaker / Skullsplitter (brak pliku → emoji)   // buff gracza (brak pliku → 📯)
+  stun: ['debuff_stun', 'Stunned', '💫'], mdeath: ['debuff_mark_of_death', 'Mark of Death', '🎯'], crip: ['debuff_crippled', 'Crippled', '🩼'], rend: ['curse_lacerate', 'Bleeding', '🩸'],   // Earthshaker / Skullsplitter (brak pliku → emoji)   // buff gracza (brak pliku → 📯)
   sunder: ['curse_sunder', 'Curse of Frailty'], exhaust: ['curse_cripple', 'Curse of Withering'], expose: ['curse_exposed', 'Exposed Weakness'], mark: ['curse_shadow_mark', 'Curse of the Void'], agony: ['curse_agony', 'Torment'], warcry: ['skill_war_cry', 'War Cry', '📯'], rage: ['skill_rage_within', 'Rage Within', '😤'], fervor: ['skill_battle_fervor', 'Battle Fervor', '🔥'],
   reap: ['curse_terror', 'Terror'], fire: ['skill_combustion', 'Fire Energy', '🔥'], water: ['skill_tidal_renewal', 'Water Energy', '💧'], tide: ['skill_soothing_tide', 'Soothing Tide', '🌊'], burn: ['skill_lingering_flames', 'Burning', '♨️'], bolt: ['skill_lightning_bolt', 'Lightning Energy', '⚡'], bleed: ['curse_lacerate', 'Bleeding'], doom: ['curse_death', 'Death Sentence']
 };
@@ -1553,7 +1553,7 @@ document.addEventListener('click', e => {
 // Dymek: każde źródło (Attack, umiejętności, Lightning Bolt, Fire Energy, Burning, Bleed, Death Sentence) – ikona, pasek, na turę (suma) i % udziału.
 const fmtN = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e4 ? (v / 1e3).toFixed(1) + 'K' : Math.round(v).toLocaleString('en-US');
 // ikona źródła obrażeń w dymku: Attack = obecna broń, umiejętność = jej ikona, pasywka = ikona z drzewka (brak pliku → emoji)
-const DPS_PAS = { 'Lightning Bolt': 'bolt', 'Fire Energy': 'fire', 'Burning': 'burn', 'Bleed': 'bleed', 'Death Sentence': 'doom', 'Deep Wound': 'rend' };
+const DPS_PAS = { 'Lightning Bolt': 'bolt', 'Fire Energy': 'fire', 'Burning': 'burn', 'Bleed': 'bleed', 'Death Sentence': 'doom', 'Deep Wound': 'rend', 'Bleeding': 'rend' };
 function dpsIco(k) {
   const box = c => `<span class="dpi">${c}</span>`;
   if (k === 'Attack') return box(eq1.weapon ? sizeIco(eq1.weapon, 20) : '👊');
@@ -3233,9 +3233,9 @@ function* fightGen(mob, io) {
           renderDebuffs(deb); upd();
           if (mh <= 0) break;
         }
-        // Skullsplitter: krwawienie (stała kwota co turę wroga)
+        // Skullsplitter: krwawienie „Bleeding” (stała kwota co turę wroga; ikona assets/skills/curses/curse_lacerate.png – krople krwi)
         if (rendT > 0) {
-          dot = true; mh -= dr('Deep Wound', rendD); rendT--; if (UI) dmgPop(fm, rendD, false, 'bleed');
+          dot = true; mh -= dr('Bleeding', rendD); rendT--; if (UI) dmgPop(fm, rendD, false, 'bleed');
           if (rendT) deb.rend = { st: rendT, tip: `Loses ${rendD} health per turn<br>Turns left: ${rendT}` }; else delete deb.rend;
           renderDebuffs(deb); upd();
           if (mh <= 0) break;
