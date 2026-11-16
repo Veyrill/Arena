@@ -412,6 +412,11 @@ function renderCook() {
 // FISHING GUIDE (rare, grafika assets/materials/fishing_guide.png; gdy brak pliku – emoji 📖): kliknięcie w plecaku zużywa 1 sztukę i daje +1 Fishing Skill Point (fishing.sp).
 // Łączy się w stos (qty). Na razie bez źródła zdobycia (tylko plecak DEV) i bez zastosowania punktów.
 const GUIDE = { name: 'Fishing Guide', r: 2, val: 50, e: '📖', img: 'materials/fishing_guide.png' };
+// WAR BANNER (ID 6403): przedmiot z Aktu 1 (2% z każdego przeciwnika na wyprawie). Kliknięcie w plecaku = Battle Series +1 (x2 → x3 → x4),
+// czyli kilka walk z rzędu jednym Auto. Wypada, dopóki poziom serii + sztandary w plecaku / w łupie < 3 (więcej nie da się użyć).
+const BANNER = { name: 'War Banner', r: 3, val: 300, e: '🚩', img: 'materials/war_banner.png', ch: 0.02, max: 3 };
+const makeBanner = () => ({ isBanner: 1, sl: 'banner', r: BANNER.r, name: BANNER.name, val: BANNER.val, s: {} });
+const bannerDropOk = (extra = []) => (me.tup && me.tup.series || 0) + [...inv, ...(me.pendLoot || []), ...extra].filter(x => x && x.isBanner).length < BANNER.max;
 // PULSUJĄCA RYBA (panel łowienia): przy każdym braniu sprite ryby nad paskiem zaczyna pulsować w losowym momencie
 // między PULSE_FROM a PULSE_TO paska (0.2–0.8) i pulsuje aż do złowienia ryby. Kliknięcie w pulsującą rybę = +1 Fishing Guide.
 // PULSE_CHANCE = szansa, że w danym braniu ryba w ogóle zapulsuje (0.5 = 50% cykli łowienia).
@@ -1651,7 +1656,7 @@ window.tupBuy = k => {
   say(`<b>${u.n}</b> upgraded to level ${l + 1}`);
   saveGame(); render();
 };
-// BATTLE SERIES: wybrana liczba walk z rzędu (me.series = 2 / 3 / 4; brak = 1), maks. = poziom ulepszenia + 1
+// BATTLE SERIES: wybrana liczba walk z rzędu (me.series = 2 / 3 / 4; brak = 1), maks. = poziom (me.tup.series, z War Banner) + 1
 const seriesMax = () => tupLvl('series') + 1;
 const seriesN = () => Math.max(1, Math.min(me.series || 1, seriesMax()));
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-ser]'); if (!b || busy) return;
@@ -1827,6 +1832,7 @@ const matIco = (k, px = 48, fs = 32) => {
 const ico = (i, size) => {
   if (i.mat) return matIco(i.sl, 48, 32);
   if (i.isScroll) return scrollIco(scrollKind(i), 48);
+  if (i.isBanner) return `<img class="px" src="${ASSETS_DIR}/${BANNER.img}" alt="" style="width:${size || 48}px;height:${size || 48}px;image-rendering:pixelated" onerror="this.outerHTML='<span class=\\'ic\\' style=\\'font-size:32px\\'>${BANNER.e}</span>'">`;   // War Banner
   if (i.isGuide) return `<img class="px" src="${ASSETS_DIR}/${GUIDE.img}" alt="" style="width:48px;height:48px;image-rendering:pixelated" onerror="this.outerHTML='<span class=\\'ic\\' style=\\'font-size:32px\\'>${GUIDE.e}</span>'">`;   // pixel art 16×16 (plik 64×64)
   if (i.isFood) return dishIco(i.kind, size || 48);   // danie z Cooking: emoji (placeholder)
   if (i.isChest) return chestIco(size || 48);   // Sunken Chest: pixel art assets/materials/sunken_chest.png
@@ -1901,6 +1907,7 @@ const quoteOf = i => i.unique ? UNIQUES[i.unique].quote
   : i.r === 5 && i.isFishGear && i.sl === 'hook' ? 'Once it bites, it never lets go.' : '';
 const quoteLine = i => quoteOf(i) ? `<br><i style="color:${UNIQUE_COLOR};opacity:.9">"${quoteOf(i)}"</i>` : '';
 const cardRaw = i => i.mat ? `<b class="t${i.r || 0}">${i.name}${i.qty > 1 ? ' ×' + i.qty : ''}</b><br>Material${MATS[i.sl].desc ? '<br>' + MATS[i.sl].desc : ''}<br>Source: ${MATS[i.sl].source}<br>Value: ${price(i)}` :
+  i.isBanner ? `<b class="t${i.r}">${i.name}</b><br>Use: Battle Series ${seriesMax() >= BANNER.max + 1 ? '<span style="color:var(--mut)">already at maximum (x' + seriesMax() + ')</span>' : `x${seriesMax()} → <b class="t1" style="display:inline">x${seriesMax() + 1}</b>`}<br><span style="color:var(--mut)">Auto fights several times in a row (buttons next to Auto, Expedition only). Loot is collected together at the end.</span><br>Value: ${price(i)}` :
   i.isGuide ? `<b class="t${i.r}">${i.name}${i.qty > 1 ? ' ×' + i.qty : ''}</b><br>Use: gain 1 Fishing Skill Point<br><span style="color:var(--mut)">Spend it in the Fishing Skill Tree</span><br>Value: ${price(i)}` :
   i.isScroll ? `<b class="t2">${i.name}</b>${i.qty > 1 ? ' ×' + i.qty : ''}<br>Increases ${SCROLLS[scrollKind(i)].stat} by 10% for 30 minutes<br>Cannot be sold` :
   i.isDesign ? `<b class="t${i.r}">${i.name}</b><br>Crafting Design<br>Use: learn to craft (Crafting → Fishing Gear)${designTip(i.kind)}${knowsDesign(i.kind) ? '<br><span style="color:var(--mut)">Already learned</span>' : ''}<br><br>Value: ${price(i)}` :
@@ -2088,9 +2095,10 @@ const tokenMob = m => { const i = EXP_MOBS.indexOf(m); return i >= 0 && i >= TOK
 const mobMats = m => [...(m.mats || []), ...(tokenMob(m) ? [['upgrade_token', TOKEN_DROP]] : [])];
 // LISTA DROPÓW (wyprawa): ikona skrzyni (assets/ui/tup_plunder.png) w prawym górnym rogu okna walki, w wierszu Back;
 // dymek po najechaniu: materiały przeciwnika i Upgrade Token z szansami (ikona, nazwa, %)
-const dropTip = m => { const L = mobMats(m), rd = LOCS[0].mobs.includes(m) && rodDesignInPool(), dz = rd ? makeDesign('rod') : null;
-  return `<b>Drops</b>` + (L.length || rd ? L.map(([k, p]) => `<span class='drrow'>${matIco(k, 32, 24)}<span class='t${MATS[k].r || 0}'>${MATS[k].name}</span><em>${+(p * 100).toFixed(1)}%</em></span>`).join('')
-    + (rd ? `<span class='drrow'>${ico(dz, 32)}<span class='t${dz.r}'>${dz.name}</span><em>${ROD_DESIGN_CH * 100}%</em></span>` : '') : '<small>No drops</small>'); };   // + projekt wędki (Forest, dopóki nie zdobyty)
+const dropTip = m => { const L = mobMats(m), rd = LOCS[0].mobs.includes(m) && rodDesignInPool(), dz = rd ? makeDesign('rod') : null, bd = LOCS.some(l => l.mobs.includes(m)) && bannerDropOk(), bz = bd ? makeBanner() : null;
+  return `<b>Drops</b>` + (L.length || rd || bd ? L.map(([k, p]) => `<span class='drrow'>${matIco(k, 32, 24)}<span class='t${MATS[k].r || 0}'>${MATS[k].name}</span><em>${+(p * 100).toFixed(1)}%</em></span>`).join('')
+    + (rd ? `<span class='drrow'>${ico(dz, 32)}<span class='t${dz.r}'>${dz.name}</span><em>${ROD_DESIGN_CH * 100}%</em></span>` : '')
+    + (bd ? `<span class='drrow'>${ico(bz, 32)}<span class='t${bz.r}'>${bz.name}</span><em>${BANNER.ch * 100}%</em></span>` : '') : '<small>No drops</small>'); };   // + War Banner (Akt 1)   // + projekt wędki (Forest, dopóki nie zdobyty)
 function renderInfo(m) {
   const r = Math.round, d = der(), s = mstats(m);
   const L = live && live.mob === m ? live : null, c = L ? L.M : s;
@@ -2904,6 +2912,12 @@ function equip(n) {
     say(`Learned: <b class="t${i.r}">${DISHES[i.kind].name}</b> – now cookable in Cooking!`, 'crit');
     render(); flashNav('cook'); return;
   }
+  if (i.isBanner) {   // War Banner: Battle Series +1 (maks. x4), zużywa przedmiot
+    if (seriesMax() >= BANNER.max + 1) { say('Battle Series is already at maximum (x' + seriesMax() + ').', 'miss'); return; }
+    inv.splice(n, 1); me.tup = me.tup || {}; me.tup.series = (me.tup.series || 0) + 1; me.series = seriesMax();   // od razu zaznaczona najwyższa seria
+    say(`<b class="t${i.r}">${i.name}</b> used – <b>Battle Series x${seriesMax()}</b> unlocked! Choose it next to the Auto button.`, 'crit');
+    saveGame(); render(); return;
+  }
   if (i.isGuide) {   // Fishing Guide: zużywa 1 sztukę, +1 Fishing Skill Point
     if (i.qty > 1) i.qty--; else inv.splice(n, 1);
     fishing.sp = (fishing.sp || 0) + 1;
@@ -3502,6 +3516,9 @@ $('go').onclick = async ev => {
       if (tokDrop) { const d = MATS.upgrade_token;
         { loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: 'upgrade_token' }); say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`); } }
       else if (mob.drop && mob.drop.length) { const it = mk(mob.drop, me.lvl < 10 && Math.random() < 0.10 ? 'weapon' : undefined, undefined, actOfMob(mob)); it.fresh = 1; if (view == 'exp') loot.push(it); else inv.push(it); say(`Loot: <b class="t${it.r}">${it.name}</b>`); }   // wyprawa: do plecaka dopiero po Collect   // Akty 2 i 3: na razie bez dropów
+      // WAR BANNER: 2% z każdego przeciwnika Aktu 1 (wyprawa), dopóki da się go jeszcze użyć (Battle Series maks. x4)
+      if (view == 'exp' && LOCS.some(l => l.mobs.includes(mob)) && bannerDropOk([...allLoot, ...loot]) && Math.random() < BANNER.ch) {
+        const bn = makeBanner(); bn.fresh = 1; loot.push(bn); say(`Loot: <b class="t${bn.r}">${bn.name}</b>`, 'crit'); }
       // PROJEKT WĘDKI: 5% z każdego przeciwnika w Forest (tylko wyprawa), jednorazowo – po zdobyciu znika z puli
       if (view == 'exp' && LOCS[0].mobs.includes(mob) && rodDesignInPool() && Math.random() < ROD_DESIGN_CH) {
         fishing.rodDesignGot = true; const dz = makeDesign('rod'); dz.fresh = 1; loot.push(dz); say(`Loot: <b class="t${dz.r}">${dz.name}</b>`, 'crit'); }
@@ -3633,7 +3650,7 @@ const card = (i, hint) => moveVal(cardRaw(i), hint);
 // po PRAWEJ założony przedmiot z napisem „Equipped” (bojowy → ekwipunek strona 1, wędkarski → strona 2). Broń: różnica średnich obrażeń.
 const tip2 = document.createElement('div'); tip2.id = 'tip2'; document.body.appendChild(tip2);
 document.head.insertAdjacentHTML('beforeend', '<style>#tip2{position:fixed;display:none;z-index:50;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;font-size:18px;line-height:1.35;max-width:315px;pointer-events:none;box-shadow:0 4px 14px #0006}#tip2 b{display:block;font-size:19px}.cmpd{font-weight:800;margin-left:6px}.cmphint{font-size:12px;color:var(--mut);font-style:italic}.tfoot{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-top:6px}.tval{margin-left:auto;white-space:nowrap}.eqlbl{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}</style>');
-const cmpEq = i => !i || !i.sl || i.mat || i.isScroll || i.isRecipe || i.isDesign || i.isGuide || i.isFood || i.isChest ? undefined : (i.isFishGear ? eq2 : eq1)[i.sl] || null;   // null = pusty slot (porównanie z niczym)
+const cmpEq = i => !i || !i.sl || i.mat || i.isScroll || i.isRecipe || i.isDesign || i.isGuide || i.isFood || i.isChest || i.isBanner ? undefined : (i.isFishGear ? eq2 : eq1)[i.sl] || null;   // null = pusty slot (porównanie z niczym)
 const cdiff = (v, u = '') => { v = +(+v).toFixed(1); return v ? `<span class="cmpd" style="color:${v > 0 ? '#3fdc3f' : '#e53935'}">${v > 0 ? '+' : '−'}${Math.abs(v)}${u}</span>` : ''; };
 // opis nowego przedmiotu z różnicami (ten sam układ co zwykły dymek)
 function cmpLeft(i, cur) {
@@ -3740,7 +3757,7 @@ document.addEventListener('dragstart', e => {
   if (item && item.isFishGear && equipPage === 1 && !busy && (parts[0] === 'inv' || parts[0] === 'upgrade')) {
     setEquipPage(2); renderSlots(); dragPageSwitch = true;
   }
-  if (item && !item.mat && !item.isScroll && !item.isRecipe && !item.isDesign && !item.isGuide && !item.isFood && !item.isChest) {
+  if (item && !item.mat && !item.isScroll && !item.isRecipe && !item.isDesign && !item.isGuide && !item.isFood && !item.isChest && !item.isBanner) {
     document.querySelectorAll('.slot[data-slot]').forEach(s => {
       if (s.dataset.slot === item.sl) s.classList.add('ok'); else s.classList.add('no');
     });
@@ -3846,7 +3863,7 @@ document.addEventListener('drop', e => {
       const i = inv[idx];
       const targetSlot = s.dataset.slot;
 
-      if (i && !i.mat && !i.isScroll && !i.isRecipe && !i.isDesign && !i.isGuide && !i.isFood && !i.isChest) {
+      if (i && !i.mat && !i.isScroll && !i.isRecipe && !i.isDesign && !i.isGuide && !i.isFood && !i.isChest && !i.isBanner) {
         if (equipPage === 2) {
           if (fishing.active && targetSlot === 'weapon') {
             say('You cannot change the rod while fishing!', 'miss');
@@ -4031,6 +4048,7 @@ DISH_KEYS.forEach((k, n) => regI(6201 + n, 'Recipe', RECIPES[k].name, () => make
 regI(6310, 'Crafting Design', makeDesign('rod').name, () => makeDesign('rod'), { design: 'rod' });   // projekt wędki Stick and String (Forest, 5%, jednorazowo)
 regI(6401, 'Other', GUIDE.name, () => ({ isGuide: 1, sl: 'guide', r: GUIDE.r, name: GUIDE.name, qty: 1, val: GUIDE.val, s: {} }), { guide: true, stack: true });
 regI(6402, 'Other', CHEST.name, () => makeChest(), { chest: true, stack: true });
+regI(6403, 'Other', BANNER.name, () => makeBanner(), { banner: true });   // War Banner – Battle Series +1
 // ID z istniejącego przedmiotu (np. z plecaka) – do przyszłych zapisów, statystyk, logów; w grze niewidoczne
 function itemId(i) {
   if (!i) return 0;
@@ -4043,6 +4061,7 @@ function itemId(i) {
   if (i.isRecipe) return f(e => e.recipe === i.kind);
   if (i.isDesign) return f(e => e.design === i.kind);
   if (i.isGuide) return 6401;
+  if (i.isBanner) return 6403;
   if (i.isChest) return 6402;
   if (i.isFishGear && i.sl === 'weapon') return f(e => e.rod === i.r);
   if (i.isFishGear && i.sl === 'hook') return f(e => e.hook === i.r);

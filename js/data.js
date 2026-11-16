@@ -508,9 +508,7 @@ export const TOKEN_UPG = [
   { k: 'lore', img: 'ui/tup_lore.png', n: 'Battle Lore', d: 'Expedition XP', per: 5, unit: '%', sign: '+', max: 10, cost: [1, 1, 2, 2, 3, 3, 4, 4, 5, 5] },
   { k: 'bounty', img: 'ui/tup_bounty.png', n: 'Bounty Board', d: 'Extra Quest', per: 1, unit: '', sign: '+', max: 2, cost: [1, 4] },
   { k: 'couriers', img: 'ui/tup_couriers.png', n: 'Swift Couriers', d: 'Quest Cooldown', per: 3, unit: ' min', sign: '-', max: 5, cost: [1, 2, 3, 4, 5] },
-  { k: 'medic', img: 'ui/tup_explorer.png', n: 'Dungeon Explorer', d: 'Dungeon Cooldown', per: 10, unit: '%', sign: '-', max: 5, cost: [1, 2, 3, 4, 5] },
-  // BATTLE SERIES – kupowany za ZŁOTO (gold = koszty kolejnych poziomów): kilka walk z rzędu jednym kliknięciem Auto (x2 / x3 / x4), łączony łup na końcu
-  { k: 'series', img: 'ui/tup_series.png', n: 'Battle Series', d: 'Fights in a row', per: 1, unit: '', sign: '', max: 3, gold: [1000, 5000, 10000], fmt: l => `x${l + 1}` }
+  { k: 'medic', img: 'ui/tup_explorer.png', n: 'Dungeon Explorer', d: 'Dungeon Cooldown', per: 10, unit: '%', sign: '-', max: 5, cost: [1, 2, 3, 4, 5] }
 ];
 
 // UNIKATY: zawsze te same statystyki (nie losowane). Każdy przedmiot mityczny ma cytat (quote) pokazywany w dymku. img = własna grafika w assets/unique/ (nie jest jednym z losowych sprite'ów hełmów).
