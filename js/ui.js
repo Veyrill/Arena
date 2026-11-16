@@ -2033,15 +2033,24 @@ function renderPortrait() {
 }
 // ZAKŁADKI ODBLOKOWYWANE: Cooking – po znalezieniu pierwszego przepisu (drop, plecak albo nauczony); Tackle Upgrade – po złowieniu 15 Crucian Carp (licznik Fishpedii, jak dymek samouczka)
 const recipeFound = () => !!(fishing.recipes && Object.keys(fishing.recipes).length) || Object.keys(fishing).some(k => /^recipe[A-Z]/.test(k) && fishing[k]) || inv.some(i => i && i.isRecipe);
+const NAV_GROUPS = [['ADVENTURE', ['exp', 'dun', 'art']], ['CHARACTER', ['abil', 'upg']], ['PROFESSIONS', ['fish', 'upgrade', 'cook', 'craft']], ['', ['set']]];   // grupy w menu ('' = linia oddzielająca)
+const NAV_ICO = { exp: 'weapon/weapon_sword.png', dun: 'enemies/enemy_spider_queen.png', art: 'materials/upgrade_token.png', abil: 'skills/abilities/ab_overhead.png', upg: 'ui/ui_skills.png',
+  fish: 'fish/fish_carp.png', upgrade: 'fishing_rods/rod1.png', cook: 'food/cooked_carp.png', craft: 'materials/crafting_design.png' };   // brak wpisu (Settings) → ⚙️
 const NAV_LOCK = { cook: () => !recipeFound(), upgrade: () => pediaCount('fish_carp') < TUT_CARP, art: () => me.lvl < QUEST_LVL, dun: () => me.lvl < 10 && !UNLOCK() };   // Artifacts – od 5 poziomu, razem z Quests; Dungeons – od 10 poziomu (DEV „odblokuj wszystko” pokazuje zawsze)
 function navLocks() {
   for (const k in NAV_LOCK) {
     const hide = NAV_LOCK[k](), b = document.querySelector(`#nav button[data-v="${k}"]`); if (b) b.hidden = hide;
     if (hide && view === k) { setView('exp'); requestAnimationFrame(render); }   // ukryta zakładka nie może być otwarta
   }
+  // nagłówek grupy znika, gdy wszystkie jej zakładki są ukryte
+  document.querySelectorAll('#nav .navg').forEach(h => { let e = h.nextElementSibling, any = false; while (e && e.tagName === 'BUTTON') { if (!e.hidden) any = true; e = e.nextElementSibling; } h.hidden = !any; });
 }
 function buildNav() {
-  $('nav').innerHTML = `<div id="portrait"><div class="pt-face"></div><span class="pt-lv"></span></div><b id="ptname"></b>` + NAV.map(([k, n]) => `<button data-v="${k}">${n}</button>`).join('');   // PORTRET: kółko z głową postaci + poziom (prawy dół)
+  // MENU ZAKŁADEK (wersja A): lista z ikoną 32 px przy każdej zakładce, w grupach ADVENTURE / CHARACTER / PROFESSIONS, Settings osobno na dole.
+  // Ikony z istniejących grafik (pixel art 16 px ×2, ikony 32 px ×1); Settings – emoji ⚙️, dopóki nie ma grafiki zębatki.
+  const nm = Object.fromEntries(NAV), btn = k => `<button data-v="${k}"><span class="navi">${NAV_ICO[k] ? `<img src="${ASSETS_DIR}/${NAV_ICO[k]}" alt="">` : '⚙️'}</span><span class="navn">${nm[k]}</span></button>`;
+  $('nav').innerHTML = `<div id="portrait"><div class="pt-face"></div><span class="pt-lv"></span></div><b id="ptname"></b>`   // PORTRET: kółko z głową postaci + poziom (prawy dół)
+    + NAV_GROUPS.map(([g, ks]) => (g ? `<h6 class="navg">${g}</h6>` : '<hr class="navsep">') + ks.map(btn).join('')).join('');
   const sb = document.querySelector('#nav button[data-v=upg]');
   if (sb) sb.addEventListener('mouseenter', () => { spDot = false; sb.classList.remove('new'); });
 }
