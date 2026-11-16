@@ -1215,7 +1215,7 @@ function renderAtkSlot() {
   { const d = der(); s.dataset.tip = `<b>Attack</b>Cost: none<br>Generates: ${RAGE_HIT + rageGenB()} Rage<br>Cooldown: none<br>Strikes with your ${w ? 'weapon' : 'fists'} for ${Math.round(d.min)}–${Math.round(d.max)} damage. Uses your turn.<br>Use it when you have no Rage for abilities.`; s.removeAttribute('title'); }
   if (s.dataset.k === key) return; s.dataset.k = key;
   s.classList.add('atk');
-  s.innerHTML = (w ? sizeIco(w, 64) : '<span class="ic">👊</span>') + '<span class="kb">1</span>';   // broń 16 px ×4 = 64 px (jak ikony umiejętności 32 px ×2)
+  s.innerHTML = (w ? sizeIco(w, 64) : fistIco(64)) + '<span class="kb">1</span>';   // broń 16 px ×4 = 64 px (jak ikony umiejętności 32 px ×2)
 }
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#skillbar .sk[data-key="1"]')) useSkillOrStart(); });
 addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '') && (atkResolve || (!fightOn && !FIGHTBOX.hidden))) { e.preventDefault(); useSkillOrStart(); } });
@@ -1575,9 +1575,11 @@ document.addEventListener('click', e => {
 const fmtN = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e4 ? (v / 1e3).toFixed(1) + 'K' : Math.round(v).toLocaleString('en-US');
 // ikona źródła obrażeń w dymku: Attack = obecna broń, umiejętność = jej ikona, pasywka = ikona z drzewka (brak pliku → emoji)
 const DPS_PAS = { 'Lightning Bolt': 'bolt', 'Fire Energy': 'fire', 'Burning': 'burn', 'Bleed': 'bleed', 'Death Sentence': 'doom', 'Deep Wound': 'rend', 'Bleeding': 'rend' };
+// ATAK BEZ BRONI: pięść (assets/weapon/weapon_fist.png, pixel art 16 px; pokazywana ×2 / ×4); brak pliku → 👊
+const fistIco = px => `<img src="${ASSETS_DIR}/weapon/weapon_fist.png" alt="" style="display:block;width:${px}px;height:${px}px;image-rendering:pixelated" onerror="this.outerHTML='👊'">`;
 function dpsIco(k, wpx = 32) {   // wpx: rozmiar ikony broni (16 px ×2 = 32 px – lista i historia)
   const box = c => `<span class="dpi">${c}</span>`;
-  if (k === 'Attack') return box(eq1.weapon ? sizeIco(eq1.weapon, wpx) : '👊');
+  if (k === 'Attack') return box(eq1.weapon ? sizeIco(eq1.weapon, wpx) : fistIco(wpx));
   const ab = Object.keys(ABILS).map(id => abEff(id)).find(a => a.n === k); if (ab) return box(ab.img ? `<img src="${ASSETS_DIR}/skills/abilities/${ab.img}.png" alt="" onerror="this.outerHTML='${ab.ico}'">` : ab.ico);   // także nazwy po morphie (np. Siphoning Strike)
   const d = DEBUFFS[DPS_PAS[k]];
   return box(d ? `<img src="${ASSETS_DIR}/skills/curses/${d[0]}.png" alt="" onerror="this.outerHTML='${d[2] || '✦'}'">` : '✦');
