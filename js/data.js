@@ -125,6 +125,7 @@ LOCS.forEach(l => l.mobs.forEach(m => {
     m.mats = [['meat', 0.4]];
     if(m.n === 'Bear') {
       m.mats.push(['claw', 0.25]);
+      m.matsOne = true;   // Bear: maks. jeden materiał na walkę – Meat 40% ALBO Bear Paw 25% (jedno losowanie, nigdy oba)
     }
   }
   // Cmentarz: kości ze szkieletów i Ghoula (50% szansy), czaszka z Nekromanty (30% szansy)

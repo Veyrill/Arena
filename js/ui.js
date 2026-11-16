@@ -3485,7 +3485,9 @@ $('go').onclick = async ev => {
       // PROJEKT WĘDKI: 5% z każdego przeciwnika w Forest (tylko wyprawa), jednorazowo – po zdobyciu znika z puli
       if (view == 'exp' && LOCS[0].mobs.includes(mob) && rodDesignInPool() && Math.random() < ROD_DESIGN_CH) {
         fishing.rodDesignGot = true; const dz = makeDesign('rod'); dz.fresh = 1; loot.push(dz); say(`Loot: <b class="t${dz.r}">${dz.name}</b>`, 'crit'); }
-      for (const [k, ch] of (mob.mats || [])) if (Math.random() < ch) {   // materiały przeciwnika (Upgrade Token losowany wyżej, zamiast przedmiotu)
+      // matsOne (np. Bear): jedno losowanie na wszystkie materiały – wypada najwyżej jeden (szanse jak w liście, np. Meat 40% / Bear Paw 25% / nic 35%)
+      const matRoll = Math.random(); let matAcc = 0;
+      for (const [k, ch] of (mob.mats || [])) if (mob.matsOne ? (matRoll >= matAcc && matRoll < (matAcc += ch)) : Math.random() < ch) {   // materiały przeciwnika (Upgrade Token losowany wyżej, zamiast przedmiotu)
         if (view != 'exp') { giveMat(k); continue; }
         const d = MATS[k]; loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: k });   // _mk: klucz materiału (po Collect → giveMat)
         say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`);
