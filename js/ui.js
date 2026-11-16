@@ -2113,7 +2113,7 @@ function renderActSide() {
   const cur = eact ?? 0, lock = busy || fishing.active;
   // akt dostępny, gdy odblokowana jest jego pierwsza lokacja (Akt 2 – po pokonaniu Fire Lorda, Akt 3 – po pokonaniu Abyss Lorda)
   $('body-act-side').innerHTML = `<div class="fish-list">` + ACTS.map((a, i) => { const open = UNLOCK() || ACT_START[i] <= locUnlocked, pl = ALL_LOCS[ACT_START[i] - 1], pb = pl ? pl.mobs[pl.mobs.length - 1] : null;
-    return `<div class="fish-row"><div class="cell${i === cur ? ' sel' : ''}${lock || !open ? ' lock' : ''}"${lock || !open ? '' : ` data-act="${i}"`}>${open ? `<span class="ic" style="font-size:28px">${a.e}</span>` : uiIco('ui_question', '❔', 32, 'opacity:.4')}</div><div><b>${a.n}</b><br><small${open ? '' : ' style="color:var(--hp)"'}>${open ? a.locs.length + ' locations' : `Defeat: ${pb.e} ${pb.n}`}</small></div></div>`; }).join('') + `</div>`;
+    return `<div class="fish-row"><div class="cell${i === cur ? ' sel' : ''}${lock || !open ? ' lock' : ''}"${lock || !open ? '' : ` data-act="${i}"`}>${open ? `<span class="ic" style="font-size:28px">${a.e}</span>` : uiIco('ui_question', '❔', 32, 'opacity:.4')}</div><div><b>${a.n}</b><br>${open ? `<small>${a.locs.length} locations</small>` : ''}</div></div>`; }).join('') + `</div>`;
 }
 
 // INFO PRZECIWNIKA (ℹ️): w walce pokazuje AKTUALNE statystyki wroga (klątwy: Withering, Sunder…).
@@ -2583,7 +2583,7 @@ function render() {
   // lokacje wybranego aktu; data-i = indeks w ALL_LOCS (wspólny dla wszystkich aktów: Akt 1 = 0–4, Akt 2 = 5–9, Akt 3 = 10–14)
   const actI = actsOn() ? (eact ?? 0) : 0, off = ACT_START[actI];
   const locTiles = `<div class="tiles">` + ACTS[actI].locs.map((l, j) => { const i = off + j; return !locOpen(i)
-    ? (() => { const pl = ALL_LOCS[i - 1], pb = pl.mobs[pl.mobs.length - 1]; return `<div class="tile lock"><span class="ic">${l.e}</span><b>${l.n}</b><small>Defeat: ${pb.e} ${pb.n}</small></div>`; })()
+    ? `<div class="tile lock"><span class="ic">${l.e}</span><b>${l.n}</b></div>`   // zablokowana kraina: bez podpowiedzi „Defeat: …” (nie pokazujemy, którego bossa trzeba pokonać)
     : l.bg ? `<button class="tile biome" data-a="eloc" data-i="${i}"${fishing.active ? ' disabled' : ''} style="--biome:url(${ASSETS_DIR}/biomes/${l.bg}.png)"><b>${l.n}</b></button>`   // KAFELEK Z GRAFIKĄ KRAINY (data.js: bg) zamiast emoji
     : `<button class="tile" data-a="eloc" data-i="${i}"${fishing.active ? ' disabled' : ''}><span class="ic">${l.e}</span><b>${l.n}</b></button>`; }).join('') + `</div>`;
   // placeholdery Aktu 2 i 3: 5 zablokowanych lokacji
