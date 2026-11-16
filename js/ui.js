@@ -1223,18 +1223,18 @@ addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEX
 // ABILITIES (aktywne umiejętności): kupowane w zakładce Abilities, używane z paska umiejętności (sloty 2–R).
 // me.abils = { id: true } – wykupione; me.bar = { klawisz slotu: id } – rozmieszczenie na pasku (przeciąganie myszką między slotami).
 // cost = koszt w Rage, mul = mnożnik średnich obrażeń broni, cd = odnowienie w turach (1 = w kolejnej Twojej turze znowu gotowe), lvl = wymagany poziom.
-// ROTACJA WARRIORA: Pommel Strike (opener, +Rage) → Battle Fury (buff do odnawiania) → Overhead Blow (spam) → Decapitate (execute); bez Rage – zwykły atak (slot 1)
+// ROTACJA WARRIORA: Pommel Strike (opener, +Rage) → Battle Fury (buff do odnawiania) → Heavy Slash (spam) → Decapitate (execute); bez Rage – zwykły atak (slot 1)
 // gain = Rage za użycie; free = nie zabiera tury (po nim działasz dalej); buffT = tury buffa; need: 'exec' = wróg poniżej 20% HP (Revenge usunięty z gry – stary zapis: pusty slot, ignorowany w me.abils)
 const ABILS = {
   // lvB = % dodatkowych obrażeń umiejętności na poziomie 1–5 (mnoży obrażenia), lvC = zmiana kosztu w Rage na poziomie 1–5
-  overhead: { n: 'Overhead Blow', ico: '💥', img: 'ab_overhead', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 4, 9, 15, 22, 30, 39, 49, 61, 75], lvAdd: true, lvC: [0, 0, 0, 0, 0, 0, 0, 0, 0, -5], d: 'Bring your weapon down with both hands for 140% weapon damage.',
+  overhead: { n: 'Heavy Slash', ico: '💥', img: 'ab_overhead', cost: 30, mul: 1.4, cd: 1, lvl: 3, lvB: [0, 4, 9, 15, 22, 30, 39, 49, 61, 75], lvAdd: true, lvC: [0, 0, 0, 0, 0, 0, 0, 0, 0, -5], d: 'Slash your opponent for 140% weapon damage.',
     // MORPH (po 5 poziomie, wybór na stałe): zastępuje umiejętność – nazwa, opis, mnożnik; heal = % zadanych obrażeń jako leczenie, critUp = % wyższa szansa i obrażenia krytyka
     morph: {
       cruel: { n: 'Cruel Blow', img: 'ab_overhead_cruel', mul: 2.5, critUp: 20, d: 'Strike for 250% weapon damage. Its critical hit chance and critical damage are 20% higher.' },
       siphon: { n: 'Siphoning Strike', img: 'ab_overhead_siphon', mul: 2.5, heal: 10, d: 'Strike for 250% weapon damage and heal for 10% of the damage dealt.' }
     } },
   // lvG = zmiana generowanego Rage na poziomie 1–5 (Pommel Strike: 25 → 30 na 5 poziomie); lvAdd = bonus lvB dodawany do % obrażeń broni (60% → 80 / 100 / 120 / 160%), bez lvAdd – mnożony
-  pommel: { n: 'Pommel Strike', ico: '🗡️', img: 'ab_pommel', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 6, 13, 21, 30, 40, 52, 66, 82, 100], lvAdd: true, lvG: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage. A strong opener.',
+  pommel: { n: 'Pommel Strike', ico: '🗡️', img: 'ab_pommel', cost: 0, gain: 25, mul: 0.6, cd: 4, lvl: 6, lvB: [0, 6, 13, 21, 30, 40, 52, 66, 82, 100], lvAdd: true, lvG: [0, 0, 0, 0, 0, 0, 0, 0, 0, 5], d: 'Slam the hilt into your foe for 60% weapon damage and gain 25 Rage.',
     // markD = Mark of Death na wrogu (Twój następny cios +markD%), crip = wróg zadaje crip% mniej obrażeń przez cripT swoich tur
     morph: {
       mark: { n: 'Marking Strike', img: 'ab_pommel_mark', markD: 20, d: 'Slam the hilt into your foe for 160% weapon damage and gain 30 Rage. Marks the enemy with Mark of Death: your next hit against it deals 20% more damage.' },
@@ -1264,12 +1264,12 @@ const abCls = a => a.cls || 'warrior';
 const myAb = id => !!ABILS[id] && abCls(ABILS[id]) === (me.cls || 'warrior');
 const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R'];   // slot 1 = zwykły atak (stały); slot Tab usunięty
 // obrażenia umiejętności dla aktualnych statystyk: zakres obrażeń postaci × mnożnik (losowane w walce jak zwykły atak), np. "6–10"
-// POZIOM UMIEJĘTNOŚCI → efekt (na razie tylko Overhead Blow): kopia umiejętności z kosztem i mnożnikiem dla jej obecnego poziomu
+// POZIOM UMIEJĘTNOŚCI → efekt (na razie tylko Heavy Slash): kopia umiejętności z kosztem i mnożnikiem dla jej obecnego poziomu
 // mk = klucz morpha (domyślnie wybrany przez gracza: me.morph[id]); morph nadpisuje nazwę, opis i mnożnik (koszt zostaje z 5 poziomu)
 // IKONA UMIEJĘTNOŚCI: obrazek z assets/skills/abilities/<img>.png (brak pliku albo brak img → emoji ico); morph używa ikony bazowej
 const abIco = (a, cls) => a.img ? `<span class="${cls} img"><img src="${ASSETS_DIR}/skills/abilities/${a.img}.png" alt="" onerror="this.parentNode.classList.remove('img');this.outerHTML='${a.ico}'"></span>` : `<span class="${cls}">${a.ico}</span>`;
 // BLADE CONTROL (Warrior): Ultimate tańszy o 5 / 10 / 15 Rage – nakładane na koszt z poziomu umiejętności / morpha
-// STEADY SWING (Warrior): Overhead Blow i morphy tańsze o 5 / 10 / 15 Rage; REINFORCEMENTS: Call to Arms i morphy trwają 1 / 2 / 3 tury dłużej
+// STEADY SWING (Warrior): Heavy Slash i morphy tańsze o 5 / 10 / 15 Rage; REINFORCEMENTS: Call to Arms i morphy trwają 1 / 2 / 3 tury dłużej
 // (odnowienie Call to Arms = czas trwania buffa, więc rośnie razem z nim; opis „For N turns” poprawiany na nową liczbę tur)
 const abEff = (id, mk) => {
   const r = abEff0(id, mk); if (!r) return r;
@@ -1341,7 +1341,7 @@ function renderXpSide() {
       + (v.ready ? `<button class="xpup" onclick="window.abLevelUp('${id}')"${fightOn || busy ? ' disabled' : ''} data-tip="${fightOn || busy ? 'Not during a fight' : `Level up to Lvl ${v.l + 1}`}">+</button>` : '<span class="xpup0"></span>') + `</div>`; }).join('');
 }
 const abTip = (id, mk) => { const a = mk ? abEff(id, mk) : abEff(id), dm = abDmg(a), d0 = ABILS[id];
-  // opis liczony na żywo: % obrażeń broni wg poziomu umiejętności (np. Overhead Blow 140% → 245% na 5 poziomie)
+  // opis liczony na żywo: % obrażeń broni wg poziomu umiejętności (np. Heavy Slash 140% → 245% na 5 poziomie)
   let desc = a.d === d0.d && a.mul && a.mul !== d0.mul ? a.d.replace(`${Math.round(d0.mul * 100)}%`, `${Math.round(a.mul * 100)}%`) : a.d;
   if (a.d === d0.d && a.buffD && a.buffD !== d0.buffD) desc = desc.replace(`${d0.buffD}% more damage`, `${a.buffD}% more damage`);   // Battle Fury: % obrażeń wg poziomu
   if (a.d === d0.d && a.execP && a.execP !== d0.execP) desc = desc.replace(`below ${d0.execP}% health`, `below ${a.execP}% health`);   // Decapitate: próg HP wg poziomu
