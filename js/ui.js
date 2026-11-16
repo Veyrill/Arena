@@ -1573,9 +1573,9 @@ document.addEventListener('click', e => {
 const fmtN = v => v >= 1e6 ? (v / 1e6).toFixed(1) + 'M' : v >= 1e4 ? (v / 1e3).toFixed(1) + 'K' : Math.round(v).toLocaleString('en-US');
 // ikona źródła obrażeń w dymku: Attack = obecna broń, umiejętność = jej ikona, pasywka = ikona z drzewka (brak pliku → emoji)
 const DPS_PAS = { 'Lightning Bolt': 'bolt', 'Fire Energy': 'fire', 'Burning': 'burn', 'Bleed': 'bleed', 'Death Sentence': 'doom', 'Deep Wound': 'rend', 'Bleeding': 'rend' };
-function dpsIco(k) {
+function dpsIco(k, wpx = 20) {   // wpx: rozmiar ikony broni (lista 20 px, historia 32 px)
   const box = c => `<span class="dpi">${c}</span>`;
-  if (k === 'Attack') return box(eq1.weapon ? sizeIco(eq1.weapon, 20) : '👊');
+  if (k === 'Attack') return box(eq1.weapon ? sizeIco(eq1.weapon, wpx) : '👊');
   const ab = Object.keys(ABILS).map(id => abEff(id)).find(a => a.n === k); if (ab) return box(ab.img ? `<img src="${ASSETS_DIR}/skills/abilities/${ab.img}.png" alt="" onerror="this.outerHTML='${ab.ico}'">` : ab.ico);   // także nazwy po morphie (np. Siphoning Strike)
   const d = DEBUFFS[DPS_PAS[k]];
   return box(d ? `<img src="${ASSETS_DIR}/skills/curses/${d[0]}.png" alt="" onerror="this.outerHTML='${d[2] || '✦'}'">` : '✦');
@@ -1586,10 +1586,10 @@ function dpsIco(k) {
 // pasywki: Bleed, Lightning Bolt, Fire Energy, Burning, Death Sentence; Skullsplitter → Bleeding); puste miejsca = ciemne wiersze
 const dpsRowsMax = () => { const U = ub(), bar = Object.values(me.bar || {}).filter(id => me.abils && me.abils[id] && ABILS[id] && myAb(id));
   return Math.max(3, 1 + bar.filter(id => !ABILS[id].free).length + bar.filter(id => ABILS[id].rend).length + ['lacerate', 'bolt', 'fire', 'burn', 'doom'].filter(k => U[k]).length); };
-// HISTORIA RUCHÓW nad listą obrażeń: 6 ostatnich Twoich ruchów (ikona, strzałka ›, obrażenia pod ikoną; krytyk – złota liczba; umiejętność bez obrażeń – „–”)
+// HISTORIA RUCHÓW nad listą obrażeń: 5 ostatnich Twoich ruchów (ikona, strzałka ›, obrażenia pod ikoną; krytyk – złota liczba; umiejętność bez obrażeń – „–”)
 let dpsHist = [];
-const histHtml = () => { const L = dpsHist.slice(-6);
-  return `<div class="dphist">${L.length ? L.map((h, i) => (i ? '<span class="dpar">›</span>' : '') + `<div class="dphc">${dpsIco(h.k)}<em class="${h.cr ? 'cr' : ''}">${h.dm == null ? '–' : fmtN(h.dm)}</em></div>`).join('') : '<small>No moves yet</small>'}</div>`; };
+const histHtml = () => { const L = dpsHist.slice(-5);   // 5 ostatnich ruchów (ikony 32 px)
+  return `<div class="dphist">${L.length ? L.map((h, i) => (i ? '<span class="dpar">›</span>' : '') + `<div class="dphc">${dpsIco(h.k, 32)}<em class="${h.cr ? 'cr' : ''}">${h.dm == null ? '–' : fmtN(h.dm)}</em></div>`).join('') : '<small>No moves yet</small>'}</div>`; };
 function setDps(by, turns) {
   const ent = Object.entries(by || {}).filter(e => e[1] > 0).sort((a, b) => b[1] - a[1]);
   const tot = ent.reduce((a, e) => a + e[1], 0), top = ent.length ? ent[0][1] : 1;
