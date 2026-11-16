@@ -1220,7 +1220,7 @@ function renderAtkSlot() {
 document.addEventListener('click', e => { if (e.target.closest && e.target.closest('#skillbar .sk[data-key="1"]')) useSkillOrStart(); });
 addEventListener('keydown', e => { if (e.key === '1' && !e.repeat && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '') && (atkResolve || (!fightOn && !FIGHTBOX.hidden))) { e.preventDefault(); useSkillOrStart(); } });
 // PASEK HP: procent HP na środku paska (gracz: hpp1 – samo HP bez tarczy, przeciwnik: hpp2)
-// ABILITIES (aktywne umiejętności): kupowane w zakładce Abilities, używane z paska umiejętności (sloty 2–Tab).
+// ABILITIES (aktywne umiejętności): kupowane w zakładce Abilities, używane z paska umiejętności (sloty 2–R).
 // me.abils = { id: true } – wykupione; me.bar = { klawisz slotu: id } – rozmieszczenie na pasku (przeciąganie myszką między slotami).
 // cost = koszt w Rage, mul = mnożnik średnich obrażeń broni, cd = odnowienie w turach (1 = w kolejnej Twojej turze znowu gotowe), lvl = wymagany poziom.
 // ROTACJA WARRIORA: Pommel Strike (opener, +Rage) → Battle Fury (buff do odnawiania) → Overhead Blow (spam) → Decapitate (execute); bez Rage – zwykły atak (slot 1)
@@ -1262,7 +1262,7 @@ const ABILS = {
 // KLASA: każda umiejętność należy do klasy (cls; brak = 'warrior'). Zakładka Abilities i pasek pokazują tylko umiejętności klasy gracza (me.cls).
 const abCls = a => a.cls || 'warrior';
 const myAb = id => !!ABILS[id] && abCls(ABILS[id]) === (me.cls || 'warrior');
-const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R', 'Tab'];   // slot 1 = zwykły atak (stały)
+const BAR_KEYS = ['2', '3', '4', '5', 'Q', 'W', 'E', 'R'];   // slot 1 = zwykły atak (stały); slot Tab usunięty
 // obrażenia umiejętności dla aktualnych statystyk: zakres obrażeń postaci × mnożnik (losowane w walce jak zwykły atak), np. "6–10"
 // POZIOM UMIEJĘTNOŚCI → efekt (na razie tylko Overhead Blow): kopia umiejętności z kosztem i mnożnikiem dla jej obecnego poziomu
 // mk = klucz morpha (domyślnie wybrany przez gracza: me.morph[id]); morph nadpisuje nazwę, opis i mnożnik (koszt zostaje z 5 poziomu)
@@ -1351,9 +1351,11 @@ const abTip = (id, mk) => { const a = mk ? abEff(id, mk) : abEff(id), dm = abDmg
   const cdT = a.ult ? 'once per fight' : a.cd ? a.cd + ' turn' + (a.cd === 1 ? '' : 's') : 'none';
   return `<span class="tiph"><span><b${a.ult ? ' style="color:#ffd36b"' : ''}>${a.n}</b>${abPips(id)}</span><span class="tipc">${a.gain ? `<em class="gen">+${a.gain} Rage</em>` : `<em>${a.cost} Rage</em>`}<i>CD: ${cdT}</i></span></span>${desc}${dm ? `<br>Deals <b style="display:inline;font-size:inherit;color:#ff8080">${dm}</b> damage${a.hits ? ` × ${a.hits}` : ''}.` : ''}${a.ult ? '<br><span style="color:#ffd36b">Ultimate: you can train only one.</span>' : ''}${abLvlBar(id)}`; };
 let fightIo = null;   // io trwającej walki: io.rage (Rage), io.cd (odnowienia), io.act (wybrany ruch)
-// pasek: ikony umiejętności w slotach 2–Tab (przebudowa tylko, gdy zmieni się rozmieszczenie – nie miga)
+// pasek: ikony umiejętności w slotach 2–R (przebudowa tylko, gdy zmieni się rozmieszczenie – nie miga)
 function renderBarAbils() {
   if (!me.bar) me.bar = {};
+  // stary zapis: umiejętność na usuniętym slocie Tab → na ostatni wolny slot (od R w lewo); brak wolnego → zostaje tylko wykupiona (do przeciągnięcia z Abilities)
+  if (me.bar.Tab) { const id = me.bar.Tab; delete me.bar.Tab; const k = [...BAR_KEYS].reverse().find(x => !me.bar[x]); if (k && !Object.values(me.bar).includes(id)) me.bar[k] = id; }
   BAR_KEYS.forEach(k => {
     const s = document.querySelector(`#skillbar .sk[data-key="${k}"]`); if (!s) return;
     const id = me.abils && me.abils[me.bar[k]] && myAb(me.bar[k]) ? me.bar[k] : null, sig = id || '';   // tylko umiejętności Twojej klasy   // usunięta umiejętność (np. stary Revenge w zapisie) = pusty slot
@@ -1391,11 +1393,11 @@ document.addEventListener('click', e => {
 });
 addEventListener('keydown', e => {
   if (e.repeat || /INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '') || FIGHTBOX.hidden) return;
-  const k = e.key === 'Tab' ? 'Tab' : e.key.length === 1 ? e.key.toUpperCase() : ''; if (!BAR_KEYS.includes(k)) return;
-  e.preventDefault();   // Tab nie przeskakuje między przyciskami, gdy widać okno walki
+  const k = e.key.length === 1 ? e.key.toUpperCase() : ''; if (!BAR_KEYS.includes(k)) return;
+  e.preventDefault();
   const id = me.bar && me.bar[k]; if (id && me.abils && me.abils[id] && myAb(id)) useAbility(id);
 });
-// PRZECIĄGANIE na pasku: złap umiejętność i upuść na inny slot (2–Tab) – zamiana miejsc (na pusty slot = przeniesienie)
+// PRZECIĄGANIE na pasku: złap umiejętność i upuść na inny slot (2–R) – zamiana miejsc (na pusty slot = przeniesienie)
 let abDragKey = null;
 { const sb = document.getElementById('skillbar');
   sb.addEventListener('dragstart', e => { const s = e.target.closest('.sk.ab'); if (!s || fightIo) { e.preventDefault(); return; } abDragKey = s.dataset.key; e.dataTransfer.setData('text/plain', 'ab'); e.dataTransfer.effectAllowed = 'move'; e.stopPropagation(); });
@@ -1539,7 +1541,7 @@ window.learnAbil = id => {
   if (a.ult && ultOf()) return;   // ultimate: tylko jeden build
   me.abils = me.abils || {}; me.abils[id] = true; me.bar = me.bar || {};
   for (const k in me.bar) if (!ABILS[me.bar[k]]) delete me.bar[k];   // sloty po usuniętych umiejętnościach są wolne
-  if (!Object.values(me.bar).includes(id)) { const k = a.ult && !me.bar.Tab ? 'Tab' : !me.bar['2'] ? '2' : BAR_KEYS.find(x => !me.bar[x]); if (k) me.bar[k] = id; }   // ultimate domyślnie na Tab   // domyślnie slot 2 (zajęty → pierwszy wolny)
+  if (!Object.values(me.bar).includes(id)) { const k = a.ult && !me.bar.R ? 'R' : !me.bar['2'] ? '2' : BAR_KEYS.find(x => !me.bar[x]); if (k) me.bar[k] = id; }   // ultimate domyślnie na R (ostatni slot)   // domyślnie slot 2 (zajęty → pierwszy wolny)
   saveGame(); render();
 };
 // SETTINGS (zakładka Settings): me.opts – zapisywane razem z grą.
