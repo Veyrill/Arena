@@ -37,6 +37,8 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 .qrow .qtx b{font-size:13px}
 .qrow.active{border-color:var(--ac);box-shadow:inset 0 0 0 1px var(--ac)}
 .qrow button{font-size:11px;padding:3px 8px}
+.qrow.qdone{border-color:#f2c200;box-shadow:inset 0 0 0 1px #f2c20066}.qrow.qdone .qbar i{background:#f2c200}
+body .qrow .qcol{display:block;margin-top:4px;font-size:11px;padding:3px 10px 5px}   /* quest ukończony: złota ramka, przycisk Collect (Upgrade Token do plecaka) */
 .qreset{width:18px;height:18px;padding:0;margin:0;border-width:1px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;background:none;border:0;cursor:pointer}
 .qreset:hover img{filter:brightness(1.25)}   /* Questy: po upływie czasu – przycisk z ikoną okrągłej strzałki (nowa pula) */
 .qreset img{width:16px;height:16px;image-rendering:pixelated}   /* 16 px – przycisk mieści się w wysokości nagłówka (okno się nie rozszerza) */
@@ -430,7 +432,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 .upg-node.bought{border-color:#f2c200;background:color-mix(in srgb,#f2c200 22%,var(--card));box-shadow:0 0 12px 3px #f2c200aa;cursor:default}
 .upg-node.center-node{width:56px;height:56px}
 .upg-node .ic{font-size:24px;line-height:1}
-.upg-node.small{width:24px;height:24px;border-radius:6px}.upg-node.small .ic{font-size:12px}
+.upg-node.small{width:24px;height:24px;border-radius:6px}.upg-node.small::before{content:'';position:absolute;inset:-9px}   /* większy obszar najechania / kliknięcia małego noda (wygląd bez zmian) */.upg-node.small .ic{font-size:12px}
 .upg-node.avail{border-color:var(--ac);box-shadow:0 0 9px color-mix(in srgb,var(--ac) 55%,transparent)}
 .upg-line.on{stroke:#f2c200;filter:drop-shadow(0 0 3px #f2c200)}.upg-line.off{stroke-dasharray:4 5;opacity:.75}
 .upg-badge{position:absolute;bottom:-4px;right:-4px;background:var(--ac);color:var(--on-ac);font-size:9px;font-weight:700;padding:1px 4px;border-radius:6px;border:1px solid var(--card)}

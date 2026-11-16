@@ -1678,9 +1678,9 @@ function addQuest() {
   const free = Object.keys(QUEST_KINDS).filter(k => !have.includes(k) && (!QUEST_KINDS[k].ok || QUEST_KINDS[k].ok()));
   if (free.length) me.quests.list.push(newQuest(free[I(0, free.length - 1)], caught));
 }
-function ensureQuests() { if (!me.quests || me.quests.v !== 2 || !me.quests.list) genQuests(); }   // v: 2 – stary zapis (Kill X×) → nowa pula; po czasie NIE losuje sama (przycisk Reset)
+function ensureQuests() { if (!me.quests || me.quests.v !== 2 || !me.quests.list) genQuests(); me.quests.list.forEach(q => { if (q.got >= q.need && q.col == null) q.col = 1; }); }   // stary zapis: ukończone questy miały nagrodę od razu (col = 1)   // v: 2 – stary zapis (Kill X×) → nowa pula; po czasie NIE losuje sama (przycisk Reset)
 // RESET: dostępny dopiero po upływie 30 min (nie w trakcie walki) – nowa pula 3 questów
-window.resetQuests = () => { if (busy || !me.quests || Date.now() < me.quests.t) return; genQuests(); render(); };
+window.resetQuests = () => { if (busy || !me.quests || Date.now() < me.quests.t) return; me.quests.list.forEach(questCollectOne); genQuests(); render(); };   // nieodebrane nagrody trafiają do plecaka przed nową pulą
 // nagłówek panelu: licznik do resetu albo (po czasie) przycisk z okrągłą strzałką (assets/ui/ui_reset.png)
 const questHead = () => Date.now() >= me.quests.t ? `<button class="qreset" onclick="window.resetQuests()" title="Reset quests – draw ${questN()} new quests"><img src="${ASSETS_DIR}/ui/ui_reset.png" alt="Reset"></button>` : fmtCd(me.quests.t - Date.now());
 // XP z nagrody (poza walką też): awanse jak po walce (+1 do statystyk, +1 skill point)
@@ -1694,12 +1694,11 @@ function addXp(x) {
 // po upływie czasu (przed kliknięciem Reset) questy dalej się liczą
 function questEv(k, n = 1, fish) {
   const Q = me.quests; if (me.lvl < QUEST_LVL || !Q || Q.v !== 2) return;
-  if (k !== 'fish' && view !== 'exp') return;   // questy walki liczą się tylko na wyprawach (lochy – bez postępu questów, więc bez Upgrade Token)
   let ch = false;
   for (const q of Q.list) {
     if (q.k !== k || q.got >= q.need || (k === 'fish' && q.fish !== fish)) continue;
     q.got = Math.min(q.need, q.got + n); ch = true;
-    if (q.got >= q.need) { giveMatQuiet('upgrade_token'); say(`<b>Quest complete!</b> ${QUEST_KINDS[k].t(q.need, q)} – +1 <b class="t${MATS.upgrade_token.r}">${MATS.upgrade_token.name}</b>`, 'crit'); }
+    if (q.got >= q.need) { q.col = 0; say(`<b>Quest complete!</b> ${QUEST_KINDS[k].t(q.need, q)} – collect your <b class="t${MATS.upgrade_token.r}">${MATS.upgrade_token.name}</b> in the Quests panel`, 'crit'); }   // nagroda czeka na przycisk Collect
   }
   if (ch) renderQuestSide();
 }
@@ -1713,13 +1712,18 @@ function renderQuestSide() {
   // wiersz: opis, pasek postępu, licznik; po prawej nagroda (Upgrade Token, dymek jak materiał). Ukończone questy znikają od razu.
   const rows = left.map(q => {
     const K = QUEST_KINDS[q.k];
-    return `<div class="qrow"><div class="qtx"><b>${K.t(q.need, q)}</b><div class="qbar"><i style="width:${q.got / q.need * 100}%"></i></div><small>${q.got}/${q.need}</small></div>`
-      + `<div class="qic" data-it="mat:upgrade_token">${matIco('upgrade_token', 32, 24)}</div></div>`;
+    const done = q.got >= q.need, i = me.quests.list.indexOf(q);
+    return `<div class="qrow${done ? ' qdone' : ''}"><div class="qtx"><b>${K.t(q.need, q)}</b><div class="qbar"><i style="width:${q.got / q.need * 100}%"></i></div>${done ? `<button class="bkac qcol" onclick="window.questCollect(${i})">Collect</button>` : `<small>${q.got}/${q.need}</small>`}</div>`
+      + `<div class="qic" data-it="mat:upgrade_token">${matIco('upgrade_token', 32, 24)}</div></div>`;   // ukończony: Collect pod paskiem (zamiast licznika)
   }).join('');
   // brak questów do zrobienia: lekko wyszarzone okienko z samym przyciskiem Reroll (aktywny dopiero po upływie czasu, wcześniej odlicza)
   $('body-quest-side').innerHTML = rows || `<div class="qempty"><small>All quests completed</small>${qRerollBtn()}</div>`;
 }
-const questsLeft = () => me.quests.list.filter(q => QUEST_KINDS[q.k] && q.got < q.need);
+// questy do pokazania: nieukończone + ukończone, ale nieodebrane (przycisk Collect); odebrane znikają
+const questsLeft = () => me.quests.list.filter(q => QUEST_KINDS[q.k] && (q.got < q.need || q.col === 0));
+// COLLECT: odebranie nagrody za ukończony quest – 1 Upgrade Token do plecaka
+const questCollectOne = q => { if (!q || q.got < q.need || q.col !== 0) return false; q.col = 1; giveMatQuiet('upgrade_token'); say(`+1 <b class="t${MATS.upgrade_token.r}">${MATS.upgrade_token.name}</b>`, 'crit'); return true; };
+window.questCollect = i => { if (me.quests && questCollectOne(me.quests.list[i])) { saveGame(); render(); } };
 const qRerollBtn = () => { const rdy = Date.now() >= me.quests.t;
   return `<button class="qreroll" onclick="window.resetQuests()"${rdy ? '' : ' disabled'}><img src="${ASSETS_DIR}/ui/ui_reset.png" alt=""><span data-qrr>${rdy ? 'Reroll' : fmtCd(me.quests.t - Date.now())}</span></button>`; };
 // przycisk Fight pod Special drops: aktywny dla wybranego przeciwnika (pokonanego albo kolejnego niepokonanego), z licznikiem przerwy po wygranej
