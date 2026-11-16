@@ -412,11 +412,12 @@ function renderCook() {
 // FISHING GUIDE (rare, grafika assets/materials/fishing_guide.png; gdy brak pliku – emoji 📖): kliknięcie w plecaku zużywa 1 sztukę i daje +1 Fishing Skill Point (fishing.sp).
 // Łączy się w stos (qty). Na razie bez źródła zdobycia (tylko plecak DEV) i bez zastosowania punktów.
 const GUIDE = { name: 'Fishing Guide', r: 2, val: 50, e: '📖', img: 'materials/fishing_guide.png' };
-// WAR BANNER (ID 6403): przedmiot z Aktu 1 (2% z każdego przeciwnika na wyprawie). Kliknięcie w plecaku = Battle Series +1 (x2 → x3 → x4),
-// czyli kilka walk z rzędu jednym Auto. Wypada, dopóki poziom serii + sztandary w plecaku / w łupie < 3 (więcej nie da się użyć).
+// WAR BANNER (ID 6403): jeden na akt – 2% z każdego przeciwnika danego aktu (tylko wyprawa); po wypadnięciu sztandaru w akcie
+// ten akt już go nie daje (me.banAct[a] = 1, zapisywane w chwili dropu). Razem 3 sztuki → Battle Series x2 → x3 → x4.
 const BANNER = { name: 'War Banner', r: 3, val: 300, e: '🚩', img: 'materials/war_banner.png', ch: 0.02, max: 3 };
 const makeBanner = () => ({ isBanner: 1, sl: 'banner', r: BANNER.r, name: BANNER.name, val: BANNER.val, s: {} });
-const bannerDropOk = (extra = []) => (me.tup && me.tup.series || 0) + [...inv, ...(me.pendLoot || []), ...extra].filter(x => x && x.isBanner).length < BANNER.max;
+const bannerAct = m => ACTS.findIndex(a => a.locs.some(l => l.mobs.includes(m)));   // -1 = poza aktami (np. loch)
+const bannerDropOk = m => { const a = bannerAct(m); return a >= 0 && !(me.banAct && me.banAct[a]); };
 // PULSUJĄCA RYBA (panel łowienia): przy każdym braniu sprite ryby nad paskiem zaczyna pulsować w losowym momencie
 // między PULSE_FROM a PULSE_TO paska (0.2–0.8) i pulsuje aż do złowienia ryby. Kliknięcie w pulsującą rybę = +1 Fishing Guide.
 // PULSE_CHANCE = szansa, że w danym braniu ryba w ogóle zapulsuje (0.5 = 50% cykli łowienia).
@@ -2095,10 +2096,10 @@ const tokenMob = m => { const i = EXP_MOBS.indexOf(m); return i >= 0 && i >= TOK
 const mobMats = m => [...(m.mats || []), ...(tokenMob(m) ? [['upgrade_token', TOKEN_DROP]] : [])];
 // LISTA DROPÓW (wyprawa): ikona skrzyni (assets/ui/tup_plunder.png) w prawym górnym rogu okna walki, w wierszu Back;
 // dymek po najechaniu: materiały przeciwnika i Upgrade Token z szansami (ikona, nazwa, %)
-const dropTip = m => { const L = mobMats(m), rd = LOCS[0].mobs.includes(m) && rodDesignInPool(), dz = rd ? makeDesign('rod') : null, bd = LOCS.some(l => l.mobs.includes(m)) && bannerDropOk(), bz = bd ? makeBanner() : null;
+const dropTip = m => { const L = mobMats(m), rd = LOCS[0].mobs.includes(m) && rodDesignInPool(), dz = rd ? makeDesign('rod') : null, bd = bannerDropOk(m), bz = bd ? makeBanner() : null;
   return `<b>Drops</b>` + (L.length || rd || bd ? L.map(([k, p]) => `<span class='drrow'>${matIco(k, 32, 24)}<span class='t${MATS[k].r || 0}'>${MATS[k].name}</span><em>${+(p * 100).toFixed(1)}%</em></span>`).join('')
     + (rd ? `<span class='drrow'>${ico(dz, 32)}<span class='t${dz.r}'>${dz.name}</span><em>${ROD_DESIGN_CH * 100}%</em></span>` : '')
-    + (bd ? `<span class='drrow'>${ico(bz, 32)}<span class='t${bz.r}'>${bz.name}</span><em>${BANNER.ch * 100}%</em></span>` : '') : '<small>No drops</small>'); };   // + War Banner (Akt 1)   // + projekt wędki (Forest, dopóki nie zdobyty)
+    + (bd ? `<span class='drrow'>${ico(bz, 32)}<span class='t${bz.r}'>${bz.name}</span><em>${BANNER.ch * 100}%</em></span>` : '') : '<small>No drops</small>'); };   // + War Banner (dopóki nie wypadł w tym akcie)   // + projekt wędki (Forest, dopóki nie zdobyty)
 function renderInfo(m) {
   const r = Math.round, d = der(), s = mstats(m);
   const L = live && live.mob === m ? live : null, c = L ? L.M : s;
@@ -3516,9 +3517,9 @@ $('go').onclick = async ev => {
       if (tokDrop) { const d = MATS.upgrade_token;
         { loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: 'upgrade_token' }); say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`); } }
       else if (mob.drop && mob.drop.length) { const it = mk(mob.drop, me.lvl < 10 && Math.random() < 0.10 ? 'weapon' : undefined, undefined, actOfMob(mob)); it.fresh = 1; if (view == 'exp') loot.push(it); else inv.push(it); say(`Loot: <b class="t${it.r}">${it.name}</b>`); }   // wyprawa: do plecaka dopiero po Collect   // Akty 2 i 3: na razie bez dropów
-      // WAR BANNER: 2% z każdego przeciwnika Aktu 1 (wyprawa), dopóki da się go jeszcze użyć (Battle Series maks. x4)
-      if (view == 'exp' && LOCS.some(l => l.mobs.includes(mob)) && bannerDropOk([...allLoot, ...loot]) && Math.random() < BANNER.ch) {
-        const bn = makeBanner(); bn.fresh = 1; loot.push(bn); say(`Loot: <b class="t${bn.r}">${bn.name}</b>`, 'crit'); }
+      // WAR BANNER: 2% z każdego przeciwnika aktu (wyprawa), jeden na akt – po dropie akt znika z puli
+      if (view == 'exp' && bannerDropOk(mob) && Math.random() < BANNER.ch) {
+        me.banAct = me.banAct || [0, 0, 0]; me.banAct[bannerAct(mob)] = 1; const bn = makeBanner(); bn.fresh = 1; loot.push(bn); say(`Loot: <b class="t${bn.r}">${bn.name}</b>`, 'crit'); }
       // PROJEKT WĘDKI: 5% z każdego przeciwnika w Forest (tylko wyprawa), jednorazowo – po zdobyciu znika z puli
       if (view == 'exp' && LOCS[0].mobs.includes(mob) && rodDesignInPool() && Math.random() < ROD_DESIGN_CH) {
         fishing.rodDesignGot = true; const dz = makeDesign('rod'); dz.fresh = 1; loot.push(dz); say(`Loot: <b class="t${dz.r}">${dz.name}</b>`, 'crit'); }
