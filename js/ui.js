@@ -2547,10 +2547,8 @@ function render() {
       // przybliżanie względem ŚRODKA obecnego widoku: punkt planszy na środku ekranu zostaje na miejscu
       // (pozycja na ekranie = pan + punkt × zoom, więc przy zmianie zoomu pan skalujemy tym samym współczynnikiem)
       const z0 = currentZoom;
-      // stopnie przybliżenia 0.5 / 1 / 1.5 / 2 – przy 0.5, 1 i 2 ikony nodów w równej skali pikseli (ostre), przy 1.5 lekko rozmyte (świadomie)
-      const ZS = [0.5, 1, 1.5, 2], zi = ZS.reduce((b, z, i) => Math.abs(z - z0) < Math.abs(ZS[b] - z0) ? i : b, 0);
-      setCurrentZoom(ZS[Math.max(0, Math.min(ZS.length - 1, zi + (e.deltaY < 0 ? 1 : -1)))]);
-      const k = currentZoom / z0; setPanX(Math.round(panX * k)); setPanY(Math.round(panY * k));
+      setCurrentZoom(e.deltaY < 0 ? Math.min(2.5, currentZoom + 0.15) : Math.max(0.5, currentZoom - 0.15));
+      const k = currentZoom / z0; setPanX(panX * k); setPanY(panY * k);
       clampPan();
       const tc = $('treeContent');
       if (tc) tc.style.transform = `translate(${panX}px,${panY}px) scale(${currentZoom})`;
