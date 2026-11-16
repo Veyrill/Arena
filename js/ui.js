@@ -1128,6 +1128,8 @@ function renderAuras(id, list) {
   { const fr = $('fbackrow'); let t = fr && fr.style.display !== 'none' ? fr.offsetTop + fr.offsetHeight + 4 : 6;
     // debuffy wroga (prawy górny róg) pod licznikiem DMG / TURN – licznik ich nie zasłania
     const lw = $('logwrap'); if (id === 'debuffs' && lw && lw.parentElement === FIGHTBOX && lw.offsetHeight) t = Math.max(t, lw.offsetTop + lw.offsetHeight + 4);
+    // debuffy wroga zawsze pod ikonami „i” / skrzynia (prawy górny róg) – ikony ich nie zasłaniają (także w lochu)
+    const ib = $('infobtn'); if (id === 'debuffs' && ib && ib.parentElement === FIGHTBOX && ib.offsetHeight) t = Math.max(t, ib.offsetTop + ib.offsetHeight + 4);
     el.style.top = t + 'px'; }
   // obwódka: czerwona = debuff na wrogu, zielona = buff gracza
   const bc = id === 'pbuffs' ? '#3fbf4f' : '#e53935';
@@ -1692,6 +1694,7 @@ function addXp(x) {
 // po upływie czasu (przed kliknięciem Reset) questy dalej się liczą
 function questEv(k, n = 1, fish) {
   const Q = me.quests; if (me.lvl < QUEST_LVL || !Q || Q.v !== 2) return;
+  if (k !== 'fish' && view !== 'exp') return;   // questy walki liczą się tylko na wyprawach (lochy – bez postępu questów, więc bez Upgrade Token)
   let ch = false;
   for (const q of Q.list) {
     if (q.k !== k || q.got >= q.need || (k === 'fish' && q.fish !== fish)) continue;
@@ -2964,7 +2967,7 @@ function* fightGen(mob, io) {
     const abCd = {}; io.cd = abCd;   // ABILITIES: odnowienia w tej walce (tury)
     // DPS METER: rejestr obrażeń zadanych wrogowi wg źródła (bez nadwyżki ponad pozostałe HP) i licznik Twoich tur
     const dmgBy = {}; let pTurns = 0;
-    const dr = (src, v) => { const real = Math.max(0, Math.min(v, mh)); dmgBy[src] = (dmgBy[src] || 0) + real; if (UI) setDps(dmgBy, pTurns); return v; };
+    const dr = (src, v) => { dmgBy[src] = (dmgBy[src] || 0) + Math.max(0, v); if (UI) setDps(dmgBy, pTurns); return v; };   // DPS METER: pełne obrażenia ciosu (także nadwyżka ponad HP wroga – np. krytyk Ultimate kończący walkę liczy się w całości, jak liczba nad wrogiem)
     if (UI) setDps({}, 0);
     const abReady = {}; io.ready = abReady; let furyT = 0, stunT = 0, rendT = 0, rendD = 0, markD = 0, cripT = 0, cripP = 0;   // markD: Mark of Death (% do następnego ciosu), cripT/cripP: Crippling Strike (tury wroga, % mniej obrażeń)   // stunT: Earthshaker (tury wroga do pominięcia); rendT/rendD: Skullsplitter (tury krwawienia, obrażenia na turę)   // abReady.crit = Revenge (tura po krytyku wroga), abReady.exec = Decapitate (wróg < 20% HP); furyT = tury Battle Fury
     const abOk = id => { const a = abEff(id); return !!a && rageBar >= a.cost && !abCd[id] && (!a.need || !!abReady[a.need]); };
