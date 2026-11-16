@@ -305,11 +305,11 @@ export const DUNS = [DUN, DUN2, DUN3, DUN4, DUN5, DUN6, ...RAIDS];   // raidy na
 // Gdy pliku nie ma, w jego miejscu pojawia się emoji (jak wcześniej).
 // display:block – obrazek nie siedzi na linii bazowej tekstu, więc jest dokładnie na środku kwadratu noda.
 const SKI = (f, e, px) => `<img src="assets/skills/${f}.png" alt="" style="display:block;width:${px}px;height:${px}px;image-rendering:pixelated" onerror="this.outerHTML='${e}'">`;
-export const SKILL_ICON_CENTER = SKI('skill_surprise', '⚡', 32);   // środkowy skill "Surprise Attack"
-// Ikony klątw (pixel art 32×32, plik 128×128) z assets/skills/curses – w dużym nodzie 32 px (skala 1:1, ostre piksele)
+export const SKILL_ICON_CENTER = SKI('skill_surprise', '⚡', 64);   // 16 px ×4   // środkowy skill "Surprise Attack"
+// Ikony klątw (pixel art 32×32, plik 128×128) z assets/skills/curses – w dużym nodzie 64 px (×2, ostre piksele; ramka nodu dotyka ikony)
 // Gdy pliku nie ma w assets/skills/curses/, szuka dalej w assets/skills/, assets/curses/ i assets/ – dopiero potem pokazuje emoji.
 const CUR_DIRS = ['assets/skills/curses/', 'assets/skills/', 'assets/curses/', 'assets/'];
-const CUR = (f, e) => `<img src="${CUR_DIRS[0]}${f}.png" alt="" data-n="0" style="display:block;width:32px;height:32px;border-radius:4px;image-rendering:pixelated" onerror="const d=${JSON.stringify(CUR_DIRS).replace(/"/g, "'")},n=+this.dataset.n+1;this.dataset.n=n;if(d[n])this.src=d[n]+'${f}.png';else this.outerHTML='${e}'">`;
+const CUR = (f, e) => `<img src="${CUR_DIRS[0]}${f}.png" alt="" data-n="0" style="display:block;width:64px;height:64px;border-radius:8px;image-rendering:pixelated" onerror="const d=${JSON.stringify(CUR_DIRS).replace(/"/g, "'")},n=+this.dataset.n+1;this.dataset.n=n;if(d[n])this.src=d[n]+'${f}.png';else this.outerHTML='${e}'">`;
 
 // ===== DRZEWKO KLĄTW (CURSES) – prawy górny róg =====
 // Układ: pień po przekątnej (45°) → rozwidlenie → 3 równoległe, poziome tory (y = -345 / -225 / -105).
@@ -321,10 +321,10 @@ const PLUS = { str: ['skill_plus_str', 'Strength', '⚔️'], dex: ['skill_plus_
 // 3 małe nody ze statystyką (+3) po kolei: p = prefiks id, from = poprzedni node, pts = pozycje
 const plus3 = (p, from, st, pts, vis) => pts.map(([x, y], i) => ({
   id: p + (i + 1), from: i ? p + i : from, req: i ? p + i : from, vis, x, y, k: 's',
-  ic: SKI(PLUS[st][0], PLUS[st][2], 16), n: 'Lesser ' + PLUS[st][1], d: '+3 ' + PLUS[st][1], eff: { [st]: 3 }   // nazwa: Lesser Strength / Lesser Dexterity / Lesser Vitality
+  ic: SKI(PLUS[st][0], PLUS[st][2], 32), n: 'Lesser ' + PLUS[st][1], d: '+3 ' + PLUS[st][1], eff: { [st]: 3 }   // nazwa: Lesser Strength / Lesser Dexterity / Lesser Vitality
 }));
 // pojedynczy mały node ze statystyką (+3) – do ścieżek, gdzie ID nadajemy ręcznie
-const plus1 = (id, from, x, y, st, vis) => ({ id, from, req: from, vis, x, y, k: 's', ic: SKI(PLUS[st][0], PLUS[st][2], 16), n: 'Lesser ' + PLUS[st][1], d: '+3 ' + PLUS[st][1], eff: { [st]: 3 } });
+const plus1 = (id, from, x, y, st, vis) => ({ id, from, req: from, vis, x, y, k: 's', ic: SKI(PLUS[st][0], PLUS[st][2], 32), n: 'Lesser ' + PLUS[st][1], d: '+3 ' + PLUS[st][1], eff: { [st]: 3 } });
 // RANGI: duże nody mają max = 3 rangi (Terror 1). eff = efekt JEDNEJ rangi (sumuje się: ranga × eff).
 // d = opis; może być funkcją rangi r (tooltip pokazuje obecną i następną rangę).
 // Kolejny node można kupić dopiero, gdy poprzedni jest wymaksowany (np. Withering 3/3 → Terror).

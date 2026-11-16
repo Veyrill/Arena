@@ -477,6 +477,12 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 .upg-line.on{stroke:#f2c200;filter:drop-shadow(0 0 3px #f2c200)}.upg-line.off{stroke-dasharray:4 5;opacity:.75}
 .upg-badge{position:absolute;bottom:-4px;right:-4px;background:var(--ac);color:var(--on-ac);font-size:9px;font-weight:700;padding:1px 4px;border-radius:6px;border:1px solid var(--card)}
 .upg-node.bought .upg-badge{background:#f2c200;color:#2b2118}
+/* PASSIVES: ikony ×2 – duży node 64 px (ikona 32 px ×2), mały 32 px (16 px ×2), środek 64 px; ramka nodu (2 px) dotyka ikony */
+#treeContent .upg-node{width:68px;height:68px;border-radius:10px}#treeContent .upg-node .upg-badge{z-index:2}
+#treeContent .upg-node.center-node{width:68px;height:68px}
+#treeContent .upg-node.small{width:36px;height:36px;border-radius:6px}#treeContent .upg-node.small img{border-radius:4px}
+#treeContent .upg-node.small::before{inset:-6px}
+#treeContent .upg-node .ic{font-size:40px}#treeContent .upg-node.small .ic{font-size:20px}
 /* BONUSY PRZECIWNIKA: 2 kwadraty nad prawym górnym rogiem kafelka (XP – fiolet, Gold – moneta); zablokowane – ciemne, puste */
 .tiles.mobt{row-gap:30px;margin-top:26px}
 .mbon{position:absolute;top:-24px;right:2px;display:flex;gap:4px;z-index:2}
