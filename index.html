@@ -184,19 +184,18 @@ button.drow:hover{border-color:var(--dc)}
 #skillbar .sk{border:2px solid #000;background:#14161b}
 #skillbar .sk.ab .ic.img{inset:0;border-radius:6px}
 #skillbar .sk .kb{right:auto;left:50%;bottom:-11px;transform:translateX(-50%);background:#15131a;border:1px solid #4a4452;border-radius:4px;padding:2px 5px;font-size:10px;color:#d8cbb4;text-shadow:none}
-#skillbar .sk .abc{left:-4px;top:-5px;background:#15131a;border:1px solid #f07b16;border-radius:4px;padding:2px 4px;font-size:10px;color:#ffb347;text-shadow:none}
-#skillbar .sk .abc.gen{border-color:#3fbf4f;color:#7fe08a}
+#skillbar .sk .abc{left:auto;top:auto;right:4px;bottom:3px;padding:0;border:0;border-radius:0;background:none;font-size:15px;font-weight:900;color:#ffb347;text-shadow:2px 0 0 #000,-2px 0 0 #000,0 2px 0 #000,0 -2px 0 #000,1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000}   /* koszt Rage: duża liczba w prawym dolnym rogu ikony, czarny kontur (pomarańczowa = koszt) */
+#skillbar .sk .abc.gen{color:#7fe08a}   /* zielona = generuje Rage (np. +25) */
 #skillbar .sk .abc,#skillbar .sk .kb{z-index:4}   /* plakietka kosztu i klawisza nad nakładką odnowienia */
-#skillbar .sk .abc.norage,#skillbar .sk .abc.gen.norage{border-color:#4a4452;color:#7d7684}   /* za mało Rage na tę umiejętność – plakietka szara */
+#skillbar .sk .abc.norage,#skillbar .sk .abc.gen.norage{color:#8a8290}   /* za mało Rage na tę umiejętność – liczba szara */
 #skillbar .sk.ab.off .ic{filter:grayscale(.9) brightness(.45);opacity:1}
 #skillbar .sk .abcd:not(:empty){background:rgba(0,0,0,.55);border-radius:6px;font-size:24px}
 /* PASEK – ikony w natywnej skali: umiejętności 32 px ×2 = 64 px, broń 16 px ×4 = 64 px; sloty 64 px na całą szerokość okna walki,
-   czarna obwódka slotu rysowana NA ikonie (::after), plakietka kosztu Rage wewnątrz slotu (nie wchodzi na sąsiada) */
+   czarna obwódka slotu rysowana NA ikonie (::after); koszt Rage – liczba w prawym dolnym rogu (wyżej) */
 #skillbar{grid-template-columns:repeat(9,64px);justify-content:center;gap:8px;padding:8px 12px 20px;margin:18px 0 0}   /* 9 slotów (1–5, Q, W, E, R – bez Tab), małe odstępy */
 #skillbar .sk{width:64px;height:64px;border:0;border-radius:6px}
 #skillbar .sk::after{content:'';position:absolute;inset:0;border-radius:6px;box-shadow:inset 0 0 0 2px #000;pointer-events:none;z-index:3}
 #skillbar .sk .ic.img{inset:0;display:flex;align-items:center;justify-content:center}#skillbar .sk .ic.img img{width:64px;height:64px}
-#skillbar .sk .abc{left:2px;top:2px}
 @keyframes abproc{from{box-shadow:0 0 0 2px #f07b16,0 0 6px #f07b16}to{box-shadow:0 0 0 3px #ffc06a,0 0 18px #f07b16}}
 /* POZIOM UMIEJĘTNOŚCI: „lvl X” przy nazwie, pasek postępu użyć do następnego poziomu, napis LVL X! przy awansie */
 .abpips{display:flex;gap:6px;margin:4px 0 8px 2px}
