@@ -306,7 +306,7 @@ export const DUNS = [DUN, DUN2, DUN3, DUN4, DUN5, DUN6, ...RAIDS];   // raidy na
 // display:block – obrazek nie siedzi na linii bazowej tekstu, więc jest dokładnie na środku kwadratu noda.
 const SKI = (f, e, px) => `<img src="assets/skills/${f}.png" alt="" style="display:block;width:${px}px;height:${px}px;image-rendering:pixelated" onerror="this.outerHTML='${e}'">`;
 export const SKILL_ICON_CENTER = SKI('skill_surprise', '⚡', 32);   // środkowy skill "Surprise Attack"
-// Ikony klątw (styl WoW, 128×128) z assets/skills/curses – w dużym nodzie 40 px, skalowane gładko (to nie pixel art)
+// Ikony klątw (pixel art 32×32, plik 128×128) z assets/skills/curses – w dużym nodzie 32 px (skala 1:1, ostre piksele)
 // Gdy pliku nie ma w assets/skills/curses/, szuka dalej w assets/skills/, assets/curses/ i assets/ – dopiero potem pokazuje emoji.
 const CUR_DIRS = ['assets/skills/curses/', 'assets/skills/', 'assets/curses/', 'assets/'];
 const CUR = (f, e) => `<img src="${CUR_DIRS[0]}${f}.png" alt="" data-n="0" style="display:block;width:32px;height:32px;border-radius:4px;image-rendering:pixelated" onerror="const d=${JSON.stringify(CUR_DIRS).replace(/"/g, "'")},n=+this.dataset.n+1;this.dataset.n=n;if(d[n])this.src=d[n]+'${f}.png';else this.outerHTML='${e}'">`;
