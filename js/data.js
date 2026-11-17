@@ -33,7 +33,7 @@ export const ST={str:'Strength',dex:'Dexterity',con:'Vitality',dmg:'Damage',arm:
 export const MATS={
   meat:{sl:'meat',grp:'upg',name:'Meat',val:10,e:'🥩',img:'materials/mat_meat.png',source:'Forest animals (Lynx, Boar, Deer, Wolf, Bear)'},
   claw:{sl:'claw',grp:'upg',name:'Bear Paw',val:20,e:'🐾',img:'materials/mat_bear_paw.png',source:'Bear (Forest)'},
-  // Drewno: materiał (common) z każdego przeciwnika w Forest (10%, osobne losowanie – także u Bear). Do craftingu wędki Stick and String (5 sztuk).
+  // Drewno: materiał (common) z każdego przeciwnika w Forest (10%, w jednym losowaniu z resztą dropów). Do craftingu wędki Stick and String (5 sztuk).
   wood:{sl:'wood',grp:'upg',name:'Wood',val:5,e:'🪵',img:'materials/mat_wood.png',source:'Forest (all enemies)',desc:'Crafting material (Stick and String)'},
   fish_carp:{sl:'fish_carp',grp:'fish',name:'Crucian Carp',val:15,e:'🐟',img:'fish/fish_carp.png',source:'Fishing (requires 20 FP)'},
   // Kość: ulepszacz (jakość Zwykła). Wypada ze szkieletów na Cmentarzu.
