@@ -34,6 +34,15 @@ const GLOVES_SPRITES = ['gloves_leather', 'gloves_steel', 'gloves_fur'];
 const SHIELD_SPRITES = ['shield_wood', 'shield_ruby', 'shield_emerald', 'shield_knight', 'shield_drake', 'shield_shadow'];   // akt 2: Knight / Drake / Shadow Shield
 
 const $ = id => document.getElementById(id);
+// UKŁAD „FULL SCREEN” (TEST, Settings → Layout): 5 kolumn na cały ekran – menu | ekwipunek | walka + plecak | Quests + DPS | Abilities.
+// Włączony w localStorage 'arena_layout' = 'fs' (przełącznik przeładowuje stronę). Klasa body.lay-fs + przeniesienie paneli bocznych do kolumny #rcol.
+const LAY_FS = (() => { try { return localStorage.getItem('arena_layout') === 'fs'; } catch (e) { return false; } })();
+if (LAY_FS) {
+  document.body.classList.add('lay-fs');
+  const w = document.querySelector('.wrap'), main = w && [...w.children].find(e => e.tagName === 'DIV' && !e.id && e.querySelector('#fightbox, #invcard'));
+  if (main) main.id = 'mcol';
+  if (w) { const r = document.createElement('div'); r.id = 'rcol'; w.appendChild(r); ['fish-side', 'act-side', 'quest-side', 'dps-side'].forEach(id => { const e = $(id); if (e) r.appendChild(e); }); }
+}
 // Własne ikony interfejsu (pixel art 16×16, plik 64×64) z assets/ui; gdy pliku brak – emoji. 32 px = ×2, ostre piksele.
 // ZŁOTO: ikona monety (pixel art 16×16, assets/ui/ui_gold.png) – przy cenach, Value, panelu Gold, przycisku Sell; brak pliku → 💰
 const goldIco = (px = 16) => `<img src="${ASSETS_DIR}/ui/ui_gold.png" alt="" draggable="false" style="width:${px}px;height:${px}px;image-rendering:pixelated;vertical-align:-3px" onerror="this.outerHTML='💰'">`;
@@ -1569,7 +1578,9 @@ function renderSettings() {
   el.innerHTML = `<div class="setrow"><div><b>Health bar</b><small>What the health bars show in fights.</small></div>`
     + `<div class="setopt"><button data-hpv="0" class="${v ? '' : 'on'}">Percent</button><button data-hpv="1" class="${v ? 'on' : ''}">Percent + values</button></div></div>`
     + `<div class="setrow" style="margin-top:8px"><div><b>Display mode</b><small>${window.arenaApp ? 'Play in a window or on the full screen. F11 also switches it.' : 'Play in a window or on the full screen (in the browser it resets after reloading the page).'}</small></div>`
-    + `<div class="setopt"><button data-fsm="0" class="${isFull() ? '' : 'on'}">Windowed</button><button data-fsm="1" class="${isFull() ? 'on' : ''}">Fullscreen</button></div></div>`;
+    + `<div class="setopt"><button data-fsm="0" class="${isFull() ? '' : 'on'}">Windowed</button><button data-fsm="1" class="${isFull() ? 'on' : ''}">Fullscreen</button></div></div>`
+    + `<div class="setrow" style="margin-top:8px"><div><b>Layout (test)</b><small>Classic or full screen panels with the fight in the middle. The page reloads.</small></div>`
+    + `<div class="setopt"><button data-lay="0" class="${LAY_FS ? '' : 'on'}">Classic</button><button data-lay="1" class="${LAY_FS ? 'on' : ''}">Full screen</button></div></div>`;
 }
 // TRYB WYŚWIETLANIA (Settings → Display mode): Windowed / Fullscreen.
 // Aplikacja (Electron): przez window.arenaApp z preload.js – zmienia tryb okna, zapamiętuje go w pliku ustawień i przywraca przy starcie (F11 też działa).
@@ -1582,6 +1593,11 @@ const setFull = v => {
 document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('[data-fsm]'); if (b) setFull(b.dataset.fsm === '1'); });
 if (window.arenaApp) window.arenaApp.onFullscreen(() => renderSettings());   // zmiana (np. F11) → przyciski w Settings od razu aktualne
 document.addEventListener('fullscreenchange', () => renderSettings());
+document.addEventListener('click', e => {   // Settings → Layout (test): zapis i przeładowanie strony
+  const b = e.target.closest && e.target.closest('[data-lay]'); if (!b || (b.dataset.lay === '1') === LAY_FS) return;
+  try { localStorage.setItem('arena_layout', b.dataset.lay === '1' ? 'fs' : 'classic'); } catch (er) {}
+  saveGame(); location.reload();
+});
 document.addEventListener('click', e => {
   const b = e.target.closest && e.target.closest('[data-hpv]'); if (!b) return;
   me.opts = Object.assign({}, me.opts, { hpVals: b.dataset.hpv === '1' }); saveGame(); render();

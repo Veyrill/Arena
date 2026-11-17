@@ -531,6 +531,26 @@ body :is(#sellbtn.on,.eq-page-btn.on,.setopt button.on):hover:not(:disabled){bac
 body :is(#sellbtn,.setopt button,.ctabs button,.absub){display:inline-flex;align-items:center;justify-content:center;gap:6px;line-height:1;padding:8px 12px}
 body .eq-page-btn{line-height:1;padding:1px 0 0}
 body .absub.on{padding:6px 12px 8px}
+
+/* ===== UKŁAD „FULL SCREEN” (TEST – Settings → Layout): panele na cały ekran, walka na środku =====
+   kolumny: menu 200 | ekwipunek 300 | środek (walka / wyprawa + plecak) | Quests + DPS 300 | Abilities 200 – boki po 500 px, więc środek = środek ekranu */
+body.lay-fs{height:100vh;overflow:hidden}
+body.lay-fs .wrap{max-width:none;width:100vw;height:100vh;margin:0;padding:12px;box-sizing:border-box;display:grid;grid-template-columns:200px 300px minmax(0,1fr) 300px 200px;gap:12px;align-items:stretch}
+body.lay-fs #nav{grid-column:1;grid-row:1;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 10px;margin:0;height:100%;box-sizing:border-box;overflow:auto}
+body.lay-fs .wrap>.card:not(#rcol){grid-column:2;grid-row:1;margin:0;height:100%;box-sizing:border-box;overflow:auto}
+body.lay-fs #mcol{grid-column:3;grid-row:1;display:flex;flex-direction:column;gap:12px;min-height:0;height:100%}
+body.lay-fs #mcol>.card{margin:0;overflow:auto}
+body.lay-fs #mcol>.card:not(#invcard){flex:1 1 auto}
+body.lay-fs #mcol>#invcard{flex:none}
+body.lay-fs #fightbox:not([hidden]){display:flex;flex-direction:column}
+body.lay-fs #fightbox>.arena{margin-top:auto}body.lay-fs #fightbox>#gorow{margin-bottom:auto}
+body.lay-fs #rcol{grid-column:4;grid-row:1;display:flex;flex-direction:column;gap:12px;height:100%;min-height:0}
+body.lay-fs #rcol>.card{position:static;width:auto;margin:0;box-shadow:none;overflow:auto}
+body.lay-fs #rcol>.card{flex:1 1 auto}
+body.lay-fs #rcol #dps-side .dpst{width:auto}
+body.lay-fs #xp-side{position:static;width:auto;margin:0;grid-column:5;grid-row:1;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:14px 12px;box-sizing:border-box;height:100%}
+body.lay-fs #xp-side::before{content:'Abilities';font-size:15px;font-weight:800;letter-spacing:.06em;margin-bottom:4px}
+@media(max-width:1600px){body.lay-fs .wrap{grid-template-columns:190px 280px minmax(0,1fr) 300px}body.lay-fs #xp-side{display:none}}   /* węższe okno: bez kolumny Abilities */
 </style></head><body>
 <div id="popup-container"></div>
 <button id="devbtn" title="Toggles developer mode and restarts the game">🛠️ DEV</button>
