@@ -2155,6 +2155,19 @@ const tokenMob = m => { const i = EXP_MOBS.indexOf(m); return i >= 0 && i >= TOK
 const mobMats = m => [...(m.mats || []), ...(tokenMob(m) ? [['upgrade_token', TOKEN_DROP]] : [])];
 // LISTA DROPÓW (wyprawa): ikona skrzyni (assets/ui/tup_plunder.png) w prawym górnym rogu okna walki, w wierszu Back;
 // dymek po najechaniu: materiały przeciwnika i Upgrade Token z szansami (ikona, nazwa, %)
+// JEDEN DROP NA WALKĘ: pula możliwych dropów przeciwnika z szansami (suma ≤ 100%, reszta = nic). Kolejność: rzadkie najpierw,
+// potem materiały, na końcu przedmiot ekwipunku (GEAR_CH, ale nie więcej niż zostało do 100%, np. Bear: 15%)
+const GEAR_CH = 0.30;
+function dropPool(mob, extra = [], loot = []) {   // loot = łup bieżącej walki (wyprawa)
+  const exp = view == 'exp', P = [], put = (it, crit) => { it.fresh = 1; if (exp) loot.push(it); else inv.push(it); say(`Loot: <b class="t${it.r}">${it.name}</b>`, crit); };
+  if (exp && LOCS[0].mobs.includes(mob) && rodDesignInPool()) P.push({ p: ROD_DESIGN_CH, k: 'design', give: () => { fishing.rodDesignGot = true; put(makeDesign('rod'), 'crit'); } });
+  if (exp && bannerDropOk(mob)) P.push({ p: BANNER.ch, k: 'banner', give: () => { me.banAct = me.banAct || [0, 0, 0]; me.banAct[bannerAct(mob)] = 1; put(makeBanner(), 'crit'); } });
+  if (bagDropOk(extra)) P.push({ p: BAG.ch, k: 'bag', give: () => { me.bagGot = 1; put(makeBag(), 'crit'); } });
+  for (const [k, ch] of mobMats(mob)) if (exp || k != 'upgrade_token') P.push({ p: ch, k, give: () => { if (!exp) return giveMat(k); const d = MATS[k]; loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: k }); say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`); } });   // _mk: klucz materiału (po Collect → giveMat)
+  const used = P.reduce((a, d) => a + d.p, 0);
+  if (mob.drop && mob.drop.length && used < 1) P.push({ p: Math.min(GEAR_CH, 1 - used), k: 'gear', give: () => put(mk(mob.drop, me.lvl < 10 && Math.random() < 0.10 ? 'weapon' : undefined, undefined, actOfMob(mob))) });   // poniżej 10 poziomu: +10 pkt proc. szansy, że przedmiot to broń
+  return P;
+}
 const dropTip = m => { const L = mobMats(m), rd = LOCS[0].mobs.includes(m) && rodDesignInPool(), dz = rd ? makeDesign('rod') : null, bd = bannerDropOk(m), bz = bd ? makeBanner() : null;
   return `<b>Drops</b>` + (L.length || rd || bd ? L.map(([k, p]) => `<span class='drrow'>${matIco(k, 32, 24)}<span class='t${MATS[k].r || 0}'>${MATS[k].name}</span><em>${+(p * 100).toFixed(1)}%</em></span>`).join('')
     + (rd ? `<span class='drrow'>${ico(dz, 32)}<span class='t${dz.r}'>${dz.name}</span><em>${ROD_DESIGN_CH * 100}%</em></span>` : '')
@@ -3598,38 +3611,23 @@ $('go').onclick = async ev => {
       setTimeout(() => flyReward(rewardGold, gainXp), 60);   // animacja: złoto do panelu Gold, XP do paska doświadczenia (po odświeżeniu ekranu)
       while (me.lvl < MAX_LVL && me.xp >= xpNeed(me.lvl)) { me.xp -= xpNeed(me.lvl); me.lvl++; me.str += 1; me.dex += 1; me.con += 1; me.sp++;   /* awans: +1 do każdej statystyki (było +2) */ spDot = true; say(`<b>Level up: ${me.lvl}!</b> +1 skill point`, 'crit'); }
       if (me.lvl >= 10 && !showDunUnlockMsg) setShowDunUnlockMsg(true);
-      // poniżej 10 poziomu: +10 pkt proc. szansy, że łup z walki to broń (dodatkowe losowanie przed zwykłym wyborem slotu)
-      const tokDrop = view == 'exp' && tokenMob(mob) && Math.random() < TOKEN_DROP;   // 1%: Upgrade Token zamiast przedmiotu – tylko wyprawy (z lochów tylko special dropy)
-      if (tokDrop) { const d = MATS.upgrade_token;
-        { loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: 'upgrade_token' }); say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`); } }
-      else if (mob.drop && mob.drop.length) { const it = mk(mob.drop, me.lvl < 10 && Math.random() < 0.10 ? 'weapon' : undefined, undefined, actOfMob(mob)); it.fresh = 1; if (view == 'exp') loot.push(it); else inv.push(it); say(`Loot: <b class="t${it.r}">${it.name}</b>`); }   // wyprawa: do plecaka dopiero po Collect   // Akty 2 i 3: na razie bez dropów
-      // LIGHT BAG: 3% z każdego przeciwnika (wyprawa → łup, loch → prosto do plecaka); tylko raz w całej grze
-      if (bagDropOk(view == 'exp' ? [...allLoot, ...loot] : []) && Math.random() < BAG.ch) {
-        me.bagGot = 1; const bg = makeBag(); bg.fresh = 1; if (view == 'exp') loot.push(bg); else inv.push(bg); say(`Loot: <b class="t${bg.r}">${bg.name}</b>`, 'crit'); }
-      // WAR BANNER: 2% z każdego przeciwnika aktu (wyprawa), jeden na akt – po dropie akt znika z puli
-      if (view == 'exp' && bannerDropOk(mob) && Math.random() < BANNER.ch) {
-        me.banAct = me.banAct || [0, 0, 0]; me.banAct[bannerAct(mob)] = 1; const bn = makeBanner(); bn.fresh = 1; loot.push(bn); say(`Loot: <b class="t${bn.r}">${bn.name}</b>`, 'crit'); }
-      // PROJEKT WĘDKI: 5% z każdego przeciwnika w Forest (tylko wyprawa), jednorazowo – po zdobyciu znika z puli
-      if (view == 'exp' && LOCS[0].mobs.includes(mob) && rodDesignInPool() && Math.random() < ROD_DESIGN_CH) {
-        fishing.rodDesignGot = true; const dz = makeDesign('rod'); dz.fresh = 1; loot.push(dz); say(`Loot: <b class="t${dz.r}">${dz.name}</b>`, 'crit'); }
-      // matsOne (np. Bear): jedno losowanie na wszystkie materiały – wypada najwyżej jeden (szanse jak w liście, np. Meat 40% / Bear Paw 25% / nic 35%)
-      const matRoll = Math.random(); let matAcc = 0;
-      for (const [k, ch, solo] of (mob.mats || [])) if (mob.matsOne && !solo ? (matRoll >= matAcc && matRoll < (matAcc += ch)) : Math.random() < ch) {   // solo = osobne losowanie (Wood)   // materiały przeciwnika (Upgrade Token losowany wyżej, zamiast przedmiotu)
-        if (view != 'exp') { giveMat(k); continue; }
-        const d = MATS[k]; loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: k });   // _mk: klucz materiału (po Collect → giveMat)
-        say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`);
-      }
       // special dropy z lochu (stałe przedmioty, np. Forgotten Edge z pierwszego przeciwnika lochu – Spiderling)
       // MAKS. JEDEN special drop na walkę: jedno losowanie, szanse się sumują (np. 12 + 7 + 5 + 10 = 34% na cokolwiek)
+      let gotSd = 0;   // loch: special drop = jedyny drop z tej walki
       if (view == 'dun' && mob.sd && mob.sd.length) {
         let roll = Math.random() * 100, x = null;
         for (const d of mob.sd) { if (roll < d.pct) { x = d; break; } roll -= d.pct; }
-        if (x) {
+        if (x) { gotSd = 1;
           const it = makeFixed(x.k); it.fresh = 1; inv.push(it); me.found = me.found || {}; me.found[x.k] = 1;
           say(`<b>Special drop:</b> <b class="t${it.r}">${it.name}</b>!`, 'crit');
           rareBanner(Object.assign({}, it, { big: true, html: `<div class="fx-b-ico cell r${it.r}">${sizeIco(it, 64)}</div><b class="t${it.r}" style="font-size:22px">${it.name}</b>` }));   // duży baner z błyskiem – bez napisu „RARE DROP!”, tylko ikona i nazwa (22 px)
         }
       }
+      // JEDEN DROP NA WALKĘ: jedno losowanie z listy (kolejność = od najrzadszych, szanse jak w liście dropów);
+      // przedmiot ekwipunku dostaje GEAR_CH (albo tyle, ile zostało do 100%), reszta = brak dropu
+      if (!gotSd) { const pool = dropPool(mob, view == 'exp' ? [...allLoot, ...loot] : [], loot);
+        let roll = Math.random(); const pick = pool.find(d => (roll -= d.p) < 0);
+        if (pick) pick.give(); }
       if (view == 'dun') {
         const di = curDun().mobs.indexOf(mob), dd = dloc ?? 0;
         if (!DEV || devFlag('dcd', false)) { me.dcd = me.dcd || {}; me.dcd[dKey(di)] = Date.now() + DUN_CD * (1 - tupVal('medic') / 100); }   // przerwa 1 h (Dungeon Explorer: −10% / poziom) dla tego przeciwnika (DEV: bez przerwy)

@@ -127,9 +127,9 @@ LOCS.forEach(l => l.mobs.forEach(m => {
     m.mats = [['meat', 0.4]];
     if(m.n === 'Bear') {
       m.mats.push(['claw', 0.25]);
-      m.matsOne = true;   // Bear: maks. jeden materiał na walkę – Meat 40% ALBO Bear Paw 25% (jedno losowanie, nigdy oba)
+      m.matsOne = true;   // Bear: Meat 40% ALBO Bear Paw 25% (od teraz i tak wszystkie dropy to jedno losowanie na walkę – dropPool w ui.js)
     }
-    m.mats.push(['wood', 0.1, true]);   // Wood 10% z każdego przeciwnika w lesie; true = osobne losowanie (u Bear niezależnie od Meat / Bear Paw)
+    m.mats.push(['wood', 0.1, true]);   // Wood 10% z każdego przeciwnika w lesie (jedno losowanie na walkę razem z resztą dropów – dropPool w ui.js)
   }
   // Cmentarz: kości ze szkieletów i Ghoula (50% szansy), czaszka z Nekromanty (30% szansy)
   if(l.n === 'Graveyard' && ['Skeleton','Skeleton Warrior','Skeleton Mage','Ghoul'].includes(m.n)) {
