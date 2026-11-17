@@ -2196,6 +2196,14 @@ function renderInfo(m) {
 
 // SLOTY EKWIPUNKU (aktualna strona 1 / 2) + przyciski stron. Wydzielone z render(), żeby przy podniesieniu sprzętu wędkarskiego
 // (przeciąganie) dało się przełączyć stronę bez przebudowy plecaka – inaczej przeciągany przedmiot zniknąłby spod kursora.
+// PLACEHOLDERY PUSTYCH SLOTÓW: wyszarzona, przygaszona ikona typowego przedmiotu danego slotu (strona 1 – walka, strona 2 – łowienie)
+const SLOT_PH = {
+  1: { weapon: 'weapon/weapon_sword.png', helm: 'helm/helm_helmet.png', armor: 'armor/armor_chainmail.png', shield: 'shield/shield_wood.png', gloves: 'gloves/gloves_leather.png',
+       ring: 'ring/ring_ring.png', amulet: 'amulet/amulet_emerald.png', boots: 'boots/boots_leather.png', trinket: 'trinket/trinket_chalice.png' },
+  2: { weapon: 'fishing_rods/rod1.png', helm: 'fishing_gear/helm_boonie.png', armor: 'fishing_gear/armor_parka.png', lantern: 'fishing_gear/lantern.png', hook: 'fishing_hook/fhook1.png',
+       ring: 'fishing_gear/ring_whisker.png', amulet: 'fishing_gear/amulet_whisker.png', boots: 'fishing_gear/boots_wellies.png', trinket: 'fishing_gear/trinket_whisker_charm.png' }
+};
+const slotPh = k => { const f = (SLOT_PH[equipPage] || {})[k]; return f ? `<img class="slph" src="${ASSETS_DIR}/${f}" alt="" draggable="false" onerror="this.remove()">` : ''; };
 function renderSlots() {
   const currentEq = (equipPage === 1) ? eq1 : eq2;
   const fpVal = fishPower();
@@ -2205,7 +2213,7 @@ function renderSlots() {
   $('slots').innerHTML = ['', 'helm', 'amulet', 'weapon', 'armor', equipPage === 2 ? 'lantern' : 'shield', equipPage === 2 ? 'hook' : 'gloves', 'ring', '', 'boots', 'trinket'].map((k, idx) => {   // prawa kolumna: amulet, tarcza/latarnia, pierścień, talizman (prawy dolny)
     if (!k) return (idx === 0 && equipPage === 2) ? `<div class="ph fpbox"><span class="lb" data-tip="${fpTip}">FP: ${fpVal}</span></div>` : '<div class="ph"></div>';
     const i = currentEq[k];
-    return `<div class="slot${k == 'armor' ? ' tall' : ''}${i ? ' r' + i.r : ''}"${i ? '' : ` title="${slotNames[k] || SL[k][1]}${equipPage === 2 ? ' (Fishing)' : ''}"`} data-t="${k}" data-slot="${k}"${i ? ` draggable="true" data-it="eq:${k}"` : ''}>${i ? slotIco(i) : ''}</div>`;   // przedmioty w slotach: 64 px
+    return `<div class="slot${k == 'armor' ? ' tall' : ''}${i ? ' r' + i.r : ''}"${i ? '' : ` title="${slotNames[k] || SL[k][1]}${equipPage === 2 ? ' (Fishing)' : ''}"`} data-t="${k}" data-slot="${k}"${i ? ` draggable="true" data-it="eq:${k}"` : ''}>${i ? slotIco(i) : slotPh(k)}</div>`;   // przedmioty w slotach: 64 px
   }).join('');
 
   document.querySelectorAll('.eq-page-btn').forEach((btn, idx) => { btn.classList.toggle('on', equipPage === idx + 1); btn.disabled = busy; });

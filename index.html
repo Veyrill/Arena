@@ -97,7 +97,9 @@ button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cu
 .slots{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:230px;margin:0 auto 8px}
 .slot{aspect-ratio:1;border:2px dashed var(--bd);border-radius:10px;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--bd) 18%,transparent);transition:.12s}
 .slot[draggable]{border-style:solid;cursor:pointer;background:var(--card)}
-.ic{font-size:26px;line-height:1}.ph{aspect-ratio:1}.px{width:32px;height:32px;image-rendering:pixelated}.slot .px{width:48px;height:48px}.cell .px{width:40px;height:40px}.slot.tall .px{width:64px;height:64px;image-rendering:pixelated}.ib{padding:0 4px;font-size:12px;border-radius:6px;margin-left:4px}
+.ic{font-size:26px;line-height:1}.ph{aspect-ratio:1}.px{width:32px;height:32px;image-rendering:pixelated}.slot .px{width:48px;height:48px}.cell .px{width:40px;height:40px}.slot.tall .px{width:64px;height:64px;image-rendering:pixelated}
+/* PLACEHOLDER pustego slotu: ikona typowego przedmiotu, wyszarzona i przygaszona (zbroja 64 px, reszta 48 px) */
+.slph{width:48px;height:48px;image-rendering:pixelated;filter:grayscale(1) brightness(.3);opacity:.28;pointer-events:none}.slot.tall .slph{width:64px;height:64px}.ib{padding:0 4px;font-size:12px;border-radius:6px;margin-left:4px}
 .fpbox{display:flex;align-items:flex-start;justify-content:flex-start;padding:2px;font-weight:700;font-size:13px;color:var(--c2)}
 .slot.tall{grid-row:span 2;aspect-ratio:auto}.slot.tall .ic{font-size:40px}
 .slot.wide{grid-column:1/-1;aspect-ratio:auto;height:38px}
