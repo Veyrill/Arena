@@ -2169,9 +2169,11 @@ function dropPool(mob, extra = [], loot = []) {   // loot = łup bieżącej walk
   return P;
 }
 const dropTip = m => { const L = mobMats(m), rd = LOCS[0].mobs.includes(m) && rodDesignInPool(), dz = rd ? makeDesign('rod') : null, bd = bannerDropOk(m), bz = bd ? makeBanner() : null;
-  return `<b>Drops</b>` + (L.length || rd || bd ? L.map(([k, p]) => `<span class='drrow'>${matIco(k, 32, 24)}<span class='t${MATS[k].r || 0}'>${MATS[k].name}</span><em>${+(p * 100).toFixed(1)}%</em></span>`).join('')
+  const gp = (dropPool(m).find(d => d.k == 'gear') || {}).p;   // szansa na przedmiot ekwipunku (jedno losowanie na walkę – dropPool)
+  const gRow = gp ? `<span class='drrow'><img src="${ASSETS_DIR}/weapon/weapon_sword.png" alt="" style="display:block;image-rendering:pixelated" onerror="this.outerHTML='🗡️'"><span class='t0'>Equipment</span><em>${+(gp * 100).toFixed(1)}%</em></span>` : '';   // ikona: Sword (16 px ×2)
+  return `<b>Drops</b>` + gRow + (L.length || rd || bd ? L.map(([k, p]) => `<span class='drrow'>${matIco(k, 32, 24)}<span class='t${MATS[k].r || 0}'>${MATS[k].name}</span><em>${+(p * 100).toFixed(1)}%</em></span>`).join('')
     + (rd ? `<span class='drrow'>${ico(dz, 32)}<span class='t${dz.r}'>${dz.name}</span><em>${ROD_DESIGN_CH * 100}%</em></span>` : '')
-    + (bd ? `<span class='drrow'>${ico(bz, 32)}<span class='t${bz.r}'>${bz.name}</span><em>${BANNER.ch * 100}%</em></span>` : '') + (bagDropOk() ? (bz2 => `<span class='drrow'>${ico(bz2, 32)}<span class='t${bz2.r}'>${bz2.name}</span><em>${BAG.ch * 100}%</em></span>`)(makeBag()) : '') : '<small>No drops</small>'); };   // + War Banner (dopóki nie wypadł w tym akcie)   // + projekt wędki (Forest, dopóki nie zdobyty)
+    + (bd ? `<span class='drrow'>${ico(bz, 32)}<span class='t${bz.r}'>${bz.name}</span><em>${BANNER.ch * 100}%</em></span>` : '') + (bagDropOk() ? (bz2 => `<span class='drrow'>${ico(bz2, 32)}<span class='t${bz2.r}'>${bz2.name}</span><em>${BAG.ch * 100}%</em></span>`)(makeBag()) : '') : (gRow ? '' : '<small>No drops</small>')); };   // + War Banner (dopóki nie wypadł w tym akcie)   // + projekt wędki (Forest, dopóki nie zdobyty)
 function renderInfo(m) {
   const r = Math.round, d = der(), s = mstats(m);
   const L = live && live.mob === m ? live : null, c = L ? L.M : s;
