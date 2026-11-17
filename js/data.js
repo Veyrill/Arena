@@ -33,6 +33,8 @@ export const ST={str:'Strength',dex:'Dexterity',con:'Vitality',dmg:'Damage',arm:
 export const MATS={
   meat:{sl:'meat',grp:'upg',name:'Meat',val:10,e:'🥩',img:'materials/mat_meat.png',source:'Forest animals (Lynx, Boar, Deer, Wolf, Bear)'},
   claw:{sl:'claw',grp:'upg',name:'Bear Paw',val:20,e:'🐾',img:'materials/mat_bear_paw.png',source:'Bear (Forest)'},
+  // Drewno: materiał (common) z każdego przeciwnika w Forest (10%, osobne losowanie – także u Bear). Do craftingu wędki Stick and String (5 sztuk).
+  wood:{sl:'wood',grp:'upg',name:'Wood',val:5,e:'🪵',img:'materials/mat_wood.png',source:'Forest (all enemies)',desc:'Crafting material (Stick and String)'},
   fish_carp:{sl:'fish_carp',grp:'fish',name:'Crucian Carp',val:15,e:'🐟',img:'fish/fish_carp.png',source:'Fishing (requires 20 FP)'},
   // Kość: ulepszacz (jakość Zwykła). Wypada ze szkieletów na Cmentarzu.
   bone:{sl:'bone',grp:'upg',name:'Bone',val:10,e:'🦴',img:'materials/mat_bone.png',source:'Graveyard (Skeleton, Skeleton Warrior, Skeleton Mage, Ghoul)'},
@@ -127,6 +129,7 @@ LOCS.forEach(l => l.mobs.forEach(m => {
       m.mats.push(['claw', 0.25]);
       m.matsOne = true;   // Bear: maks. jeden materiał na walkę – Meat 40% ALBO Bear Paw 25% (jedno losowanie, nigdy oba)
     }
+    m.mats.push(['wood', 0.1, true]);   // Wood 10% z każdego przeciwnika w lesie; true = osobne losowanie (u Bear niezależnie od Meat / Bear Paw)
   }
   // Cmentarz: kości ze szkieletów i Ghoula (50% szansy), czaszka z Nekromanty (30% szansy)
   if(l.n === 'Graveyard' && ['Skeleton','Skeleton Warrior','Skeleton Mage','Ghoul'].includes(m.n)) {

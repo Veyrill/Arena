@@ -154,7 +154,7 @@ const canCraftFish = sl => { const d = CRAFT_FISH[sl]; return d.mats.every(([k, 
 //   Ring of the Tide (epic) = 9 Eye of Cod + 9 Catfish Scale + 9 Barracuda Fang + 9 Light of Anglerfish (bez przedmiotu bazowego)
 const ROD_DESIGN_GOLD = 500, ROD_DESIGN_CH = 0.05;   // projekt wędki Stick and String: koszt craftingu (złoto) i szansa dropu w Forest
 const GEAR_RECIPES = [
-  { to: 'rod', gold: ROD_DESIGN_GOLD, mats: [] },   // Stick and String – 500 złota (projekt z Forest)
+  { to: 'rod', gold: ROD_DESIGN_GOLD, mats: [['wood', 5]] },   // Stick and String – 500 złota + 5 Wood (projekt i drewno z Forest)
   { from: 'boonie', to: 'seasoned_cap', mats: [['catfish_scale', 5]] },
   { from: 'parka', to: 'seasoned_parka', mats: [['catfish_scale', 5]] },
   { from: 'wellies', to: 'seasoned_wellies', mats: [['catfish_scale', 5]] },
@@ -424,16 +424,18 @@ const BANNER = { name: 'War Banner', r: 3, val: 300, e: '🚩', img: 'materials/
 const makeBanner = () => ({ isBanner: 1, sl: 'banner', r: BANNER.r, name: BANNER.name, val: BANNER.val, s: {} });
 const bannerAct = m => ACTS.findIndex(a => a.locs.some(l => l.mobs.includes(m)));   // -1 = poza aktami (np. loch)
 const bannerDropOk = m => { const a = bannerAct(m); return a >= 0 && !(me.banAct && me.banAct[a]); };
-// PLECAK (wersja A): na start 11 miejsc (każdy przedmiot / stos = 1 miejsce); DEV – bez limitu. Puste miejsca widać jako wolne pola (bez kłódek).
+// PLECAK (wersja A): na start 11 miejsc (+5 z Light Bag) (każdy przedmiot / stos = 1 miejsce); DEV – bez limitu. Puste miejsca widać jako wolne pola (bez kłódek).
 // Pełny plecak: walka (wyprawa i loch) się nie zaczyna, a sprzętu nie da się zdjąć – trzeba sprzedać albo użyć przedmiotów.
 // Łup z innych źródeł (łowienie, crafting, gotowanie, nagrody) trafia do plecaka nawet ponad limit (nic nie przepada) – licznik świeci na czerwono.
-// BACKPACK STRAP (ID 6404): +1 miejsce w plecaku po kliknięciu; 1% z przeciwników na wyprawie, 5% w lochach; maks. 20 sztuk (31 miejsc).
+// LIGHT BAG (ID 6405, common): +5 miejsc w plecaku po kliknięciu; 3% z każdego przeciwnika (wyprawa i lochy), wypada TYLKO RAZ w całej grze
+// (me.bagGot = 1 w chwili dropu – potem znika z puli i z listy dropów). Dawny Backpack Strap (ID 6404) usunięty, ID zarezerwowane.
 const INV_START = 11;
 const invCap = () => DEV ? Infinity : (me.invCap || INV_START);
 const invFree = () => invCap() - inv.length;
-const STRAP = { name: 'Backpack Strap', r: 2, val: 100, e: '🎒', img: 'materials/backpack_strap.png', chExp: 0.01, chDun: 0.05, max: 20 };
-const makeStrap = () => ({ isStrap: 1, sl: 'strap', r: STRAP.r, name: STRAP.name, val: STRAP.val, s: {} });
-const strapDropOk = (extra = []) => !DEV && (me.straps || 0) + [...inv, ...(me.pendLoot || []), ...extra].filter(x => x && x.isStrap).length < STRAP.max;
+const BAG = { name: 'Light Bag', r: 0, val: 50, e: '👜', img: 'materials/light_bag.png', ch: 0.03, slots: 5 };
+const makeBag = () => ({ isBag: 1, sl: 'bag', r: BAG.r, name: BAG.name, val: BAG.val, s: {} });
+const bagDropOk = (extra = []) => !DEV && !me.bagGot && ![...inv, ...(me.pendLoot || []), ...extra].some(x => x && x.isBag);
+for (let k = inv.length - 1; k >= 0; k--) if (inv[k] && inv[k].isStrap) inv.splice(k, 1);   // stare zapisy: usunięty Backpack Strap znika z plecaka
 const invFullMsg = need => {   // komunikat o pełnym plecaku: dymek w prawym górnym rogu + mignięcie nagłówka plecaka
   const pc = $('popup-container'); if (pc) { const d = document.createElement('div'); d.className = 'popup-msg'; d.innerHTML = `<span><b>Backpack full!</b> Sell or use items to free ${need > 1 ? need + ' slots' : 'a slot'}.</span>`; pc.appendChild(d); setTimeout(() => d.remove(), 3500); }
   const h = $('invcap'); if (h) { h.classList.remove('flash'); void h.offsetWidth; h.classList.add('flash'); }
@@ -1879,7 +1881,7 @@ const matIco = (k, px = 48, fs = 32) => {
 const ico = (i, size) => {
   if (i.mat) return matIco(i.sl, 48, 32);
   if (i.isScroll) return scrollIco(scrollKind(i), 48);
-  if (i.isStrap) return `<img class="px" src="${ASSETS_DIR}/${STRAP.img}" alt="" style="width:${size || 48}px;height:${size || 48}px;image-rendering:pixelated" onerror="this.outerHTML='<span class=\\'ic\\' style=\\'font-size:${Math.round((size || 48) * 0.6)}px\\'>${STRAP.e}</span>'">`;
+  if (i.isBag) return `<img class="px" src="${ASSETS_DIR}/${BAG.img}" alt="" style="width:${size || 48}px;height:${size || 48}px;image-rendering:pixelated" onerror="this.outerHTML='<span class=\\'ic\\' style=\\'font-size:${Math.round((size || 48) * 0.6)}px\\'>${BAG.e}</span>'">`;
   if (i.isBanner) return `<img class="px" src="${ASSETS_DIR}/${BANNER.img}" alt="" style="width:${size || 48}px;height:${size || 48}px;image-rendering:pixelated" onerror="this.outerHTML='<span class=\\'ic\\' style=\\'font-size:32px\\'>${BANNER.e}</span>'">`;   // War Banner
   if (i.isGuide) return `<img class="px" src="${ASSETS_DIR}/${GUIDE.img}" alt="" style="width:48px;height:48px;image-rendering:pixelated" onerror="this.outerHTML='<span class=\\'ic\\' style=\\'font-size:32px\\'>${GUIDE.e}</span>'">`;   // pixel art 16×16 (plik 64×64)
   if (i.isFood) return dishIco(i.kind, size || 48);   // danie z Cooking: emoji (placeholder)
@@ -1955,7 +1957,7 @@ const quoteOf = i => i.unique ? UNIQUES[i.unique].quote
   : i.r === 5 && i.isFishGear && i.sl === 'hook' ? 'Once it bites, it never lets go.' : '';
 const quoteLine = i => quoteOf(i) ? `<br><i style="color:${UNIQUE_COLOR};opacity:.9">"${quoteOf(i)}"</i>` : '';
 const cardRaw = i => i.mat ? `<b class="t${i.r || 0}">${i.name}${i.qty > 1 ? ' ×' + i.qty : ''}</b><br>Material${MATS[i.sl].desc ? '<br>' + MATS[i.sl].desc : ''}<br>Source: ${MATS[i.sl].source}<br>Value: ${price(i)}` :
-  i.isStrap ? `<b class="t${i.r}">${i.name}</b><br>Use: <span class="t1" style="font-weight:700">+1 backpack slot</span> (${invCap() === Infinity ? 'unlimited' : invCap() + ' → ' + (invCap() + 1)})<br><small style="color:var(--mut)">Click to use</small>` :
+  i.isBag ? `<b class="t${i.r}">${i.name}</b><br>Use: <span class="t1" style="font-weight:700">+${BAG.slots} backpack slots</span> (${invCap() === Infinity ? 'unlimited' : invCap() + ' → ' + (invCap() + BAG.slots)})<br><small style="color:var(--mut)">Click to use</small>` :
   i.isBanner ? `<b class="t${i.r}">${i.name}</b><br>Use: Battle Series ${seriesMax() >= BANNER.max + 1 ? '<span style="color:var(--mut)">already at maximum (x' + seriesMax() + ')</span>' : `x${seriesMax()} → <b class="t1" style="display:inline">x${seriesMax() + 1}</b>`}<br><span style="color:var(--mut)">Auto fights several times in a row (buttons next to Auto, Expedition only). Loot is collected together at the end.</span><br>Value: ${price(i)}` :
   i.isGuide ? `<b class="t${i.r}">${i.name}${i.qty > 1 ? ' ×' + i.qty : ''}</b><br>Use: gain 1 Fishing Skill Point<br><span style="color:var(--mut)">Spend it in the Fishing Skill Tree</span><br>Value: ${price(i)}` :
   i.isScroll ? `<b class="t2">${i.name}</b>${i.qty > 1 ? ' ×' + i.qty : ''}<br>Increases ${SCROLLS[scrollKind(i)].stat} by 10% for 30 minutes<br>Cannot be sold` :
@@ -2029,7 +2031,7 @@ function flashNav(v) {
 }
 // dymek Crafting Design: co dokładnie powstanie – nazwa, slot, FP, set (z bonusami) i przepis
 function designTip(k) {
-  if (k === 'rod') return `<br><br><b class="t${ROD_TIERS[0].r}" style="display:inline">${ROD_TIERS[0].name}</b><br>Fishing Rod<br>FP: <b class="t2" style="display:inline">${ROD_TIERS[0].fp}</b><br><br>Recipe:<br>• ${ROD_DESIGN_GOLD} gold`;
+  if (k === 'rod') return `<br><br><b class="t${ROD_TIERS[0].r}" style="display:inline">${ROD_TIERS[0].name}</b><br>Fishing Rod<br>FP: <b class="t2" style="display:inline">${ROD_TIERS[0].fp}</b><br><br>Recipe:<br>• 5 Wood<br>• ${ROD_DESIGN_GOLD} gold`;
   const it = FIXED_ITEMS[k], rc = gearRecipeOf(k), slot = it.sl === 'lantern' ? 'Lantern' : (SL[it.sl] ? SL[it.sl][1] : it.sl);
   const sk = Object.keys(FISH_SETS).find(x => FISH_SETS[x].pieces.includes(k)), S = sk ? FISH_SETS[sk] : null;
   return `<br><br><b class="t${it.r}" style="display:inline">${it.name}</b><br>Fishing ${slot}<br>FP: <b class="t2" style="display:inline">${it.fp}</b>`
@@ -2156,7 +2158,7 @@ const mobMats = m => [...(m.mats || []), ...(tokenMob(m) ? [['upgrade_token', TO
 const dropTip = m => { const L = mobMats(m), rd = LOCS[0].mobs.includes(m) && rodDesignInPool(), dz = rd ? makeDesign('rod') : null, bd = bannerDropOk(m), bz = bd ? makeBanner() : null;
   return `<b>Drops</b>` + (L.length || rd || bd ? L.map(([k, p]) => `<span class='drrow'>${matIco(k, 32, 24)}<span class='t${MATS[k].r || 0}'>${MATS[k].name}</span><em>${+(p * 100).toFixed(1)}%</em></span>`).join('')
     + (rd ? `<span class='drrow'>${ico(dz, 32)}<span class='t${dz.r}'>${dz.name}</span><em>${ROD_DESIGN_CH * 100}%</em></span>` : '')
-    + (bd ? `<span class='drrow'>${ico(bz, 32)}<span class='t${bz.r}'>${bz.name}</span><em>${BANNER.ch * 100}%</em></span>` : '') + (strapDropOk() ? (sz => `<span class='drrow'>${ico(sz, 32)}<span class='t${sz.r}'>${sz.name}</span><em>${STRAP.chExp * 100}%</em></span>`)(makeStrap()) : '') : '<small>No drops</small>'); };   // + War Banner (dopóki nie wypadł w tym akcie)   // + projekt wędki (Forest, dopóki nie zdobyty)
+    + (bd ? `<span class='drrow'>${ico(bz, 32)}<span class='t${bz.r}'>${bz.name}</span><em>${BANNER.ch * 100}%</em></span>` : '') + (bagDropOk() ? (bz2 => `<span class='drrow'>${ico(bz2, 32)}<span class='t${bz2.r}'>${bz2.name}</span><em>${BAG.ch * 100}%</em></span>`)(makeBag()) : '') : '<small>No drops</small>'); };   // + War Banner (dopóki nie wypadł w tym akcie)   // + projekt wędki (Forest, dopóki nie zdobyty)
 function renderInfo(m) {
   const r = Math.round, d = der(), s = mstats(m);
   const L = live && live.mob === m ? live : null, c = L ? L.M : s;
@@ -2303,7 +2305,7 @@ function render() {
       return { r: 2, name: d.name, ico: px => scrollIco(k, px === 'L' ? 72 : 48), it: 'craft:scroll_' + k, eff: `Use: <b class="t1" style="display:inline">+10% ${d.stat}</b> for 30 minutes`, mats, gold: d.gold, can: canCraftScroll(k), go: `window.craftScroll('${k}')`, key: 'scroll:' + k }; }
     const r = gearRecipeOf(k);
     if (k === 'rod') return { r: ROD_TIERS[0].r, name: ROD_TIERS[0].name, ico: px => ico(makeRod()).replace(/width:\d+px;height:\d+px/, `width:${px === 'L' ? 64 : 48}px;height:${px === 'L' ? 64 : 48}px`), it: 'rod:new',
-      eff: `Fishing Rod · FP <b class="t2" style="display:inline">${ROD_TIERS[0].fp}</b>`, mats: [], gold: r.gold, can: canCraftGear('rod'), go: `window.craftGear('rod')`, key: 'gear:rod' };
+      eff: `Fishing Rod · FP <b class="t2" style="display:inline">${ROD_TIERS[0].fp}</b>`, mats: r.mats.map(([m, q]) => ({ ico: matIco(m, 32, 26), it: 'mat:' + m, name: MATS[m].name, have: matQty(m), need: q })), gold: r.gold, can: canCraftGear('rod'), go: `window.craftGear('rod')`, key: 'gear:rod' };
     const it = FIXED_ITEMS[k], slot = it.sl === 'lantern' ? 'Lantern' : (SL[it.sl] ? SL[it.sl][1] : it.sl);
     const sk = Object.keys(FISH_SETS).find(x => FISH_SETS[x].pieces.includes(k));
     const mats = [...(r.from ? [{ ico: fixedIco(r.from, 32), it: 'fixed:' + r.from, name: FIXED_ITEMS[r.from].name, have: inv.filter(x => x.fixed === r.from).length, need: 1 }] : []),
@@ -2654,7 +2656,7 @@ function render() {
   $('fres').innerHTML = showRes ? (expRes.win ? '<span class="resv win">VICTORY</span><span class="ress">THE ENEMY HAS FALLEN</span>' : '<span class="resv lose">DEFEAT</span><span class="ress">YOU HAVE FALLEN</span>') : '';   // duży napis + mały podpis (jak w RPG)
   $('loot').hidden = !(expRes && expRes.win && !fightOn);
   if (!$('loot').hidden) $('loot').innerHTML = (expRes.loot.length
-    ? expRes.loot.map((i, n) => `<div class="cell r${i.r || 0}" data-it="loot:${n}">${invIco(i)}</div>`).join('')   // tylko podgląd (dymek, Shift = porównanie) – bez zakładania
+    ? expRes.loot.map((i, n) => `<div class="cell r${i.r || 0}" data-it="loot:${n}">${invIco(i)}${i.qty > 1 ? `<span class="qty">${i.qty}</span>` : ''}</div>`).join('')   // tylko podgląd (dymek, Shift = porównanie) – bez zakładania
     : expRes.had ? '' : `<small>No loot</small>`)
     + `<div class="rw">${expRes.xp ? `<span style="color:#8e44ad">+${expRes.xp} XP</span>` : ''}<span style="color:#e69500">+${expRes.gold} ${goldIco(16)}</span></div>`   // pod łupem: +XP i +złoto;
   // walka niżej: pas na górze okna walki zarezerwowany na ikony buffów (lewo) i debuffów (prawo) – 6 px odstępu + 36 px kafelek,
@@ -2989,8 +2991,8 @@ function equip(n) {
     say(`Learned: <b class="t${i.r}">${DISHES[i.kind].name}</b> – now cookable in Cooking!`, 'crit');
     render(); flashNav('cook'); return;
   }
-  if (i.isStrap) {   // Backpack Strap: +1 miejsce w plecaku, zużywa przedmiot
-    inv.splice(n, 1); me.invCap = (me.invCap || INV_START) + 1; me.straps = (me.straps || 0) + 1;
+  if (i.isBag) {   // Light Bag: +5 miejsc w plecaku, zużywa przedmiot
+    inv.splice(n, 1); me.invCap = (me.invCap || INV_START) + BAG.slots; me.bagUsed = 1;
     say(`<b class="t${i.r}">${i.name}</b> used – backpack now has <b>${me.invCap}</b> slots.`, 'crit');
     saveGame(); render(); return;
   }
@@ -3544,7 +3546,7 @@ const fightTempo = t => { if (window.FIGHT_TEMPO !== t) { window.FIGHT_TEMPO = t
 let expRes = null;
 let dunRes = null;   // LOCH: wynik ostatniej walki ({ win }) – napis VICTORY / DEFEAT nad oknem walki w lochu; znika po Back albo przy nowej walce
 function deliverLoot(list) {   // łup → plecak: sprzęt jako przedmiot, materiały przez giveMat (doliczane do stosu, bez wpisu w logu)
-  for (const it of list || []) { if (it._mk) giveMatQuiet(it._mk); else inv.push(it); }
+  for (const it of list || []) { if (it._mk) for (let q = 0; q < (it.qty || 1); q++) giveMatQuiet(it._mk); else inv.push(it); }   // stos materiałów = qty sztuk
 }
 function endExp() {   // zamyka ekran wyniku i oddaje niezebrany łup do plecaka
   if (expRes) deliverLoot(expRes.loot);
@@ -3601,9 +3603,9 @@ $('go').onclick = async ev => {
       if (tokDrop) { const d = MATS.upgrade_token;
         { loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: 'upgrade_token' }); say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`); } }
       else if (mob.drop && mob.drop.length) { const it = mk(mob.drop, me.lvl < 10 && Math.random() < 0.10 ? 'weapon' : undefined, undefined, actOfMob(mob)); it.fresh = 1; if (view == 'exp') loot.push(it); else inv.push(it); say(`Loot: <b class="t${it.r}">${it.name}</b>`); }   // wyprawa: do plecaka dopiero po Collect   // Akty 2 i 3: na razie bez dropów
-      // BACKPACK STRAP: 1% na wyprawie (do łupu), 5% w lochu (prosto do plecaka); maks. 20 sztuk łącznie
-      if (strapDropOk(view == 'exp' ? [...allLoot, ...loot] : []) && Math.random() < (view == 'exp' ? STRAP.chExp : STRAP.chDun)) {
-        const sp = makeStrap(); sp.fresh = 1; if (view == 'exp') loot.push(sp); else inv.push(sp); say(`Loot: <b class="t${sp.r}">${sp.name}</b>`, 'crit'); }
+      // LIGHT BAG: 3% z każdego przeciwnika (wyprawa → łup, loch → prosto do plecaka); tylko raz w całej grze
+      if (bagDropOk(view == 'exp' ? [...allLoot, ...loot] : []) && Math.random() < BAG.ch) {
+        me.bagGot = 1; const bg = makeBag(); bg.fresh = 1; if (view == 'exp') loot.push(bg); else inv.push(bg); say(`Loot: <b class="t${bg.r}">${bg.name}</b>`, 'crit'); }
       // WAR BANNER: 2% z każdego przeciwnika aktu (wyprawa), jeden na akt – po dropie akt znika z puli
       if (view == 'exp' && bannerDropOk(mob) && Math.random() < BANNER.ch) {
         me.banAct = me.banAct || [0, 0, 0]; me.banAct[bannerAct(mob)] = 1; const bn = makeBanner(); bn.fresh = 1; loot.push(bn); say(`Loot: <b class="t${bn.r}">${bn.name}</b>`, 'crit'); }
@@ -3612,7 +3614,7 @@ $('go').onclick = async ev => {
         fishing.rodDesignGot = true; const dz = makeDesign('rod'); dz.fresh = 1; loot.push(dz); say(`Loot: <b class="t${dz.r}">${dz.name}</b>`, 'crit'); }
       // matsOne (np. Bear): jedno losowanie na wszystkie materiały – wypada najwyżej jeden (szanse jak w liście, np. Meat 40% / Bear Paw 25% / nic 35%)
       const matRoll = Math.random(); let matAcc = 0;
-      for (const [k, ch] of (mob.mats || [])) if (mob.matsOne ? (matRoll >= matAcc && matRoll < (matAcc += ch)) : Math.random() < ch) {   // materiały przeciwnika (Upgrade Token losowany wyżej, zamiast przedmiotu)
+      for (const [k, ch, solo] of (mob.mats || [])) if (mob.matsOne && !solo ? (matRoll >= matAcc && matRoll < (matAcc += ch)) : Math.random() < ch) {   // solo = osobne losowanie (Wood)   // materiały przeciwnika (Upgrade Token losowany wyżej, zamiast przedmiotu)
         if (view != 'exp') { giveMat(k); continue; }
         const d = MATS[k]; loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: k });   // _mk: klucz materiału (po Collect → giveMat)
         say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`);
@@ -3652,7 +3654,8 @@ $('go').onclick = async ev => {
       }
     } else { say('<b>You lost.</b> Get stronger and try again.'); }
     if (view == 'dun') dunRes = { win: ph > 0 };   // LOCH: napis wyniku nad oknem walki
-    allLoot.push(...loot); totXp += rwXp; totGold += rwGold; if (ph > 0) wins++;
+    for (const it of loot) { const same = it._mk && allLoot.find(x => x._mk === it._mk); if (same) same.qty = (same.qty || 1) + (it.qty || 1); else allLoot.push(it); }   // materiały w stos (np. 3× Meat jako jedno pole)
+    totXp += rwXp; totGold += rwGold; if (ph > 0) wins++;
     if (view == 'exp') me.pendLoot = allLoot;   // zapis gry: łup całej serii czeka na Collect
     if (ph <= 0) break;   // przegrana przerywa serię
    }
@@ -3738,7 +3741,7 @@ const card = (i, hint) => moveVal(cardRaw(i), hint);
 // po PRAWEJ założony przedmiot z napisem „Equipped” (bojowy → ekwipunek strona 1, wędkarski → strona 2). Broń: różnica średnich obrażeń.
 const tip2 = document.createElement('div'); tip2.id = 'tip2'; document.body.appendChild(tip2);
 document.head.insertAdjacentHTML('beforeend', '<style>#tip2{position:fixed;display:none;z-index:50;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;font-size:18px;line-height:1.35;max-width:315px;pointer-events:none;box-shadow:0 4px 14px #0006}#tip2 b{display:block;font-size:19px}.cmpd{font-weight:800;margin-left:6px}.cmphint{font-size:12px;color:var(--mut);font-style:italic}.tfoot{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;margin-top:6px}.tval{margin-left:auto;white-space:nowrap}.eqlbl{font-size:13px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--mut);margin-bottom:4px}</style>');
-const cmpEq = i => !i || !i.sl || i.mat || i.isScroll || i.isRecipe || i.isDesign || i.isGuide || i.isFood || i.isChest || i.isBanner || i.isStrap ? undefined : (i.isFishGear ? eq2 : eq1)[i.sl] || null;   // null = pusty slot (porównanie z niczym)
+const cmpEq = i => !i || !i.sl || i.mat || i.isScroll || i.isRecipe || i.isDesign || i.isGuide || i.isFood || i.isChest || i.isBanner || i.isBag ? undefined : (i.isFishGear ? eq2 : eq1)[i.sl] || null;   // null = pusty slot (porównanie z niczym)
 const cdiff = (v, u = '') => { v = +(+v).toFixed(1); return v ? `<span class="cmpd" style="color:${v > 0 ? '#3fdc3f' : '#e53935'}">${v > 0 ? '+' : '−'}${Math.abs(v)}${u}</span>` : ''; };
 // opis nowego przedmiotu z różnicami (ten sam układ co zwykły dymek)
 function cmpLeft(i, cur) {
@@ -3845,7 +3848,7 @@ document.addEventListener('dragstart', e => {
   if (item && item.isFishGear && equipPage === 1 && !busy && (parts[0] === 'inv' || parts[0] === 'upgrade')) {
     setEquipPage(2); renderSlots(); dragPageSwitch = true;
   }
-  if (item && !item.mat && !item.isScroll && !item.isRecipe && !item.isDesign && !item.isGuide && !item.isFood && !item.isChest && !item.isBanner && !item.isStrap) {
+  if (item && !item.mat && !item.isScroll && !item.isRecipe && !item.isDesign && !item.isGuide && !item.isFood && !item.isChest && !item.isBanner && !item.isBag) {
     document.querySelectorAll('.slot[data-slot]').forEach(s => {
       if (s.dataset.slot === item.sl) s.classList.add('ok'); else s.classList.add('no');
     });
@@ -3951,7 +3954,7 @@ document.addEventListener('drop', e => {
       const i = inv[idx];
       const targetSlot = s.dataset.slot;
 
-      if (i && !i.mat && !i.isScroll && !i.isRecipe && !i.isDesign && !i.isGuide && !i.isFood && !i.isChest && !i.isBanner && !i.isStrap) {
+      if (i && !i.mat && !i.isScroll && !i.isRecipe && !i.isDesign && !i.isGuide && !i.isFood && !i.isChest && !i.isBanner && !i.isBag) {
         if (equipPage === 2) {
           if (fishing.active && targetSlot === 'weapon') {
             say('You cannot change the rod while fishing!', 'miss');
@@ -4129,6 +4132,7 @@ regI(2014, 'Dungeon', FIXED_ITEMS.chitin_halberd.name, () => makeFixed('chitin_h
 regI(4001, 'Unique', UNIQUES.lure_hood.name, () => makeUnique('lure_hood'), { unique: 'lure_hood' });
 const matI = (id, k) => regI(id, 'Material', MATS[k].name, () => ({ sl: MATS[k].sl, r: MATS[k].r || 0, name: MATS[k].name, mat: 1, qty: 1, val: MATS[k].val, s: {} }), { mat: k, stack: true });
 ['meat', 'claw', 'bone', 'skull'].forEach((k, n) => matI(5001 + n, k));
+matI(5005, 'wood');   // Wood (Forest, 10%)
 ['fish_carp', 'fish_cod', 'fish_catfish', 'fish_barracuda', 'fish_anglerfish', 'fish_shark', 'fish_leviathan'].forEach((k, n) => matI(5101 + n, k));
 ['eye_of_cod', 'catfish_scale', 'barracuda_fang', 'light_of_anglerfish', 'pearl_of_the_deep', 'shark_fin'].forEach((k, n) => matI(5201 + n, k));
 matI(5301, 'upgrade_token');   // 53xx – tokeny (nagrody z questów)
@@ -4142,7 +4146,7 @@ regI(6310, 'Crafting Design', makeDesign('rod').name, () => makeDesign('rod'), {
 regI(6401, 'Other', GUIDE.name, () => ({ isGuide: 1, sl: 'guide', r: GUIDE.r, name: GUIDE.name, qty: 1, val: GUIDE.val, s: {} }), { guide: true, stack: true });
 regI(6402, 'Other', CHEST.name, () => makeChest(), { chest: true, stack: true });
 regI(6403, 'Other', BANNER.name, () => makeBanner(), { banner: true });   // War Banner – Battle Series +1
-regI(6404, 'Other', STRAP.name, () => makeStrap(), { strap: true });   // Backpack Strap – +1 miejsce w plecaku
+regI(6405, 'Other', BAG.name, () => makeBag(), { bag: true });   // Light Bag – +5 miejsc w plecaku (6404 Backpack Strap – usunięty, zarezerwowane)
 // ID z istniejącego przedmiotu (np. z plecaka) – do przyszłych zapisów, statystyk, logów; w grze niewidoczne
 function itemId(i) {
   if (!i) return 0;
@@ -4156,7 +4160,7 @@ function itemId(i) {
   if (i.isDesign) return f(e => e.design === i.kind);
   if (i.isGuide) return 6401;
   if (i.isBanner) return 6403;
-  if (i.isStrap) return 6404;
+  if (i.isBag) return 6405;
   if (i.isChest) return 6402;
   if (i.isFishGear && i.sl === 'weapon') return f(e => e.rod === i.r);
   if (i.isFishGear && i.sl === 'hook') return f(e => e.hook === i.r);

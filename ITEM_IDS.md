@@ -196,6 +196,7 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 5002 | Bear Paw (stos) |
 | 5003 | Bone (stos) |
 | 5004 | Skull (stos) |
+| 5005 | Wood (stos; Forest 10%, do wędki Stick and String) |
 | 5101 | Crucian Carp (stos) |
 | 5102 | Cod (stos) |
 | 5103 | Catfish (stos) |
@@ -255,7 +256,7 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 6307 | Crafting Design: Sea Raider Wellies |
 | 6308 | Crafting Design: Sea Raider Lantern |
 | 6309 | Crafting Design: Ring of the Tide |
-| 6310 | Crafting Design: Stick and String (Forest, 5%, jednorazowo; crafting za 500 złota) |
+| 6310 | Crafting Design: Stick and String (Forest, 5%, jednorazowo; crafting: 5 Wood + 500 złota) |
 
 ## Other
 
@@ -264,7 +265,8 @@ Każdy rodzaj przedmiotu ma stałe ID (niewidoczne w grze). Spawn: tryb DEV → 
 | 6401 | Fishing Guide (stos) |
 | 6402 | Sunken Chest (stos) |
 | 6403 | War Banner (jeden na akt: 2% z przeciwników aktu na wyprawie; kliknięcie = Battle Series +1, maks. x4) |
-| 6404 | Backpack Strap (1% z przeciwników na wyprawie, 5% w lochach, maks. 20; kliknięcie = +1 miejsce w plecaku) |
+| 6404 | ~~Backpack Strap~~ (usunięty, ID zarezerwowane) |
+| 6405 | Light Bag (common; 3% z każdego przeciwnika, tylko raz w grze; kliknięcie = +5 miejsc w plecaku) |
 
 ## Artifacts
 
