@@ -494,6 +494,8 @@ document.head.insertAdjacentHTML('beforeend', '<style>'
   + '.fx-fly{position:absolute;width:64px;height:64px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 4px 6px #0008)}'
   + '.fx-float{position:absolute;transform:translate(-50%,0);font-weight:800;font-size:16px;white-space:nowrap;text-align:center;text-shadow:0 1px 0 #000,0 0 6px #000;animation:fxup 2.2s ease-out forwards}'
   + '.fx-float.big{font-size:34px;color:#f2c200;font-weight:900}'
+  + '.fx-float .fx-lvl{display:block;font-size:32px;font-weight:900;color:#f2c200;letter-spacing:1px;text-shadow:0 2px 0 #000,0 0 10px #f2c20088}'
+  + '.fx-float .fx-lvst{display:block;font-size:15px;color:#3fdc3f;line-height:1.25;text-shadow:1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,0 0 6px #000}'
   + '.xporb{display:block;width:14px;height:14px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff 0 18%,#c49cfa 35%,#8c54d4 70%,#582e8c 100%);box-shadow:0 0 8px 3px #8c54d4aa}'
   + '.rwpop{animation:rwpop .45s ease-out}@keyframes rwpop{0%{transform:scale(1);box-shadow:none}35%{transform:scale(1.05);box-shadow:0 0 14px 3px #f2c20088}100%{transform:scale(1);box-shadow:none}}'
   + '@keyframes fxup{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}15%{opacity:1;transform:translate(-50%,0) scale(1.18)}30%{transform:translate(-50%,-6px) scale(1)}75%{opacity:1;transform:translate(-50%,-44px)}100%{opacity:0;transform:translate(-50%,-64px)}}'
@@ -578,7 +580,7 @@ function flyReward(gold, xp, from) {
   const nG = Math.max(2, Math.min(7, Math.round(2 + gold / 25))), nX = Math.max(2, Math.min(7, Math.round(2 + xp / 120)));
   if (gold > 0) shoot(nG, $('gold'), () => goldIco(32), 32, b => { releaseGold(); if (b) { pop($('gold')); floatText(`<span style="color:#f2c200">+${gold}</span>`, b.right - 40, b.top - 4); } }, 0, true); else releaseGold();
   const bar = $('xpf') && $('xpf').parentElement;
-  if (xp > 0) shoot(nX, bar, () => '<i class="xporb"></i>', 22, b => { releaseXp(); if (b) { pop($('xpf').parentElement); floatText(`<span style="color:#b98cff">+${xp} XP</span>`, b.left + b.width / 2, b.top - 26); } }, 126); else releaseXp();
+  if (xp > 0) shoot(nX, bar, () => '<i class="xporb"></i>', 22, b => { releaseXp(); if (b) pop($('xpf').parentElement); }, 126); else releaseXp();   // bez napisu „+X XP” nad paskiem
 }
 // CRAFTING / COOKING: wytworzony przedmiot spada z ikony przepisu (wiersz z przyciskiem data-btn=key) prosto w dół do swojej komórki w plecaku; komórka „podskakuje”, nad przepisem wylatuje napis „+1 nazwa” w kolorze rzadkości. Wywoływać PO render().
 function flyToInv(key, item) {
@@ -2287,7 +2289,9 @@ function render() {
     const L = $('lvl'); L.classList.remove('lvlpop'); void L.offsetWidth; L.classList.add('lvlpop');
     setTimeout(() => L.classList.remove('lvlpop'), 1400);
     const rc = L.getBoundingClientRect();
-    floatText(`<span style="color:#f2c200">LVL UP!</span> <span style="color:#3fdc3f">+${showLvl - lastLvl} ${spIco(16)} Skill Point${showLvl - lastLvl > 1 ? 's' : ''}</span>`, rc.left + 120, rc.top - 34, false);   // nad napisem, nie zasłania go
+    // duży napis „LVL UP!” + pod nim przyrost każdej statystyki (bez Skill Point – licznik SP i tak się zmienia)
+    const dl = showLvl - lastLvl;
+    floatText(`<span class="fx-lvl">LVL UP!</span>${['Strength', 'Dexterity', 'Vitality'].map(n => `<span class="fx-lvst">+${dl} ${n}</span>`).join('')}`, rc.left + 120, rc.top - 96, false);   // nad napisem, nie zasłania go
   }
   lastLvl = showLvl;
 
