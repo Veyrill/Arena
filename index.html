@@ -517,8 +517,9 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 /* PRZYCISKI DRUGORZĘDNE (Sell, strony ekwipunku 1 / 2, opcje w Settings): jeden ciemny styl pikselowy – czarna obwódka, jasna krawędź u góry, cień u dołu;
    zaznaczony (on) = pomarańczowy, jak przyciski akcji. Back i Auto / Collect zostają pomarańczowe (przyciski akcji). */
 body :is(#sellbtn,.eq-page-btn,.setopt button){background:#2d2620;color:#f0e6d2;border:2px solid #1a0e08;border-radius:3px;font-weight:800;box-shadow:inset 0 2px 0 #4a3e2c,inset 0 -3px 0 #15100b;text-shadow:1px 1px 0 #000}
-body :is(#sellbtn,.eq-page-btn,.setopt button):hover:not(:disabled){background:#3a3128;border-color:#1a0e08}
+body :is(#sellbtn,.eq-page-btn,.setopt button):hover:not(:disabled):not(.on){background:#3a3128;border-color:#1a0e08}
 body :is(#sellbtn.on,.eq-page-btn.on,.setopt button.on){background:#e8793a;color:#fff;border-color:#1a0e08;box-shadow:inset 0 2px 0 #ffb36b,inset 0 -3px 0 #a8461a;text-shadow:1px 1px 0 #6a2a0c}
+body :is(#sellbtn.on,.eq-page-btn.on,.setopt button.on):hover:not(:disabled){background:#f08a4a;border-color:#1a0e08;box-shadow:inset 0 2px 0 #ffc58a,inset 0 -3px 0 #a8461a}   /* zaznaczony + kursor: jaśniejszy pomarańcz (jak Auto / Back), bez zmiany na ciemny */
 </style></head><body>
 <div id="popup-container"></div>
 <button id="devbtn" title="Toggles developer mode and restarts the game">🛠️ DEV</button>
