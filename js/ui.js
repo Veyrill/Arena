@@ -2418,7 +2418,7 @@ function render() {
   const hookIco = `<img src="${ASSETS_DIR}/fishing_hook/fhook1.png" alt="" style="display:block;width:32px;height:32px;image-rendering:pixelated" onerror="this.outerHTML='<span class=\\'ic\\' style=\\'font-size:22px\\'>🪝</span>'">`;
   // zakładki w prawym górnym rogu panelu łowienia: Skill tree (drzewko umiejętności łowienia) i Special drops
   // ikony (i, drzewko, Special drops) widać dopiero po pierwszym złowionym Crucian Carp (DEV: od razu)
-  const sdTab = !fishTabsOn() ? '' : `<div style="position:absolute;top:6px;right:8px;display:flex;gap:6px">${ftOpen ? `<button onclick="window.toggleFishTree(false)" style="height:40px;padding:0 14px;font-weight:800;font-size:14px;border-radius:8px;background:var(--ac);color:var(--on-ac);border:1px solid var(--ac);box-shadow:0 2px 8px color-mix(in srgb,var(--ac) 45%,transparent)">← Back to fishing</button>` : ''}${tabBtn(fbOpen, 'Fishing Bonuses', 'window.toggleFishBonuses()', uiIco('ui_info', 'ℹ️', 32))}${tabBtn(ftOpen, 'Fishing Skill Tree', 'window.toggleFishTree()', uiIco('ui_skills', '⭐', 32), fishSpDot())}</div>`;   // zakładka Special drops usunięta – dropy są na stałe pod rybą (sdCells)
+  const sdTab = !fishTabsOn() ? '' : `<div style="position:absolute;top:6px;right:8px;display:flex;gap:6px">${ftOpen ? `<button onclick="window.toggleFishTree(false)" style="height:40px;padding:0 14px;font-weight:800;font-size:14px;border-radius:8px;background:var(--ac);color:var(--on-ac);border:1px solid var(--ac);box-shadow:0 2px 8px color-mix(in srgb,var(--ac) 45%,transparent)">Back to fishing</button>` : ''}${tabBtn(fbOpen, 'Fishing Bonuses', 'window.toggleFishBonuses()', uiIco('ui_info', 'ℹ️', 32))}${tabBtn(ftOpen, 'Fishing Skill Tree', 'window.toggleFishTree()', uiIco('ui_skills', '⭐', 32), fishSpDot())}</div>`;   // zakładka Special drops usunięta – dropy są na stałe pod rybą (sdCells)
   // panel łowienia: zamiast poziomu i XP – Twoje FP i wymagane FP zaznaczonej ryby (na czerwono, gdy za mało)
   const selFish = FISH.find(x => x.id === fishing.sel);
   const fpOk = canFish(selFish);
@@ -2622,7 +2622,7 @@ function render() {
     };
   }
 
-  const back = (a, t) => `<div class="row"><button data-a="${a}" class="bkac"${busy ? ' disabled' : ''}>← Back</button><b>${t}</b></div>`, D = curDun(), N = D.mobs.length;   // każdy Back (lista przeciwników, lochy, walka w lochu) – pomarańczowy, jak Auto i Back w oknie walki
+  const back = (a, t) => `<div class="row"><button data-a="${a}" class="bkac"${busy ? ' disabled' : ''}>Back</button><b>${t}</b></div>`, D = curDun(), N = D.mobs.length;   // każdy Back (lista przeciwników, lochy, walka w lochu) – pomarańczowy, jak Auto i Back w oknie walki
   // lista lokacji Aktu 1 (dokładnie jak wcześniej)
   // lokacja jest zablokowana, dopóki nie pokonasz bossa (czerwona poświata) poprzedniej lokacji
   // lokacje wybranego aktu; data-i = indeks w ALL_LOCS (wspólny dla wszystkich aktów: Akt 1 = 0–4, Akt 2 = 5–9, Akt 3 = 10–14)
@@ -2723,7 +2723,7 @@ function render() {
   { const dcd = view == 'dun' && m && dsel >= 0 ? dunCd(dsel) : 0;   // loch: przerwa po wygranej → przycisk z licznikiem
     const done = expRes && !fightOn;   // wyprawa po walce: Collect (wygrana) / Back (przegrana)
     $('go').disabled = done ? busy : fightOn ? skipFight : (busy || fishing.active || dcd > 0);
-    $('go').textContent = done ? (expRes.win ? 'Collect' : 'Back') : fightOn ? 'Auto ▶▶' : dcd > 0 ? `Next fight in ${fmtCd(dcd)}` : 'Auto ▶▶';
+    $('go').textContent = done ? (expRes.win ? 'Collect' : 'Back') : fightOn ? 'Auto' : dcd > 0 ? `Next fight in ${fmtCd(dcd)}` : 'Auto';
     $('go').dataset.st = !done && !fightOn && !(dcd > 0) ? 'start' : '';   // start = przed walką (atak / umiejętność zaczyna walkę ręcznie, Auto – automatycznie)
     $('go').style.visibility = !done && !fightOn && !m ? 'hidden' : '';   // bez wybranego przeciwnika – brak przycisku (miejsce zostaje)
     // BATTLE SERIES: przyciski 2x / 3x / 4x obok Auto (tylko wyprawa, po kupnie ulepszenia; w trakcie serii – postęp „Fight 2/3”)

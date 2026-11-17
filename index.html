@@ -286,6 +286,9 @@ button.drow:hover{border-color:var(--dc)}
    „body” w selektorze – wygrywa ze stylami wstawianymi przez ui.js */
 body :is(.abtrain:not(:disabled),#fbackrow button,#go,.dfbtn,.bkac,#clsok){background:#e8793a;color:#fff;border:2px solid #1a0e08;border-radius:3px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
   box-shadow:inset 0 2px 0 #ffb36b,inset 0 -4px 0 #a8461a;text-shadow:1px 1px 0 #6a2a0c;padding-bottom:7px}
+/* WYŚRODKOWANY NAPIS: flex + line-height 1; dół o 2 px większy niż góra, bo dolny cień (4 px) jest grubszy od górnego światła (2 px) – napis stoi na środku pomarańczowej „twarzy” */
+body :is(.abtrain,#fbackrow button,#go,.dfbtn,.bkac,#clsok){display:inline-flex;align-items:center;justify-content:center;line-height:1;padding:7px 16px 9px}
+body :is(.abtrain,#fbackrow button,#go,.dfbtn,.bkac,#clsok):active:not(:disabled){padding-top:9px;padding-bottom:7px}
 body :is(.abtrain:not(:disabled),#fbackrow button,#go,.dfbtn,.bkac,#clsok):hover:not(:disabled){background:#f08a4a;border-color:#1a0e08}
 body :is(.abtrain:not(:disabled),#fbackrow button,#go,.dfbtn,.bkac,#clsok):active:not(:disabled){box-shadow:inset 0 2px 0 #a8461a;padding-top:7px;padding-bottom:5px}
 body :is(.abtrain,#go,.dfbtn,#clsok):disabled{opacity:1;background:#8a8090;color:#d8d2dc;border:2px solid #1a0e08;border-radius:3px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;box-shadow:inset 0 2px 0 #aaa2b0,inset 0 -4px 0 #5e5664;text-shadow:none;padding-bottom:7px}
@@ -553,7 +556,7 @@ body :is(#sellbtn.on,.eq-page-btn.on,.setopt button.on):hover:not(:disabled){bac
 <div class="card" id="v-upgrade" hidden><h2>Rod Upgrade</h2><div id="body-upgrade"></div></div>
 <div class="card" id="v-cook" hidden><h2 style="display:flex;align-items:center;gap:10px">Cooking<span id="cook-head" style="flex:1;display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0"></span></h2><div id="body-cook"></div></div>
 <div class="card" id="fightbox" hidden>
-<div class="row" id="fbackrow" style="display:none"><button data-a="fback">← Back</button><b id="fres"></b></div>
+<div class="row" id="fbackrow" style="display:none"><button data-a="fback">Back</button><b id="fres"></b></div>
 <div class="arena"><div><div class="fig" id="fp">🧙</div><b id="pname">You</b><div class="hpw" tabindex="0"><div class="bar" style="position:relative"><i class="hpg" id="hg1" style="width:100%"></i><i id="hp1" style="width:100%"></i><i id="sh1"></i><span class="hpv" id="hpv1"></span><span class="hpp" id="hpp1"></span></div><small id="ht1" class="hptip"></small></div><div class="bar rage" id="rgw"><i id="rg1" style="width:0%"></i><span class="hpp" id="rgp1">0</span></div></div>
 <div style="font-size:18px">VS</div>
 <div style="position:relative"><div class="fig" id="fm"></div><b id="nm"></b><div class="hpw" tabindex="0"><div class="bar"><i class="hpg" id="hg2" style="width:100%"></i><i id="hp2" style="width:100%"></i><span class="hpv" id="hpv2"></span><span class="hpp" id="hpp2"></span></div><small id="ht2" class="hptip"></small></div><div class="bar rage" style="visibility:hidden" aria-hidden="true"></div></div></div>
