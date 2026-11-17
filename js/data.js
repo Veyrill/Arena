@@ -124,10 +124,10 @@ LOCS.flatMap(l => l.mobs).forEach((m, i, all) => { m.sl = m.l; m.l = Math.round(
 LOCS.forEach(l => l.mobs.forEach(m => {
   m.mats = [];
   if(l.n === 'Forest') {
-    m.mats = [['meat', 0.4]];
+    m.mats = [['meat', 0.2]];   // Meat 20% (było 40%)
     if(m.n === 'Bear') {
       m.mats.push(['claw', 0.25]);
-      m.matsOne = true;   // Bear: Meat 40% ALBO Bear Paw 25% (od teraz i tak wszystkie dropy to jedno losowanie na walkę – dropPool w ui.js)
+      m.matsOne = true;   // Bear: Meat 20% ALBO Bear Paw 25% (od teraz i tak wszystkie dropy to jedno losowanie na walkę – dropPool w ui.js)
     }
     m.mats.push(['wood', 0.1, true]);   // Wood 10% z każdego przeciwnika w lesie (jedno losowanie na walkę razem z resztą dropów – dropPool w ui.js)
   }

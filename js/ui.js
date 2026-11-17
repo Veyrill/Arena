@@ -2156,8 +2156,7 @@ const mobMats = m => [...(m.mats || []), ...(tokenMob(m) ? [['upgrade_token', TO
 // LISTA DROPÓW (wyprawa): ikona skrzyni (assets/ui/tup_plunder.png) w prawym górnym rogu okna walki, w wierszu Back;
 // dymek po najechaniu: materiały przeciwnika i Upgrade Token z szansami (ikona, nazwa, %)
 // JEDEN DROP NA WALKĘ: pula możliwych dropów przeciwnika z szansami (suma ≤ 100%, reszta = nic). Kolejność: rzadkie najpierw,
-// potem materiały, na końcu przedmiot ekwipunku (GEAR_CH, ale nie więcej niż zostało do 100%, np. Bear: 15%)
-const GEAR_CH = 0.30;
+// potem materiały, na końcu przedmiot ekwipunku = DOPEŁNIENIE do 100% (zawsze coś wypada; np. Lynx: 100 − Meat 20 − Wood 10 − … = 60%)
 function dropPool(mob, extra = [], loot = []) {   // loot = łup bieżącej walki (wyprawa)
   const exp = view == 'exp', P = [], put = (it, crit) => { it.fresh = 1; if (exp) loot.push(it); else inv.push(it); say(`Loot: <b class="t${it.r}">${it.name}</b>`, crit); };
   if (exp && LOCS[0].mobs.includes(mob) && rodDesignInPool()) P.push({ p: ROD_DESIGN_CH, k: 'design', give: () => { fishing.rodDesignGot = true; put(makeDesign('rod'), 'crit'); } });
@@ -2165,12 +2164,13 @@ function dropPool(mob, extra = [], loot = []) {   // loot = łup bieżącej walk
   if (bagDropOk(extra)) P.push({ p: BAG.ch, k: 'bag', give: () => { me.bagGot = 1; put(makeBag(), 'crit'); } });
   for (const [k, ch] of mobMats(mob)) if (exp || k != 'upgrade_token') P.push({ p: ch, k, give: () => { if (!exp) return giveMat(k); const d = MATS[k]; loot.push({ sl: d.sl, r: d.r || 0, name: d.name, mat: 1, qty: 1, val: d.val, s: {}, _mk: k }); say(`Loot: <b class="t${d.r || 0}">${d.name}</b>`); } });   // _mk: klucz materiału (po Collect → giveMat)
   const used = P.reduce((a, d) => a + d.p, 0);
-  if (mob.drop && mob.drop.length && used < 1) P.push({ p: Math.min(GEAR_CH, 1 - used), k: 'gear', give: () => put(mk(mob.drop, me.lvl < 10 && Math.random() < 0.10 ? 'weapon' : undefined, undefined, actOfMob(mob))) });   // poniżej 10 poziomu: +10 pkt proc. szansy, że przedmiot to broń
+  if (mob.drop && mob.drop.length && used < 1) P.push({ p: 1 - used, k: 'gear', give: () => put(mk(mob.drop, me.lvl < 10 && Math.random() < 0.10 ? 'weapon' : undefined, undefined, actOfMob(mob))) });   // poniżej 10 poziomu: +10 pkt proc. szansy, że przedmiot to broń
   return P;
 }
 const dropTip = m => { const L = mobMats(m), rd = LOCS[0].mobs.includes(m) && rodDesignInPool(), dz = rd ? makeDesign('rod') : null, bd = bannerDropOk(m), bz = bd ? makeBanner() : null;
   const gp = (dropPool(m).find(d => d.k == 'gear') || {}).p;   // szansa na przedmiot ekwipunku (jedno losowanie na walkę – dropPool)
-  const gRow = gp ? `<span class='drrow'><img src="${ASSETS_DIR}/weapon/weapon_sword.png" alt="" style="display:block;image-rendering:pixelated" onerror="this.outerHTML='🗡️'"><span class='t0'>Equipment</span><em>${+(gp * 100).toFixed(1)}%</em></span>` : '';   // ikona: Sword (16 px ×2)
+  const gRow = gp ? [0, 1, 2, 3, 4, 5].map(r => [r, m.drop.filter(x => Math.min(5, x) === r).length / m.drop.length]).filter(([, f]) => f)   // osobny wiersz na każdą rzadkość z puli przeciwnika (Common / Uncommon / Rare …)
+    .map(([r, f]) => `<span class='drrow'><img src="${ASSETS_DIR}/weapon/weapon_sword.png" alt="" style="display:block;image-rendering:pixelated" onerror="this.outerHTML='🗡️'"><span class='t${r}'>${RAR[r][0]} Equipment</span><em>${+(gp * f * 100).toFixed(1)}%</em></span>`).join('') : '';   // ikona: Sword (16 px ×2)
   return `<b>Drops</b>` + gRow + (L.length || rd || bd ? L.map(([k, p]) => `<span class='drrow'>${matIco(k, 32, 24)}<span class='t${MATS[k].r || 0}'>${MATS[k].name}</span><em>${+(p * 100).toFixed(1)}%</em></span>`).join('')
     + (rd ? `<span class='drrow'>${ico(dz, 32)}<span class='t${dz.r}'>${dz.name}</span><em>${ROD_DESIGN_CH * 100}%</em></span>` : '')
     + (bd ? `<span class='drrow'>${ico(bz, 32)}<span class='t${bz.r}'>${bz.name}</span><em>${BANNER.ch * 100}%</em></span>` : '') + (bagDropOk() ? (bz2 => `<span class='drrow'>${ico(bz2, 32)}<span class='t${bz2.r}'>${bz2.name}</span><em>${BAG.ch * 100}%</em></span>`)(makeBag()) : '') : (gRow ? '' : '<small>No drops</small>')); };   // + War Banner (dopóki nie wypadł w tym akcie)   // + projekt wędki (Forest, dopóki nie zdobyty)
@@ -3626,7 +3626,7 @@ $('go').onclick = async ev => {
         }
       }
       // JEDEN DROP NA WALKĘ: jedno losowanie z listy (kolejność = od najrzadszych, szanse jak w liście dropów);
-      // przedmiot ekwipunku dostaje GEAR_CH (albo tyle, ile zostało do 100%), reszta = brak dropu
+      // przedmiot ekwipunku = reszta do 100% (zawsze jakiś drop)
       if (!gotSd) { const pool = dropPool(mob, view == 'exp' ? [...allLoot, ...loot] : [], loot);
         let roll = Math.random(); const pick = pool.find(d => (roll -= d.p) < 0);
         if (pick) pick.give(); }
