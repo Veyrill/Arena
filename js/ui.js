@@ -2131,9 +2131,10 @@ function renderActSide() {
   side.hidden = !(view === 'exp' && actsOn()) || dpsSideOn();
   if (side.hidden) return;
   const cur = eact ?? 0, lock = busy || fishing.active;
+  // IKONA AKTU: złota cyfra rzymska pixel art (assets/ui/act_1–3.png, wysokość 10 px ×2); zablokowany akt – ta sama cyfra, wyszarzona
   // akt dostępny, gdy odblokowana jest jego pierwsza lokacja (Akt 2 – po pokonaniu Fire Lorda, Akt 3 – po pokonaniu Abyss Lorda)
   $('body-act-side').innerHTML = `<div class="fish-list">` + ACTS.map((a, i) => { const open = UNLOCK() || ACT_START[i] <= locUnlocked, pl = ALL_LOCS[ACT_START[i] - 1], pb = pl ? pl.mobs[pl.mobs.length - 1] : null;
-    return `<div class="fish-row"><div class="cell${i === cur ? ' sel' : ''}${lock || !open ? ' lock' : ''}"${lock || !open ? '' : ` data-act="${i}"`}>${open ? `<span class="ic" style="font-size:28px">${a.e}</span>` : uiIco('ui_question', '❔', 32, 'opacity:.4')}</div><div><b>${a.n}</b></div></div>`; }).join('') + `</div>`;   // sama nazwa aktu (bez „5 locations”)
+    return `<div class="fish-row"><div class="cell${i === cur ? ' sel' : ''}${lock || !open ? ' lock' : ''}"${lock || !open ? '' : ` data-act="${i}"`}><img class="actn${open ? '' : ' off'}" src="${ASSETS_DIR}/ui/act_${i + 1}.png" alt="${['I', 'II', 'III'][i]}" draggable="false"></div><div><b>${a.n}</b></div></div>`; }).join('') + `</div>`;   // sama nazwa aktu (bez „5 locations”)
 }
 
 // INFO PRZECIWNIKA (ℹ️): w walce pokazuje AKTUALNE statystyki wroga (klątwy: Withering, Sunder…).
