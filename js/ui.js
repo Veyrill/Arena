@@ -2237,9 +2237,11 @@ function render() {
 
   const popupContainer = $('popup-container');
   let popupHtml = '';
-  if (me.lvl >= QUEST_LVL && !me.questMsgClosed) popupHtml += `<div class="popup-msg"><span>📜 <b>Quests</b> and <b>Artifacts</b> unlocked!</span><button onclick="window.closeQuestMsg()">X</button></div>`;
-  if (me.lvl >= 10 && !dunMsgClosed) popupHtml += `<div class="popup-msg"><span>🕳️ <b>Dungeons</b> unlocked!</span><button onclick="window.closeDunMsg()">X</button></div>`;
-  if (showNoRodMsg) popupHtml += `<div class="popup-msg"><span>🎣 ${hasRod() ? 'Equip a rod on equipment page 2!' : 'You do not have a fishing rod!'}</span><button onclick="window.closeNoRodMsg()">X</button></div>`;
+  // ikony w popupach = ikony zakładek z menu (NAV_ICO): Artifacts – Upgrade Token, Dungeons – Spider Queen, wędka – Tackle Upgrade (rod1); 32 px, natywna skala
+  const popIco = k => `<img class="popico" src="${ASSETS_DIR}/${NAV_ICO[k]}" alt="" draggable="false">`;
+  if (me.lvl >= QUEST_LVL && !me.questMsgClosed) popupHtml += `<div class="popup-msg"><span class="pops">${popIco('art')}<span><b>Quests</b> and <b>Artifacts</b> unlocked!</span></span><button onclick="window.closeQuestMsg()">X</button></div>`;
+  if (me.lvl >= 10 && !dunMsgClosed) popupHtml += `<div class="popup-msg"><span class="pops">${popIco('dun')}<span><b>Dungeons</b> unlocked!</span></span><button onclick="window.closeDunMsg()">X</button></div>`;
+  if (showNoRodMsg) popupHtml += `<div class="popup-msg"><span class="pops">${popIco('upgrade')}<span>${hasRod() ? 'Equip a rod on equipment page 2!' : 'You do not have a fishing rod!'}</span></span><button onclick="window.closeNoRodMsg()">X</button></div>`;
 
   if (popupContainer.innerHTML !== popupHtml) {
     popupContainer.innerHTML = popupHtml;
