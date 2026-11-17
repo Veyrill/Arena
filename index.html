@@ -523,6 +523,12 @@ body :is(#sellbtn,.eq-page-btn,.setopt button){background:#2d2620;color:#f0e6d2;
 body :is(#sellbtn,.eq-page-btn,.setopt button):hover:not(:disabled):not(.on){background:#3a3128;border-color:#1a0e08}
 body :is(#sellbtn.on,.eq-page-btn.on,.setopt button.on){background:#e8793a;color:#fff;border-color:#1a0e08;box-shadow:inset 0 2px 0 #ffb36b,inset 0 -3px 0 #a8461a;text-shadow:1px 1px 0 #6a2a0c}
 body :is(#sellbtn.on,.eq-page-btn.on,.setopt button.on):hover:not(:disabled){background:#f08a4a;border-color:#1a0e08;box-shadow:inset 0 2px 0 #ffc58a,inset 0 -3px 0 #a8461a}   /* zaznaczony + kursor: jaśniejszy pomarańcz (jak Auto / Back), bez zmiany na ciemny */
+
+/* WYŚRODKOWANE NAPISY przycisków drugorzędnych (Sell, strony 1 / 2, opcje Settings, zakładki Abilities / Battle Plan, zakładki Crafting):
+   flex + line-height 1; dół o 1 px (ciemne) / 2 px (pomarańczowe) większy niż góra – dolny cień jest grubszy od górnego światła */
+body :is(#sellbtn,.setopt button,.ctabs button,.absub){display:inline-flex;align-items:center;justify-content:center;gap:6px;line-height:1;padding:8px 12px}
+body .eq-page-btn{line-height:1;padding:1px 0 0}
+body .absub.on{padding:6px 12px 8px}
 </style></head><body>
 <div id="popup-container"></div>
 <button id="devbtn" title="Toggles developer mode and restarts the game">🛠️ DEV</button>
