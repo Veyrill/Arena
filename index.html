@@ -22,7 +22,8 @@ body.dragging:not(#_),body.dragging *:not(#_):not(#__){cursor:url(assets/ui/curs
 :is(.upg-node.bought,.sk.ab.off,.bpc.atk,.skillbar.fighting .sk.atk:not(.ready)){cursor:url(assets/ui/cursor.png) 5 4,default!important}
 :is(button:disabled,.tile:disabled,.upg-node.disabled,.cell.lock,[style*="cursor:not-allowed"],[style*="cursor: not-allowed"],.plusw:has(.plus:disabled)){cursor:url(assets/ui/cursor_no.png) 5 4,not-allowed!important}
 body{margin:0;background:var(--bg);color:var(--tx);font:13px/1.35 'Cascadia Mono','Cascadia Code',Consolas,'Courier New',monospace}
-h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;letter-spacing:.05em;color:var(--mut)}
+/* NAGŁÓWKI PANELI: 15 px, jasne (było 12 px, szare) – Equipment (h1) wygląda tak samo jak Expedition, Backpack, Quests */
+h1{font-size:15px;margin:0;font-weight:800;letter-spacing:.06em;color:var(--tx)}h2{font-size:15px;margin:0 0 8px;font-weight:800;letter-spacing:.06em;color:var(--tx)}
 #lvl { font-size: 1.2em; font-weight: 700; }
 .wrap{max-width:1180px;margin:auto;padding:10px;display:grid;gap:10px;grid-template-columns:180px 270px 1fr;align-items:start;position:relative}
 /* panel wyboru ryby: przyklejony z boku, na prawo od całego układu – nie przesuwa reszty menu */
@@ -35,7 +36,7 @@ h1{font-size:16px;margin:0;color:var(--ac)}h2{font-size:12px;margin:0 0 6px;lett
 #quest-side{position:absolute;left:100%;top:10px;width:270px;margin-left:10px}
 .qrow{display:flex;gap:8px;align-items:center;padding:7px;border:1px solid var(--bd);border-radius:8px;margin-bottom:6px}
 .qrow .qic{width:36px;height:36px;flex:none;display:flex;align-items:center;justify-content:center}
-.qrow .qtx{flex:1;min-width:0;font-size:12px;line-height:1.35}
+.qrow .qtx{flex:1;min-width:0;font-size:12px;line-height:1.35}.qrow .qtx small{font-size:12px;color:var(--mut)}
 .qrow .qtx b{font-size:13px}
 .qrow.active{border-color:var(--ac);box-shadow:inset 0 0 0 1px var(--ac)}
 .qrow button{font-size:11px;padding:3px 8px}
@@ -69,7 +70,7 @@ button{font:inherit;cursor:pointer;border:1px solid var(--bd);background:var(--c
 button:hover:not(:disabled){border-color:var(--ac)}button:disabled{opacity:.5;cursor:default}
 .nav{display:flex;flex-direction:column;gap:2px}
 /* MENU ZAKŁADEK (wersja A): ikona 32 px + nazwa, bez ramek; aktywna – pomarańczowy pasek z lewej i poświata; grupy z małymi nagłówkami */
-#nav .navg{margin:10px 0 4px 4px;font-size:10px;font-weight:700;letter-spacing:.18em;color:var(--mut)}#nav .navg[hidden]{display:none}
+#nav .navg{margin:10px 0 4px 4px;font-size:12px;font-weight:700;letter-spacing:.18em;color:var(--mut)}#nav .navg[hidden]{display:none}
 #nav .navsep{border:0;border-top:1px solid var(--bd);margin:8px 0}
 #nav button{display:flex;align-items:center;gap:10px;width:100%;padding:4px 8px;border:0;border-left:3px solid transparent;border-radius:0 6px 6px 0;background:none;color:var(--tx);font-size:13px}
 #nav button:hover:not(:disabled){background:color-mix(in srgb,var(--tx) 6%,transparent)}
@@ -145,7 +146,7 @@ button.drow:hover{border-color:var(--dc)}
 .dpill{font-size:10px;font-weight:800;padding:1px 6px;border-radius:9px;letter-spacing:.05em}
 .dpill.def{background:#2f4a22;color:#9fe07a}.dpill.rdy{background:#5a2a10;color:#ffb36b}.dpill.lck{background:#2a2520;color:#8f806e}
 .tile{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px;text-align:center;min-height:84px;border-radius:10px}
-.tile small{color:var(--mut)}.tile.sel{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 14%,transparent)}
+.tile small{color:var(--mut);font-size:12px}.tile.sel{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 14%,transparent)}
 .tile.lock{border:1px dashed var(--bd);opacity:.45;background:transparent}
 .row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
 .arena{display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;text-align:center}
@@ -388,7 +389,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 #log[hidden]{display:none}   /* log walki ukryty, dopóki gracz nie kliknie „Show battle log” */
 #log{height:100px;overflow:auto;font-size:12px;border:1px solid var(--bd);border-radius:8px;padding:5px;margin:8px 0}
 #log p{margin:1px 0}.crit{color:var(--ac);font-weight:700}.miss{color:var(--mut)}
-.cell{position:relative}.qty{position:absolute;right:3px;bottom:0;font-size:11px;font-weight:700;color:var(--tx);text-shadow:0 0 3px var(--card),0 0 3px var(--card)}
+.cell{position:relative}.qty{position:absolute;right:3px;bottom:0;font-size:13px;font-weight:700;color:var(--tx);text-shadow:0 0 3px var(--card),0 0 3px var(--card)}
 .cell.new{position:relative}
 .cell.new::after{content:"";position:absolute;top:-3px;right:-3px;width:12px;height:12px;border-radius:50%;background:#e53935;box-shadow:0 0 5px 2px #e5393588;animation:newglow .9s infinite alternate;pointer-events:none}
 @keyframes newglow{from{opacity:.55;box-shadow:0 0 3px 1px #e5393577}to{opacity:1;box-shadow:0 0 9px 4px #e53935aa}}
@@ -495,13 +496,13 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 .upg-node.bought .upg-badge{background:#f2c200;color:#2b2118}
 /* BONUSY PRZECIWNIKA: 2 kwadraty nad prawym górnym rogiem kafelka (XP – fiolet, Gold – moneta); zablokowane – ciemne, puste */
 .tiles.mobt{row-gap:30px;margin-top:26px}
-.mbon{position:absolute;top:-24px;right:2px;display:flex;gap:4px;z-index:2}
-.mbq{width:20px;height:20px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:2px solid #111;border-radius:3px;background:#2a2520;box-shadow:inset 0 0 0 1px #4a3e2c;font:800 9px/1 inherit;font-style:normal;color:#fff;cursor:help}
+.mbon{position:absolute;top:-28px;right:2px;display:flex;gap:4px;z-index:2}
+.mbq{width:24px;height:24px;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border:2px solid #111;border-radius:3px;background:#2a2520;box-shadow:inset 0 0 0 1px #4a3e2c;font:800 9px/1 inherit;font-style:normal;color:#fff;cursor:help}
 .mbq.mbx.on{background:#33194d;box-shadow:inset 0 0 0 1px #8c54d4,0 0 6px #8c54d499}   /* jak Gold: ciemne tło, kolorowa obwódka i poświata */
 .mbq.mbg.on{background:#5a3a10;box-shadow:inset 0 0 0 1px #e69500,0 0 6px #e6950099}
 .tile.mlock .mbon{opacity:.5}
-.mbq .xporb{width:10px;height:10px;box-shadow:0 0 4px 1px #8c54d4aa}.mbq img{vertical-align:0!important}
-.mbq:not(.on)>*{filter:grayscale(1) brightness(.7);opacity:.6}   /* zablokowany: ikona wyszarzona */
+.mbq .xporb{width:12px;height:12px;box-shadow:0 0 4px 1px #8c54d4aa}.mbq img{vertical-align:0!important}
+.mbq:not(.on)>*{filter:grayscale(1) brightness(.9);opacity:.8}   /* zablokowany: ikona wyszarzona */
 /* LISTA DROPÓW: ikona skrzyni w prawym górnym rogu okna walki (wiersz Back), dymek z dropami przeciwnika */
 #dropbtn,#infobtn{position:absolute;top:2px;right:12px;z-index:6;width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid var(--bd);border-radius:8px;background:var(--card);cursor:help}
 #infobtn{right:54px}#infobtn.solo{right:12px}#infobtn.on{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 35%,var(--card))}   /* „i” jak zakładki w Fishing; w lochu (bez listy dropów) w samym rogu */
@@ -512,6 +513,12 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 #tip .etrow{display:flex;justify-content:space-between;gap:20px;padding:3px 0;border-bottom:1px dotted var(--bd);font-size:15px}#tip .etrow:last-child{border:0}#tip .etrow span{color:var(--mut)}#tip .etrow b{display:inline;font-size:15px}   /* dymek „i”: karta przeciwnika */
 #tip .drrow{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:15px}#tip .drrow em{margin-left:auto;padding-left:14px;font-style:normal;font-weight:800}#tip .drrow img{width:32px!important;height:32px!important}
 .tile.boss{border-color:#e0524a;box-shadow:0 0 10px 2px color-mix(in srgb,#e0524a 45%,transparent)}.fig.boss{filter:drop-shadow(0 0 7px #e0524a)}
+
+/* PRZYCISKI DRUGORZĘDNE (Sell, strony ekwipunku 1 / 2, opcje w Settings): jeden ciemny styl pikselowy – czarna obwódka, jasna krawędź u góry, cień u dołu;
+   zaznaczony (on) = pomarańczowy, jak przyciski akcji. Back i Auto / Collect zostają pomarańczowe (przyciski akcji). */
+body :is(#sellbtn,.eq-page-btn,.setopt button){background:#2d2620;color:#f0e6d2;border:2px solid #1a0e08;border-radius:3px;font-weight:800;box-shadow:inset 0 2px 0 #4a3e2c,inset 0 -3px 0 #15100b;text-shadow:1px 1px 0 #000}
+body :is(#sellbtn,.eq-page-btn,.setopt button):hover:not(:disabled){background:#3a3128;border-color:#1a0e08}
+body :is(#sellbtn.on,.eq-page-btn.on,.setopt button.on){background:#e8793a;color:#fff;border-color:#1a0e08;box-shadow:inset 0 2px 0 #ffb36b,inset 0 -3px 0 #a8461a;text-shadow:1px 1px 0 #6a2a0c}
 </style></head><body>
 <div id="popup-container"></div>
 <button id="devbtn" title="Toggles developer mode and restarts the game">🛠️ DEV</button>
@@ -519,8 +526,8 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 <div id="xp-side" hidden></div>
 <div class="nav" id="nav"></div>
 <div class="card">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-    <h1>⚔️ Arena</h1>
+  <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:8px">
+    <!-- bez tytułu nad ekwipunkiem (dawniej „⚔️ Arena”) – tylko przyciski stron 1 / 2 po prawej -->
     <div class="eq-pages">
       <button class="eq-page-btn on" onclick="setEquipPage(1)">1</button>
       <button class="eq-page-btn" onclick="setEquipPage(2)">2</button>
@@ -534,7 +541,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
   <div class="stats" id="stats"></div>
 </div>
 <div>
-<div class="card" id="v-exp"><h2>Expedition</h2><div id="body-exp"></div></div>
+<div class="card" id="v-exp"><div id="body-exp"></div></div>
 <div class="card" id="v-art" hidden><h2>Artifacts</h2><div id="body-art"></div></div>
 <div class="card" id="v-upg" hidden><span id="skillresetw" style="position:absolute;top:6px;right:8px;display:inline-flex"><button id="skillreset" style="font-size:22px;line-height:1;padding:2px 8px;font-weight:700">↺</button></span><h2>Passives</h2><small style="color:var(--mut)">Mouse wheel: zoom · drag: pan the board</small><div id="body-upg" style="margin-top:6px"></div></div>
 <div class="card" id="v-abil" hidden><h2>Abilities</h2><div id="body-abil" style="margin-top:6px"></div></div>
@@ -552,7 +559,7 @@ body.hpv-off .arena .bar .hpv{display:none}   /* Settings: tylko procenty */
 <div class="skillbar" id="skillbar"><div class="sk" data-key="1"><span class="kb">1</span></div><div class="sk" data-key="2"><span class="kb">2</span></div><div class="sk" data-key="3"><span class="kb">3</span></div><div class="sk" data-key="4"><span class="kb">4</span></div><div class="sk" data-key="5"><span class="kb">5</span></div><div class="sk" data-key="Q"><span class="kb">Q</span></div><div class="sk" data-key="W"><span class="kb">W</span></div><div class="sk" data-key="E"><span class="kb">E</span></div><div class="sk" data-key="R"><span class="kb">R</span></div></div>
 <div class="info" id="info"></div>
 <div id="loot" hidden></div><div id="gorow"><button id="go">Fight!</button></div><div id="log" hidden></div></div>
-<div class="card" id="invcard"><div class="row" style="justify-content:space-between"><h2 style="margin:0;display:flex;gap:10px;align-items:baseline">Backpack<b id="invcap" class="invcap"></b></h2><button id="sellbtn" title="Sell mode: click an item or drop it on this button">💰 Sell</button></div><div class="inv" id="inv"></div></div>
+<div class="card" id="invcard"><div class="row" style="justify-content:space-between"><h2 style="margin:0;display:flex;gap:10px;align-items:baseline"><b id="invcap" class="invcap"></b></h2><button id="sellbtn" title="Sell mode: click an item or drop it on this button">💰 Sell</button></div><div class="inv" id="inv"></div></div>
 </div>
 <div class="card" id="fish-side" hidden><h2>Fish selection</h2><div id="body-fish-side"></div></div>
 <div class="card" id="act-side" hidden><h2>Act selection</h2><div id="body-act-side"></div></div>

@@ -2622,7 +2622,7 @@ function render() {
     };
   }
 
-  const back = (a, t) => `<div class="row"><button data-a="${a}"${a === 'dfback' ? ' class="bkac"' : ''}${busy ? ' disabled' : ''}>← Back</button><b>${t}</b></div>`, D = curDun(), N = D.mobs.length;   // Back z walki w lochu (dfback) – pomarańczowy, jak Fight i Back na wyprawie
+  const back = (a, t) => `<div class="row"><button data-a="${a}" class="bkac"${busy ? ' disabled' : ''}>← Back</button><b>${t}</b></div>`, D = curDun(), N = D.mobs.length;   // każdy Back (lista przeciwników, lochy, walka w lochu) – pomarańczowy, jak Auto i Back w oknie walki
   // lista lokacji Aktu 1 (dokładnie jak wcześniej)
   // lokacja jest zablokowana, dopóki nie pokonasz bossa (czerwona poświata) poprzedniej lokacji
   // lokacje wybranego aktu; data-i = indeks w ALL_LOCS (wspólny dla wszystkich aktów: Akt 1 = 0–4, Akt 2 = 5–9, Akt 3 = 10–14)
@@ -3464,7 +3464,7 @@ const mobB = m => (me.mobB && me.mobB[m.n]) || {};
 const mobXp = m => Math.round(xpOf(m) * (1 + (mobB(m).x ? MOB_B_PCT / 100 : 0)));   // XP pokazywane na kafelku (z bonusem)
 const mobBTag = m => { const b = mobB(m), lk = `<br><span style='color:var(--mut)'>Locked – each victory has a ${MOB_B_CH * 100}% chance to unlock it</span>`;
   return `<span class="mbon"><i class="mbq mbx${b.x ? ' on' : ''}" data-tip="<b>XP bonus</b>+${MOB_B_PCT}% XP from ${m.n}${b.x ? '' : lk}"><i class="xporb"></i></i>`
-    + `<i class="mbq mbg${b.g ? ' on' : ''}" data-tip="<b>Gold bonus</b>+${MOB_B_PCT}% gold from ${m.n}${b.g ? '' : lk}">${goldIco(12)}</i></span>`; };
+    + `<i class="mbq mbg${b.g ? ' on' : ''}" data-tip="<b>Gold bonus</b>+${MOB_B_PCT}% gold from ${m.n}${b.g ? '' : lk}">${goldIco(16)}</i></span>`; };   // moneta 16 px (natywna skala) w kwadracie 24 px
 const winTag = m => DEV ? (() => { const w = winChance(m); return `<span class="mwin" style="color:${w >= 80 ? '#3fdc3f' : w >= 40 ? '#e6a700' : '#e53935'}">${w}%</span>`; })() : '';
 
 // LICZBY OBRAŻEŃ: nad trafioną postacią wylatuje „37” (bez minusa) i znika w górę. Twoje ciosy – białe, ciosy wroga w Ciebie – czerwone,
